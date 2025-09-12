@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
@@ -26,7 +26,15 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Truck
+  Truck,
+  Edit,
+  UserCheck,
+  Package,
+  DollarSign,
+  Calendar,
+  ArrowRight,
+  FileText,
+  PhoneCall
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -141,8 +149,15 @@ const Dashboard = () => {
       {/* Órdenes Recientes */}
       <Card>
         <CardHeader>
-          <CardTitle>Órdenes de Trabajo Recientes</CardTitle>
-          <CardDescription>Últimas órdenes ingresadas al sistema</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Órdenes de Trabajo Recientes</CardTitle>
+              <CardDescription>Últimas órdenes ingresadas al sistema</CardDescription>
+            </div>
+            <Button onClick={() => navigate('/ordenes')} variant="outline">
+              Ver Todas
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -183,7 +198,606 @@ const Dashboard = () => {
   );
 };
 
-// Registro de Vehículo con IA
+// Gestión de Órdenes de Trabajo
+const OrdenesListado = () => {
+  const [ordenes, setOrdenes] = useState([]);
+  const [filtro, setFiltro] = useState('todas');
+  const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    cargarOrdenes();
+  }, []);
+
+  const cargarOrdenes = async () => {
+    try {
+      const response = await axios.get(`${API}/ordenes`);
+      setOrdenes(response.data);
+    } catch (error) {
+      console.error('Error cargando órdenes:', error);
+      toast.error('Error cargando las órdenes');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const estadoConfig = {
+      'recibido': { color: 'bg-blue-100 text-blue-800', icon: <Clock className="w-3 h-3" /> },
+      'diagnosticando': { color: 'bg-yellow-100 text-yellow-800', icon: <Search className="w-3 h-3" /> },
+      'presupuestado': { color: 'bg-purple-100 text-purple-800', icon: <FileText className="w-3 h-3" /> },
+      'aprobado': { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'en_reparacion': { color: 'bg-orange-100 text-orange-800', icon: <Wrench className="w-3 h-3" /> },
+      'terminado': { color: 'bg-gray-100 text-gray-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'entregado': { color: 'bg-green-500 text-white', icon: <CheckCircle className="w-3 h-3" /> }
+    };
+    
+    const config = estadoConfig[estado] || estadoConfig['recibido'];
+    return (
+      <Badge className={`${config.color} flex items-center gap-1`}>
+        {config.icon}
+        {estado.replace('_', ' ').toUpperCase()}
+      </Badge>
+    );
+  };
+
+  const ordenesFiltradas = ordenes.filter(orden => {
+    if (filtro === 'todas') return true;
+    if (filtro === 'activas') return !['terminado', 'entregado'].includes(orden.estado);
+    return orden.estado === filtro;
+  });
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando órdenes...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Órdenes de Trabajo</h1>
+        <Button onClick={() => navigate('/registro')} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Nueva Orden
+        </Button>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-2 flex-wrap">
+        <Button 
+          variant={filtro === 'todas' ? 'default' : 'outline'}
+          onClick={() => setFiltro('todas')}
+        >
+          Todas ({ordenes.length})
+        </Button>
+        <Button 
+          variant={filtro === 'activas' ? 'default' : 'outline'}
+          onClick={() => setFiltro('activas')}
+        >
+          Activas ({ordenes.filter(o => !['terminado', 'entregado'].includes(o.estado)).length})
+        </Button>
+        <Button 
+          variant={filtro === 'recibido' ? 'default' : 'outline'}
+          onClick={() => setFiltro('recibido')}
+        >
+          Recibidas ({ordenes.filter(o => o.estado === 'recibido').length})
+        </Button>
+        <Button 
+          variant={filtro === 'en_reparacion' ? 'default' : 'outline'}
+          onClick={() => setFiltro('en_reparacion')}
+        >
+          En Reparación ({ordenes.filter(o => o.estado === 'en_reparacion').length})
+        </Button>
+      </div>
+
+      {/* Lista de Órdenes */}
+      <div className="grid gap-4">
+        {ordenesFiltradas.map((orden) => (
+          <Card key={orden.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">Orden #{orden.id.slice(-8)}</h3>
+                    {getEstadoBadge(orden.estado)}
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Ingreso: {new Date(orden.fecha_ingreso).toLocaleDateString('es-ES')}
+                  </p>
+                  {orden.diagnostico && (
+                    <p className="text-sm"><strong>Diagnóstico:</strong> {orden.diagnostico}</p>
+                  )}
+                  {orden.presupuesto_total && (
+                    <p className="text-sm"><strong>Presupuesto:</strong> ${orden.presupuesto_total.toFixed(2)}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/orden/${orden.id}`)}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Ver Detalles
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/orden/${orden.id}/editar`)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {ordenesFiltradas.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No hay órdenes para mostrar</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// Detalle de Orden de Trabajo
+const OrdenDetalle = () => {
+  const { ordenId } = useParams();
+  const [orden, setOrden] = useState(null);
+  const [vehiculo, setVehiculo] = useState(null);
+  const [cliente, setCliente] = useState(null);
+  const [mecanicos, setMecanicos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    cargarDetalles();
+  }, [ordenId]);
+
+  const cargarDetalles = async () => {
+    try {
+      const [ordenRes, mecanicosRes] = await Promise.all([
+        axios.get(`${API}/ordenes/${ordenId}`),
+        axios.get(`${API}/mecanicos/activos`)
+      ]);
+      
+      const ordenData = ordenRes.data;
+      setOrden(ordenData);
+      setMecanicos(mecanicosRes.data);
+
+      // Cargar datos del vehículo y cliente
+      const [vehiculoRes, clienteRes] = await Promise.all([
+        axios.get(`${API}/vehiculos/${ordenData.vehiculo_id}`),
+        axios.get(`${API}/clientes/${ordenData.cliente_id}`)
+      ]);
+
+      setVehiculo(vehiculoRes.data);
+      setCliente(clienteRes.data);
+    } catch (error) {
+      console.error('Error cargando detalles:', error);
+      toast.error('Error cargando los detalles de la orden');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const cambiarEstado = async (nuevoEstado) => {
+    try {
+      await axios.put(`${API}/ordenes/${ordenId}`, { estado: nuevoEstado });
+      setOrden(prev => ({ ...prev, estado: nuevoEstado }));
+      toast.success('Estado actualizado correctamente');
+    } catch (error) {
+      console.error('Error actualizando estado:', error);
+      toast.error('Error actualizando el estado');
+    }
+  };
+
+  const asignarMecanico = async (mecanicoId) => {
+    try {
+      await axios.put(`${API}/ordenes/${ordenId}`, { mecanico_id: mecanicoId });
+      setOrden(prev => ({ ...prev, mecanico_id: mecanicoId }));
+      toast.success('Mecánico asignado correctamente');
+    } catch (error) {
+      console.error('Error asignando mecánico:', error);
+      toast.error('Error asignando el mecánico');
+    }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const estadoConfig = {
+      'recibido': { color: 'bg-blue-100 text-blue-800', icon: <Clock className="w-3 h-3" /> },
+      'diagnosticando': { color: 'bg-yellow-100 text-yellow-800', icon: <Search className="w-3 h-3" /> },
+      'presupuestado': { color: 'bg-purple-100 text-purple-800', icon: <FileText className="w-3 h-3" /> },
+      'aprobado': { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'en_reparacion': { color: 'bg-orange-100 text-orange-800', icon: <Wrench className="w-3 h-3" /> },
+      'terminado': { color: 'bg-gray-100 text-gray-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'entregado': { color: 'bg-green-500 text-white', icon: <CheckCircle className="w-3 h-3" /> }
+    };
+    
+    const config = estadoConfig[estado] || estadoConfig['recibido'];
+    return (
+      <Badge className={`${config.color} flex items-center gap-1`}>
+        {config.icon}
+        {estado.replace('_', ' ').toUpperCase()}
+      </Badge>
+    );
+  };
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando detalles...</div>;
+  }
+
+  if (!orden) {
+    return <div className="text-center py-8">Orden no encontrada</div>;
+  }
+
+  const mecanicoAsignado = mecanicos.find(m => m.id === orden.mecanico_id);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Orden #{orden.id.slice(-8)}</h1>
+          <p className="text-gray-600 mt-1">
+            Creada el {new Date(orden.fecha_ingreso).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {getEstadoBadge(orden.estado)}
+          <Button onClick={() => navigate('/ordenes')} variant="outline">
+            Volver
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Información del Cliente y Vehículo */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Información del Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cliente && (
+                <div className="space-y-2">
+                  <p><strong>Nombre:</strong> {cliente.nombre}</p>
+                  {cliente.empresa && <p><strong>Empresa:</strong> {cliente.empresa}</p>}
+                  {cliente.telefono && (
+                    <p className="flex items-center gap-2">
+                      <strong>Teléfono:</strong> {cliente.telefono}
+                      <Button size="sm" variant="outline">
+                        <PhoneCall className="w-3 h-3" />
+                      </Button>
+                    </p>
+                  )}
+                  {cliente.email && <p><strong>Email:</strong> {cliente.email}</p>}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Car className="w-5 h-5" />
+                Información del Vehículo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {vehiculo && (
+                <div className="space-y-2">
+                  <p><strong>Matrícula:</strong> {vehiculo.matricula}</p>
+                  <p><strong>Marca/Modelo:</strong> {vehiculo.marca} {vehiculo.modelo}</p>
+                  {vehiculo.año && <p><strong>Año:</strong> {vehiculo.año}</p>}
+                  {vehiculo.color && <p><strong>Color:</strong> {vehiculo.color}</p>}
+                  {vehiculo.kilometraje && <p><strong>Kilometraje:</strong> {vehiculo.kilometraje.toLocaleString()} km</p>}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Diagnóstico y Observaciones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Diagnóstico</label>
+                  <p className="text-sm bg-gray-50 p-3 rounded">
+                    {orden.diagnostico || 'Sin diagnóstico registrado'}
+                  </p>
+                </div>
+                {orden.observaciones && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Observaciones</label>
+                    <p className="text-sm bg-gray-50 p-3 rounded">{orden.observaciones}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Panel de Control */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Control de Estado</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'recibido' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('recibido')}
+              >
+                Recibido
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'diagnosticando' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('diagnosticando')}
+              >
+                Diagnosticando
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'presupuestado' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('presupuestado')}
+              >
+                Presupuestado
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'aprobado' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('aprobado')}
+              >
+                Aprobado
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'en_reparacion' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('en_reparacion')}
+              >
+                En Reparación
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'terminado' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('terminado')}
+              >
+                Terminado
+              </Button>
+              <Button 
+                className="w-full" 
+                variant={orden.estado === 'entregado' ? 'default' : 'outline'}
+                onClick={() => cambiarEstado('entregado')}
+              >
+                Entregado
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Asignación de Mecánico</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mecanicoAsignado && (
+                  <div className="p-3 bg-green-50 rounded border border-green-200">
+                    <p className="font-medium text-green-800">{mecanicoAsignado.nombre}</p>
+                    <p className="text-sm text-green-600">Especialidad: {mecanicoAsignado.especialidad}</p>
+                  </div>
+                )}
+                
+                <Select onValueChange={asignarMecanico}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar mecánico" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mecanicos.map((mecanico) => (
+                      <SelectItem key={mecanico.id} value={mecanico.id}>
+                        {mecanico.nombre} - {mecanico.especialidad}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {orden.presupuesto_total && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Presupuesto
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  ${orden.presupuesto_total.toFixed(2)}
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  {orden.aprobado_cliente ? 'Aprobado por cliente' : 'Pendiente de aprobación'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Gestión de Mecánicos
+const MecanicosList = () => {
+  const [mecanicos, setMecanicos] = useState([]);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [nuevoMecanico, setNuevoMecanico] = useState({
+    nombre: '', especialidad: '', telefono: '', activo: true
+  });
+
+  useEffect(() => {
+    cargarMecanicos();
+  }, []);
+
+  const cargarMecanicos = async () => {
+    try {
+      const response = await axios.get(`${API}/mecanicos`);
+      setMecanicos(response.data);
+    } catch (error) {
+      console.error('Error cargando mecánicos:', error);
+      toast.error('Error cargando los mecánicos');
+    }
+  };
+
+  const guardarMecanico = async () => {
+    try {
+      await axios.post(`${API}/mecanicos`, nuevoMecanico);
+      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true });
+      setMostrarFormulario(false);
+      cargarMecanicos();
+      toast.success('Mecánico agregado correctamente');
+    } catch (error) {
+      console.error('Error guardando mecánico:', error);
+      toast.error('Error guardando el mecánico');
+    }
+  };
+
+  const especialidades = [
+    'motor', 'transmision', 'frenos', 'electricidad', 'suspension', 
+    'climatizacion', 'neumaticos', 'carroceria', 'general'
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Mecánicos Especialistas</h1>
+        <Dialog open={mostrarFormulario} onOpenChange={setMostrarFormulario}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Mecánico
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Agregar Nuevo Mecánico</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre *</label>
+                <Input
+                  value={nuevoMecanico.nombre}
+                  onChange={(e) => setNuevoMecanico(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Nombre completo del mecánico"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Especialidad *</label>
+                <Select 
+                  value={nuevoMecanico.especialidad}
+                  onValueChange={(value) => setNuevoMecanico(prev => ({ ...prev, especialidad: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar especialidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {especialidades.map((esp) => (
+                      <SelectItem key={esp} value={esp}>
+                        {esp.charAt(0).toUpperCase() + esp.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Teléfono</label>
+                <Input
+                  value={nuevoMecanico.telefono}
+                  onChange={(e) => setNuevoMecanico(prev => ({ ...prev, telefono: e.target.value }))}
+                  placeholder="Número de teléfono"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setMostrarFormulario(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={guardarMecanico}
+                  disabled={!nuevoMecanico.nombre || !nuevoMecanico.especialidad}
+                >
+                  Guardar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {mecanicos.map((mecanico) => (
+          <Card key={mecanico.id}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${mecanico.activo ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                  <h3 className="font-semibold">{mecanico.nombre}</h3>
+                </div>
+                <Badge variant="outline">
+                  {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
+                </Badge>
+              </div>
+              {mecanico.telefono && (
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <PhoneCall className="w-3 h-3" />
+                  {mecanico.telefono}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                Agregado: {new Date(mecanico.created_at).toLocaleDateString('es-ES')}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {mecanicos.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <UserCheck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No hay mecánicos registrados</p>
+            <Button 
+              className="mt-4" 
+              onClick={() => setMostrarFormulario(true)}
+            >
+              Agregar Primer Mecánico
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// Registro de Vehículo con IA (código anterior se mantiene igual)
 const RegistroVehiculo = () => {
   const [paso, setPaso] = useState(1);
   const [cliente, setCliente] = useState({ nombre: '', telefono: '', empresa: '', email: '' });
@@ -292,14 +906,14 @@ const RegistroVehiculo = () => {
       const vehiculoResponse = await axios.post(`${API}/vehiculos`, vehiculoData);
       
       // Crear orden de trabajo inicial
-      await axios.post(`${API}/ordenes`, {
+      const ordenResponse = await axios.post(`${API}/ordenes`, {
         vehiculo_id: vehiculoResponse.data.id,
         cliente_id: clienteId,
         diagnostico: 'Vehículo recibido - Pendiente diagnóstico inicial'
       });
       
       toast.success('Vehículo registrado exitosamente');
-      navigate('/dashboard');
+      navigate(`/orden/${ordenResponse.data.id}`);
       
     } catch (error) {
       console.error('Error guardando registro:', error);
@@ -556,6 +1170,10 @@ const Navigation = () => {
             <Truck className="w-4 h-4" />
             Órdenes
           </Link>
+          <Link to="/mecanicos" className="hover:text-blue-300 flex items-center gap-2">
+            <UserCheck className="w-4 h-4" />
+            Mecánicos
+          </Link>
           <Link to="/vehiculos" className="hover:text-blue-300 flex items-center gap-2">
             <Car className="w-4 h-4" />
             Vehículos
@@ -563,62 +1181,6 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
-  );
-};
-
-// Página de Prueba IA
-const PruebaIA = () => {
-  const [textoTest, setTextoTest] = useState('');
-  const [resultado, setResultado] = useState(null);
-  const [cargando, setCargando] = useState(false);
-
-  const probarIA = async () => {
-    setCargando(true);
-    try {
-      const response = await axios.post(`${API}/ai/extraer-datos`, {
-        texto_dictado: textoTest
-      });
-      setResultado(response.data);
-    } catch (error) {
-      console.error('Error:', error);
-      setResultado({ error: error.message });
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Prueba de IA</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Probar Extracción de Datos con IA</CardTitle>
-          <CardDescription>
-            Escribe información de un vehículo para probar la IA
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={textoTest}
-            onChange={(e) => setTextoTest(e.target.value)}
-            placeholder="Ejemplo: El vehículo Toyota Corolla 2020 color blanco con matrícula ABC123 tiene 50000 kilómetros, el cliente es Juan Pérez de la empresa Transportes Unidos, teléfono 123456789"
-            rows={4}
-          />
-          <Button onClick={probarIA} disabled={cargando || !textoTest}>
-            {cargando ? 'Procesando...' : 'Probar IA'}
-          </Button>
-          
-          {resultado && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold mb-2">Resultado:</h3>
-              <pre className="text-sm whitespace-pre-wrap">
-                {JSON.stringify(resultado, null, 2)}
-              </pre>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
   );
 };
 
@@ -648,7 +1210,9 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/registro" element={<RegistroVehiculo />} />
-            <Route path="/prueba-ia" element={<PruebaIA />} />
+            <Route path="/ordenes" element={<OrdenesListado />} />
+            <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
+            <Route path="/mecanicos" element={<MecanicosList />} />
           </Routes>
         </main>
       </BrowserRouter>
