@@ -1215,10 +1215,14 @@ const RegistroVehiculo = () => {
                   <label className="block text-sm font-medium mb-2">Matrícula/Placa *</label>
                   <Input
                     value={vehiculo.matricula}
-                    onChange={(e) => setVehiculo(prev => ({ ...prev, matricula: e.target.value }))}
-                    placeholder="Número de matrícula"
-                    className="uppercase"
+                    onChange={(e) => validarMatricula(e.target.value)}
+                    placeholder="4-7 caracteres alfanuméricos"
+                    className="uppercase font-mono tracking-wider text-center"
+                    maxLength={7}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Solo letras y números, sin símbolos. Mínimo 4, máximo 7 caracteres.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Marca</label>
