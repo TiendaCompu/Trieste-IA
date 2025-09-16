@@ -1184,6 +1184,698 @@ const Navigation = () => {
   );
 };
 
+// Gestión de Vehículos
+const VehiculosList = () => {
+  const [vehiculos, setVehiculos] = useState([]);
+  const [clientes, setClientes] = useState({});
+  const [filtroTexto, setFiltroTexto] = useState('');
+  const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    cargarVehiculos();
+  }, []);
+
+  const cargarVehiculos = async () => {
+    try {
+      const [vehiculosRes, clientesRes] = await Promise.all([
+        axios.get(`${API}/vehiculos`),
+        axios.get(`${API}/clientes`)
+      ]);
+      
+      setVehiculos(vehiculosRes.data);
+      
+      // Crear un mapa de clientes por ID para acceso rápido
+      const clientesMap = {};
+      clientesRes.data.forEach(cliente => {
+        clientesMap[cliente.id] = cliente;
+      });
+      setClientes(clientesMap);
+    } catch (error) {
+      console.error('Error cargando vehículos:', error);
+      toast.error('Error cargando los vehículos');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const vehiculosFiltrados = vehiculos.filter(vehiculo => {
+    const cliente = clientes[vehiculo.cliente_id];
+    const busqueda = filtroTexto.toLowerCase();
+    
+    return (
+      vehiculo.matricula.toLowerCase().includes(busqueda) ||
+      vehiculo.marca.toLowerCase().includes(busqueda) ||
+      vehiculo.modelo.toLowerCase().includes(busqueda) ||
+      (cliente && cliente.nombre.toLowerCase().includes(busqueda)) ||
+      (cliente && cliente.empresa && cliente.empresa.toLowerCase().includes(busqueda)) ||
+      (vehiculo.color && vehiculo.color.toLowerCase().includes(busqueda))
+    );
+  });
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando vehículos...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Gestión de Vehículos</h1>
+        <Button onClick={() => navigate('/registro')} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Registrar Vehículo
+        </Button>
+      </div>
+
+      {/* Barra de búsqueda */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2">
+            <Search className="w-5 h-5 text-gray-400" />
+            <Input
+              placeholder="Buscar por matrícula, marca, modelo, cliente o empresa..."
+              value={filtroTexto}
+              onChange={(e) => setFiltroTexto(e.target.value)}
+              className="flex-1"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Estadísticas rápidas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">{vehiculos.length}</div>
+            <p className="text-sm text-gray-600">Total Vehículos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {vehiculosFiltrados.length}
+            </div>
+            <p className="text-sm text-gray-600">Resultados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-600">
+              {new Set(vehiculos.map(v => clientes[v.cliente_id]?.empresa || clientes[v.cliente_id]?.nombre)).size}
+            </div>
+            <p className="text-sm text-gray-600">Clientes/Empresas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-600">
+              {new Set(vehiculos.map(v => v.marca)).size}
+            </div>
+            <p className="text-sm text-gray-600">Marcas</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Lista de vehículos */}
+      <div className="grid gap-4">
+        {vehiculosFiltrados.map((vehiculo) => {
+          const cliente = clientes[vehiculo.cliente_id];
+          return (
+            <Card key={vehiculo.id} className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/vehiculo/${vehiculo.id}`)}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-100 p-3 rounded-lg">
+                      <Car className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-semibold">{vehiculo.matricula}</h3>
+                        <Badge variant="outline">
+                          {vehiculo.marca} {vehiculo.modelo}
+                        </Badge>
+                        {vehiculo.año && (
+                          <Badge variant="secondary">{vehiculo.año}</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                        {cliente && (
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {cliente.empresa ? `${cliente.empresa} - ${cliente.nombre}` : cliente.nombre}
+                          </span>
+                        )}
+                        {vehiculo.color && (
+                          <span>Color: {vehiculo.color}</span>
+                        )}
+                        {vehiculo.kilometraje && (
+                          <span>{vehiculo.kilometraje.toLocaleString()} km</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/vehiculo/${vehiculo.id}/historial`);
+                      }}
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      Historial
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/vehiculo/${vehiculo.id}`);
+                      }}
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      Ver Detalles
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {vehiculosFiltrados.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">
+              {filtroTexto ? 'No se encontraron vehículos con ese criterio' : 'No hay vehículos registrados'}
+            </p>
+            {filtroTexto && (
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setFiltroTexto('')}
+              >
+                Limpiar filtro
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// Detalle de Vehículo
+const VehiculoDetalle = () => {
+  const { vehiculoId } = useParams();
+  const [vehiculo, setVehiculo] = useState(null);
+  const [cliente, setCliente] = useState(null);
+  const [ordenesRecientes, setOrdenesRecientes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    cargarDetalles();
+  }, [vehiculoId]);
+
+  const cargarDetalles = async () => {
+    try {
+      const vehiculoRes = await axios.get(`${API}/vehiculos/${vehiculoId}`);
+      const vehiculoData = vehiculoRes.data;
+      setVehiculo(vehiculoData);
+
+      const [clienteRes, historialRes] = await Promise.all([
+        axios.get(`${API}/clientes/${vehiculoData.cliente_id}`),
+        axios.get(`${API}/vehiculos/${vehiculoId}/historial`)
+      ]);
+
+      setCliente(clienteRes.data);
+      setOrdenesRecientes(historialRes.data.slice(0, 5)); // Últimas 5 órdenes
+    } catch (error) {
+      console.error('Error cargando detalles del vehículo:', error);
+      toast.error('Error cargando los detalles del vehículo');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const estadoConfig = {
+      'recibido': { color: 'bg-blue-100 text-blue-800', icon: <Clock className="w-3 h-3" /> },
+      'diagnosticando': { color: 'bg-yellow-100 text-yellow-800', icon: <Search className="w-3 h-3" /> },
+      'presupuestado': { color: 'bg-purple-100 text-purple-800', icon: <FileText className="w-3 h-3" /> },
+      'aprobado': { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'en_reparacion': { color: 'bg-orange-100 text-orange-800', icon: <Wrench className="w-3 h-3" /> },
+      'terminado': { color: 'bg-gray-100 text-gray-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'entregado': { color: 'bg-green-500 text-white', icon: <CheckCircle className="w-3 h-3" /> }
+    };
+    
+    const config = estadoConfig[estado] || estadoConfig['recibido'];
+    return (
+      <Badge className={`${config.color} flex items-center gap-1`}>
+        {config.icon}
+        {estado.replace('_', ' ').toUpperCase()}
+      </Badge>
+    );
+  };
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando detalles...</div>;
+  }
+
+  if (!vehiculo) {
+    return <div className="text-center py-8">Vehículo no encontrado</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{vehiculo.matricula}</h1>
+          <p className="text-xl text-gray-600 mt-1">
+            {vehiculo.marca} {vehiculo.modelo} {vehiculo.año}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => navigate('/vehiculos')} variant="outline">
+            Volver a Lista
+          </Button>
+          <Button onClick={() => navigate(`/vehiculo/${vehiculo.id}/historial`)}>
+            Ver Historial Completo
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Información Principal */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Car className="w-5 h-5" />
+                Información del Vehículo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Matrícula/Placa</label>
+                  <p className="text-lg font-semibold">{vehiculo.matricula}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marca y Modelo</label>
+                  <p className="text-lg">{vehiculo.marca} {vehiculo.modelo}</p>
+                </div>
+                {vehiculo.año && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                    <p className="text-lg">{vehiculo.año}</p>
+                  </div>
+                )}
+                {vehiculo.color && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <p className="text-lg">{vehiculo.color}</p>
+                  </div>
+                )}
+                {vehiculo.kilometraje && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Kilometraje</label>
+                    <p className="text-lg">{vehiculo.kilometraje.toLocaleString()} km</p>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registro</label>
+                  <p className="text-sm text-gray-600">
+                    {new Date(vehiculo.created_at).toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+              </div>
+              
+              {vehiculo.foto_matricula && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Foto de la Matrícula</label>
+                  <img 
+                    src={vehiculo.foto_matricula} 
+                    alt="Matrícula" 
+                    className="max-w-sm h-auto border rounded-lg shadow-sm"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Información del Propietario
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cliente && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                    <p className="text-lg">{cliente.nombre}</p>
+                  </div>
+                  {cliente.empresa && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                      <p className="text-lg">{cliente.empresa}</p>
+                    </div>
+                  )}
+                  {cliente.telefono && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                      <div className="flex items-center gap-2">
+                        <p className="text-lg">{cliente.telefono}</p>
+                        <Button size="sm" variant="outline">
+                          <PhoneCall className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {cliente.email && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <p className="text-lg">{cliente.email}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Panel Lateral */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Acciones Rápidas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button 
+                className="w-full"
+                onClick={() => {
+                  // Crear nueva orden para este vehículo
+                  navigate('/registro', { 
+                    state: { 
+                      vehiculo: vehiculo,
+                      cliente: cliente 
+                    }
+                  });
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nueva Orden de Trabajo
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate(`/vehiculo/${vehiculo.id}/historial`)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Ver Historial Completo
+              </Button>
+              {cliente && (
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate(`/cliente/${cliente.id}`)}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Ver Otros Vehículos
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Estadísticas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Órdenes:</span>
+                  <span className="font-semibold">{ordenesRecientes.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Órdenes Activas:</span>
+                  <span className="font-semibold">
+                    {ordenesRecientes.filter(o => !['terminado', 'entregado'].includes(o.estado)).length}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Historial Reciente */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Historial Reciente</CardTitle>
+            <Button 
+              variant="outline"
+              onClick={() => navigate(`/vehiculo/${vehiculo.id}/historial`)}
+            >
+              Ver Todo
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {ordenesRecientes.map((orden) => (
+              <div key={orden.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">Orden #{orden.id.slice(-8)}</p>
+                    {getEstadoBadge(orden.estado)}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {new Date(orden.fecha_ingreso).toLocaleDateString('es-ES')}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm"><strong>Diagnóstico:</strong></p>
+                  <p className="text-sm text-gray-600">{orden.diagnostico || 'Pendiente'}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate(`/orden/${orden.id}`)}
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          
+          {ordenesRecientes.length === 0 && (
+            <div className="text-center py-8">
+              <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No hay órdenes de trabajo registradas</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Historial Completo del Vehículo
+const VehiculoHistorial = () => {
+  const { vehiculoId } = useParams();
+  const [vehiculo, setVehiculo] = useState(null);
+  const [ordenes, setOrdenes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    cargarHistorial();
+  }, [vehiculoId]);
+
+  const cargarHistorial = async () => {
+    try {
+      const [vehiculoRes, historialRes] = await Promise.all([
+        axios.get(`${API}/vehiculos/${vehiculoId}`),
+        axios.get(`${API}/vehiculos/${vehiculoId}/historial`)
+      ]);
+
+      setVehiculo(vehiculoRes.data);
+      setOrdenes(historialRes.data);
+    } catch (error) {
+      console.error('Error cargando historial:', error);
+      toast.error('Error cargando el historial del vehículo');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const estadoConfig = {
+      'recibido': { color: 'bg-blue-100 text-blue-800', icon: <Clock className="w-3 h-3" /> },
+      'diagnosticando': { color: 'bg-yellow-100 text-yellow-800', icon: <Search className="w-3 h-3" /> },
+      'presupuestado': { color: 'bg-purple-100 text-purple-800', icon: <FileText className="w-3 h-3" /> },
+      'aprobado': { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'en_reparacion': { color: 'bg-orange-100 text-orange-800', icon: <Wrench className="w-3 h-3" /> },
+      'terminado': { color: 'bg-gray-100 text-gray-800', icon: <CheckCircle className="w-3 h-3" /> },
+      'entregado': { color: 'bg-green-500 text-white', icon: <CheckCircle className="w-3 h-3" /> }
+    };
+    
+    const config = estadoConfig[estado] || estadoConfig['recibido'];
+    return (
+      <Badge className={`${config.color} flex items-center gap-1`}>
+        {config.icon}
+        {estado.replace('_', ' ').toUpperCase()}
+      </Badge>
+    );
+  };
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando historial...</div>;
+  }
+
+  if (!vehiculo) {
+    return <div className="text-center py-8">Vehículo no encontrado</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Historial Completo</h1>
+          <p className="text-xl text-gray-600 mt-1">
+            {vehiculo.matricula} - {vehiculo.marca} {vehiculo.modelo}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={() => navigate(`/vehiculo/${vehiculo.id}`)} variant="outline">
+            Volver a Detalles
+          </Button>
+          <Button onClick={() => navigate('/vehiculos')} variant="outline">
+            Lista de Vehículos
+          </Button>
+        </div>
+      </div>
+
+      {/* Resumen */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">{ordenes.length}</div>
+            <p className="text-sm text-gray-600">Total Órdenes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {ordenes.filter(o => o.estado === 'entregado').length}
+            </div>
+            <p className="text-sm text-gray-600">Completadas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-600">
+              {ordenes.filter(o => !['terminado', 'entregado'].includes(o.estado)).length}
+            </div>
+            <p className="text-sm text-gray-600">En Proceso</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-600">
+              ${ordenes.reduce((total, orden) => total + (orden.presupuesto_total || 0), 0).toFixed(2)}
+            </div>
+            <p className="text-sm text-gray-600">Total Facturado</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Timeline de Órdenes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Timeline de Órdenes de Trabajo</CardTitle>
+          <CardDescription>Historial completo de todas las intervenciones</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {ordenes.map((orden, index) => (
+              <div key={orden.id} className="relative">
+                {index < ordenes.length - 1 && (
+                  <div className="absolute left-4 top-8 w-0.5 h-full bg-gray-200"></div>
+                )}
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-semibold text-blue-600">{ordenes.length - index}</span>
+                  </div>
+                  <Card className="flex-1">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">Orden #{orden.id.slice(-8)}</h3>
+                          {getEstadoBadge(orden.estado)}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">
+                            {new Date(orden.fecha_ingreso).toLocaleDateString('es-ES')}
+                          </span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/orden/${orden.id}`)}
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Ver
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm"><strong>Diagnóstico:</strong> {orden.diagnostico || 'Pendiente'}</p>
+                        {orden.observaciones && (
+                          <p className="text-sm"><strong>Observaciones:</strong> {orden.observaciones}</p>
+                        )}
+                        {orden.presupuesto_total && (
+                          <p className="text-sm"><strong>Presupuesto:</strong> ${orden.presupuesto_total.toFixed(2)}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {ordenes.length === 0 && (
+            <div className="text-center py-8">
+              <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No hay órdenes de trabajo registradas para este vehículo</p>
+              <Button 
+                className="mt-4"
+                onClick={() => navigate('/registro')}
+              >
+                Crear Primera Orden
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // App Principal
 function App() {
   // Test de conexión al iniciar
@@ -1213,6 +1905,9 @@ function App() {
             <Route path="/ordenes" element={<OrdenesListado />} />
             <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
             <Route path="/mecanicos" element={<MecanicosList />} />
+            <Route path="/vehiculos" element={<VehiculosList />} />
+            <Route path="/vehiculo/:vehiculoId" element={<VehiculoDetalle />} />
+            <Route path="/vehiculo/:vehiculoId/historial" element={<VehiculoHistorial />} />
           </Routes>
         </main>
       </BrowserRouter>
