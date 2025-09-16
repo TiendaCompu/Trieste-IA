@@ -263,6 +263,13 @@ async def obtener_cliente(cliente_id: str):
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return Cliente(**parse_from_mongo(cliente))
 
+# Verificar matrícula única
+@api_router.get("/vehiculos/verificar-matricula/{matricula}")
+async def verificar_matricula_unica(matricula: str):
+    """Verifica si una matrícula ya existe en la base de datos"""
+    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula.upper()})
+    return {"existe": vehiculo_existente is not None, "matricula": matricula.upper()}
+
 # Vehículo Routes
 @api_router.post("/vehiculos", response_model=Vehiculo)
 async def crear_vehiculo(vehiculo: VehiculoCreate):
@@ -271,7 +278,25 @@ async def crear_vehiculo(vehiculo: VehiculoCreate):
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     
+    # Normalizar matrícula a mayúsculas y validar formato
+    matricula_normalizada = vehiculo.matricula.upper().strip()
+    
+    # Validar formato de matrícula (4-7 caracteres alfanuméricos)
+    import re
+    if not re.match(r'^[A-Z0-9]{4,7}$', matricula_normalizada):
+        raise HTTPException(
+            status_code=400, 
+            detail="Matrícula inválida. Debe tener 4-7 caracteres alfanuméricos sin símbolos"
+        )
+    
+    # Verificar que la matrícula no existe
+    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula_normalizada})
+    if vehiculo_existente:
+        raise HTTPException(status_code=400, detail="Esta matrícula ya está registrada")
+    
+    # Crear vehículo con matrícula normalizada
     vehiculo_dict = prepare_for_mongo(vehiculo.dict())
+    vehiculo_dict["matricula"] = matricula_normalizada
     vehiculo_obj = Vehiculo(**vehiculo_dict)
     await db.vehiculos.insert_one(prepare_for_mongo(vehiculo_obj.dict()))
     return vehiculo_obj
