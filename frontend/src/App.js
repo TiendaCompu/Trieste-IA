@@ -939,15 +939,57 @@ const MecanicosList = () => {
   );
 };
 
-// Registro de Vehículo con IA (código anterior se mantiene igual)
+// Registro de Vehículo con IA (mejorado)
 const RegistroVehiculo = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const [paso, setPaso] = useState(1);
   const [cliente, setCliente] = useState({ nombre: '', telefono: '', empresa: '', email: '' });
   const [vehiculo, setVehiculo] = useState({ matricula: '', marca: '', modelo: '', año: '', color: '', kilometraje: '' });
   const [grabando, setGrabando] = useState(false);
   const [procesandoIA, setProcesandoIA] = useState(false);
   const [fotoMatricula, setFotoMatricula] = useState(null);
-  const navigate = useNavigate();
+  const [modoCreacionDirecta, setModoCreacionDirecta] = useState(false);
+
+  useEffect(() => {
+    // Verificar si viene de búsqueda con datos predefinidos
+    if (location.state) {
+      if (location.state.matricula_predefinida) {
+        setVehiculo(prev => ({ ...prev, matricula: location.state.matricula_predefinida }));
+      }
+      
+      if (location.state.vehiculo_existente && location.state.cliente_existente) {
+        setVehiculo(location.state.vehiculo_existente);
+        setCliente(location.state.cliente_existente);
+        setModoCreacionDirecta(true);
+        setPaso(3); // Ir directo a confirmación para crear orden
+      }
+    }
+  }, [location.state]);
+
+  const validarMatricula = (valor) => {
+    // Solo alfanuméricos, 4-7 caracteres, convertir a mayúsculas
+    const limpio = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (limpio.length <= 7) {
+      setVehiculo(prev => ({ ...prev, matricula: limpio }));
+    }
+  };
+
+  const verificarMatriculaUnica = async (matricula) => {
+    try {
+      const response = await axios.get(`${API}/vehiculos`);
+      const existe = response.data.find(v => v.matricula === matricula && v.id !== vehiculo.id);
+      if (existe) {
+        toast.error('Esta matrícula ya está registrada');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error verificando matrícula:', error);
+      return true; // Permitir en caso de error
+    }
+  };
 
   const procesarConIA = async (textoOImagen, tipo) => {
     setProcesandoIA(true);
