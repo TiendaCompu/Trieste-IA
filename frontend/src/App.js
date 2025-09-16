@@ -1074,6 +1074,31 @@ const RegistroVehiculo = () => {
 
   const guardarRegistro = async () => {
     try {
+      // Validar matrícula
+      if (vehiculo.matricula.length < 4) {
+        toast.error('La matrícula debe tener al menos 4 caracteres');
+        return;
+      }
+
+      // Verificar que la matrícula sea única
+      const matriculaValida = await verificarMatriculaUnica(vehiculo.matricula);
+      if (!matriculaValida) {
+        return;
+      }
+
+      if (modoCreacionDirecta) {
+        // Solo crear orden para vehículo existente
+        const ordenResponse = await axios.post(`${API}/ordenes`, {
+          vehiculo_id: vehiculo.id,
+          cliente_id: cliente.id,
+          diagnostico: 'Nueva orden de trabajo - Pendiente diagnóstico inicial'
+        });
+        
+        toast.success('Nueva orden creada exitosamente');
+        navigate(`/orden/${ordenResponse.data.id}`);
+        return;
+      }
+
       // Crear cliente
       const clienteResponse = await axios.post(`${API}/clientes`, cliente);
       const clienteId = clienteResponse.data.id;
@@ -1101,7 +1126,11 @@ const RegistroVehiculo = () => {
       
     } catch (error) {
       console.error('Error guardando registro:', error);
-      toast.error('Error al guardar el registro');
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Error al guardar el registro');
+      }
     }
   };
 
