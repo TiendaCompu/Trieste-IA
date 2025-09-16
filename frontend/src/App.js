@@ -40,6 +40,145 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Búsqueda Principal por Matrícula
+const BusquedaMatricula = () => {
+  const [matricula, setMatricula] = useState('');
+  const [buscando, setBuscando] = useState(false);
+  const [vehiculoEncontrado, setVehiculoEncontrado] = useState(null);
+  const [cliente, setCliente] = useState(null);
+  const navigate = useNavigate();
+
+  const validarMatricula = (valor) => {
+    // Solo alfanuméricos, 4-7 caracteres, convertir a mayúsculas
+    const limpio = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (limpio.length <= 7) {
+      setMatricula(limpio);
+    }
+  };
+
+  const buscarVehiculo = async () => {
+    if (matricula.length < 4) {
+      toast.error('La matrícula debe tener al menos 4 caracteres');
+      return;
+    }
+
+    setBuscando(true);
+    try {
+      // Buscar vehículo por matrícula
+      const response = await axios.get(`${API}/vehiculos`);
+      const vehiculo = response.data.find(v => v.matricula === matricula);
+      
+      if (vehiculo) {
+        // Vehículo encontrado, cargar datos del cliente
+        const clienteRes = await axios.get(`${API}/clientes/${vehiculo.cliente_id}`);
+        setVehiculoEncontrado(vehiculo);
+        setCliente(clienteRes.data);
+        toast.success('Vehículo encontrado');
+      } else {
+        // Vehículo no encontrado, ir a registro
+        setVehiculoEncontrado(null);
+        setCliente(null);
+        toast.info('Vehículo no encontrado. Ir a registro.');
+        navigate('/registro', { state: { matricula_predefinida: matricula } });
+      }
+    } catch (error) {
+      console.error('Error buscando vehículo:', error);
+      toast.error('Error en la búsqueda');
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  const crearNuevaOrden = () => {
+    navigate('/registro', { 
+      state: { 
+        vehiculo_existente: vehiculoEncontrado,
+        cliente_existente: cliente,
+        crear_orden_directa: true
+      }
+    });
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      buscarVehiculo();
+    }
+  };
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-center">Búsqueda por Matrícula</CardTitle>
+        <CardDescription className="text-center">
+          Ingresa la matrícula del vehículo para comenzar
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 max-w-md mx-auto">
+          <Input
+            value={matricula}
+            onChange={(e) => validarMatricula(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ej: ABC123"
+            className="text-center text-lg font-mono tracking-wider uppercase"
+            maxLength={7}
+          />
+          <Button 
+            onClick={buscarVehiculo}
+            disabled={buscando || matricula.length < 4}
+            className="px-6"
+          >
+            {buscando ? <Clock className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {buscando ? 'Buscando...' : 'Buscar'}
+          </Button>
+        </div>
+        
+        <div className="text-center mt-2 text-sm text-gray-600">
+          Formato: 4-7 caracteres alfanuméricos (sin símbolos)
+        </div>
+
+        {vehiculoEncontrado && (
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-semibold text-green-800">
+                  {vehiculoEncontrado.matricula} - {vehiculoEncontrado.marca} {vehiculoEncontrado.modelo}
+                </h3>
+                {cliente && (
+                  <p className="text-sm text-green-700">
+                    Propietario: {cliente.empresa ? `${cliente.empresa} - ${cliente.nombre}` : cliente.nombre}
+                  </p>
+                )}
+                <p className="text-sm text-green-600">
+                  Año: {vehiculoEncontrado.año} | Color: {vehiculoEncontrado.color} | 
+                  KM: {vehiculoEncontrado.kilometraje?.toLocaleString()}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  onClick={() => navigate(`/vehiculo/${vehiculoEncontrado.id}`)}
+                  variant="outline"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  Ver Detalles
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={crearNuevaOrden}
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Nueva Orden
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 // Dashboard Component
 const Dashboard = () => {
   const [estadisticas, setEstadisticas] = useState(null);
