@@ -234,9 +234,12 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold text-gray-900">Dashboard del Taller</h1>
         <Button onClick={() => navigate('/registro')} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4 mr-2" />
-          Nuevo Vehículo
+          Registro Manual
         </Button>
       </div>
+
+      {/* Búsqueda Principal por Matrícula */}
+      <BusquedaMatricula />
 
       {/* Estadísticas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
