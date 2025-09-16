@@ -263,12 +263,43 @@ async def obtener_cliente(cliente_id: str):
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return Cliente(**parse_from_mongo(cliente))
 
-# Verificar matrícula única
-@api_router.get("/vehiculos/verificar-matricula/{matricula}")
-async def verificar_matricula_unica(matricula: str):
-    """Verifica si una matrícula ya existe en la base de datos"""
-    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula.upper()})
-    return {"existe": vehiculo_existente is not None, "matricula": matricula.upper()}
+# Endpoint temporal para limpiar duplicados
+@api_router.post("/admin/limpiar-duplicados")
+async def limpiar_matriculas_duplicadas():
+    """Elimina vehículos con matrículas duplicadas, manteniendo el más reciente"""
+    vehiculos = await db.vehiculos.find().to_list(1000)
+    matriculas_vistas = {}
+    duplicados_eliminados = []
+    
+    # Normalizar todas las matrículas a mayúsculas primero
+    for vehiculo in vehiculos:
+        matricula_normalizada = vehiculo["matricula"].upper()
+        await db.vehiculos.update_one(
+            {"id": vehiculo["id"]}, 
+            {"$set": {"matricula": matricula_normalizada}}
+        )
+    
+    # Obtener vehículos actualizados
+    vehiculos = await db.vehiculos.find().sort("created_at", -1).to_list(1000)
+    
+    for vehiculo in vehiculos:
+        matricula = vehiculo["matricula"]
+        if matricula in matriculas_vistas:
+            # Es un duplicado, eliminar
+            await db.vehiculos.delete_one({"id": vehiculo["id"]})
+            duplicados_eliminados.append({
+                "id": vehiculo["id"],
+                "matricula": matricula,
+                "created_at": vehiculo.get("created_at")
+            })
+        else:
+            matriculas_vistas[matricula] = vehiculo
+    
+    return {
+        "duplicados_eliminados": len(duplicados_eliminados),
+        "detalles": duplicados_eliminados,
+        "matriculas_unicas_restantes": len(matriculas_vistas)
+    }
 
 # Vehículo Routes
 @api_router.post("/vehiculos", response_model=Vehiculo)
