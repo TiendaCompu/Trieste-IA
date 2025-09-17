@@ -1782,8 +1782,302 @@ const VehiculoDetalle = () => {
           <Button onClick={() => navigate(`/vehiculo/${vehiculo.id}/historial`)}>
             Ver Historial Completo
           </Button>
+          
+          {/* Botones de administración */}
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setMostrarEdicion(true)}
+              variant="outline"
+              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            >
+              <Edit className="w-4 h-4 mr-1" />
+              Editar
+            </Button>
+            
+            <Button 
+              onClick={() => setMostrarCambioMatricula(true)}
+              variant="outline"
+              className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+            >
+              <Settings className="w-4 h-4 mr-1" />
+              Cambiar Matrícula
+            </Button>
+            
+            <Button 
+              onClick={() => setMostrarEliminacion(true)}
+              variant="outline"
+              className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+            >
+              <AlertCircle className="w-4 h-4 mr-1" />
+              Eliminar
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Modales */}
+      
+      {/* Modal de Edición */}
+      <Dialog open={mostrarEdicion} onOpenChange={setMostrarEdicion}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Datos del Vehículo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Marca</label>
+                <Input
+                  value={datosEdicion.marca || ''}
+                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, marca: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Modelo</label>
+                <Input
+                  value={datosEdicion.modelo || ''}
+                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, modelo: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Año</label>
+                <Input
+                  type="number"
+                  value={datosEdicion.año || ''}
+                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, año: e.target.value }))}
+                  min="1950"
+                  max="2030"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Color</label>
+                <Input
+                  value={datosEdicion.color || ''}
+                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, color: e.target.value }))}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-2">Kilometraje</label>
+                <Input
+                  type="number"
+                  value={datosEdicion.kilometraje || ''}
+                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, kilometraje: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>Nota:</strong> La matrícula no se puede modificar desde aquí. 
+                Use la función "Cambiar Matrícula" para casos especiales.
+              </p>
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setMostrarEdicion(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={guardarEdicion}>
+                Guardar Cambios
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Eliminación */}
+      <Dialog open={mostrarEliminacion} onOpenChange={setMostrarEliminacion}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">⚠️ Eliminar Vehículo</DialogTitle>
+          </DialogHeader>
+          
+          {pasoEliminacion === 1 && (
+            <div className="space-y-4">
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <strong>ADVERTENCIA:</strong> Esta acción eliminará permanentemente el vehículo 
+                  <strong> {vehiculo.matricula}</strong> y todo su historial.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Se eliminarán:</h4>
+                <ul className="text-sm space-y-1 text-gray-600">
+                  <li>• Datos del vehículo</li>
+                  <li>• {ordenesRecientes.length} órdenes de trabajo</li>
+                  <li>• Historial completo</li>
+                  <li>• Fotos y documentos asociados</li>
+                </ul>
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setMostrarEliminacion(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => setPasoEliminacion(2)}
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {pasoEliminacion === 2 && (
+            <div className="space-y-4">
+              <p className="text-sm">
+                Para confirmar, escriba <strong>"ELIMINAR {vehiculo.matricula}"</strong>:
+              </p>
+              <Input
+                value={confirmacionEliminacion}
+                onChange={(e) => setConfirmacionEliminacion(e.target.value)}
+                placeholder="ELIMINAR ABC123"
+                className="font-mono"
+              />
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setPasoEliminacion(1)}>
+                  Atrás
+                </Button>
+                <Button 
+                  variant="destructive"
+                  disabled={confirmacionEliminacion !== `ELIMINAR ${vehiculo.matricula}`}
+                  onClick={() => setPasoEliminacion(3)}
+                >
+                  Confirmar
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {pasoEliminacion === 3 && (
+            <div className="space-y-4">
+              <Alert className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <strong>ÚLTIMA CONFIRMACIÓN:</strong> ¿Está completamente seguro?
+                  Esta acción NO se puede deshacer.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setPasoEliminacion(2)}>
+                  No, Cancelar
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => {
+                    eliminarVehiculo();
+                    setMostrarEliminacion(false);
+                    setPasoEliminacion(1);
+                  }}
+                >
+                  Sí, Eliminar Definitivamente
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Cambio de Matrícula */}
+      <Dialog open={mostrarCambioMatricula} onOpenChange={setMostrarCambioMatricula}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-yellow-600">🔄 Cambiar Matrícula</DialogTitle>
+          </DialogHeader>
+          
+          {pasoMatricula === 1 && (
+            <div className="space-y-4">
+              <Alert className="border-yellow-200 bg-yellow-50">
+                <Settings className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800">
+                  <strong>IMPORTANTE:</strong> El cambio de matrícula mantendrá todo el historial
+                  del vehículo. Use solo para cambios oficiales de placas.
+                </AlertDescription>
+              </Alert>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Matrícula Actual</label>
+                <Input value={vehiculo.matricula} disabled className="bg-gray-100" />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Nueva Matrícula</label>
+                <Input
+                  value={nuevaMatricula}
+                  onChange={(e) => validarMatricula(e.target.value)}
+                  placeholder="Ej: DEF456"
+                  className="font-mono text-center tracking-wider uppercase"
+                  maxLength={7}
+                />
+                <p className="text-xs text-gray-500 mt-1">4-7 caracteres alfanuméricos</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Motivo del Cambio</label>
+                <Textarea
+                  value={motivoCambio}
+                  onChange={(e) => setMotivoCambio(e.target.value)}
+                  placeholder="Ej: Cambio oficial de placas por renovación"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setMostrarCambioMatricula(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={() => setPasoMatricula(2)}
+                  disabled={nuevaMatricula.length < 4 || !motivoCambio.trim()}
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {pasoMatricula === 2 && (
+            <div className="space-y-4">
+              <p className="text-sm">
+                Para confirmar el cambio de <strong>{vehiculo.matricula}</strong> a <strong>{nuevaMatricula}</strong>,
+                escriba <strong>"CAMBIAR MATRICULA"</strong>:
+              </p>
+              <Input
+                value={confirmacionMatricula}
+                onChange={(e) => setConfirmacionMatricula(e.target.value)}
+                placeholder="CAMBIAR MATRICULA"
+                className="font-mono"
+              />
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Se mantendrá:</strong> Todo el historial, órdenes y datos del vehículo.
+                  Solo cambiará la matrícula.
+                </p>
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setPasoMatricula(1)}>
+                  Atrás
+                </Button>
+                <Button 
+                  disabled={confirmacionMatricula !== "CAMBIAR MATRICULA"}
+                  onClick={() => {
+                    cambiarMatricula();
+                  }}
+                >
+                  Confirmar Cambio
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Información Principal */}
