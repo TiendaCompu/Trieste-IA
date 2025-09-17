@@ -1328,12 +1328,13 @@ const ServiciosRepuestos = () => {
   );
 };
 
-// Gestión de Mecánicos
+// Gestión de Mecánicos (mejorado con edición y avatares)
 const MecanicosList = () => {
   const [mecanicos, setMecanicos] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [editandoMecanico, setEditandoMecanico] = useState(null);
   const [nuevoMecanico, setNuevoMecanico] = useState({
-    nombre: '', especialidad: '', telefono: '', activo: true
+    nombre: '', especialidad: '', telefono: '', activo: true, avatar: ''
   });
 
   useEffect(() => {
@@ -1352,14 +1353,49 @@ const MecanicosList = () => {
 
   const guardarMecanico = async () => {
     try {
-      await axios.post(`${API}/mecanicos`, nuevoMecanico);
-      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true });
+      if (editandoMecanico) {
+        await axios.put(`${API}/mecanicos/${editandoMecanico.id}`, nuevoMecanico);
+        toast.success('Mecánico actualizado correctamente');
+      } else {
+        await axios.post(`${API}/mecanicos`, nuevoMecanico);
+        toast.success('Mecánico agregado correctamente');
+      }
+      
+      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true, avatar: '' });
+      setEditandoMecanico(null);
       setMostrarFormulario(false);
       cargarMecanicos();
-      toast.success('Mecánico agregado correctamente');
     } catch (error) {
       console.error('Error guardando mecánico:', error);
       toast.error('Error guardando el mecánico');
+    }
+  };
+
+  const editarMecanico = (mecanico) => {
+    setNuevoMecanico({
+      nombre: mecanico.nombre,
+      especialidad: mecanico.especialidad,
+      telefono: mecanico.telefono || '',
+      activo: mecanico.activo,
+      avatar: mecanico.avatar || ''
+    });
+    setEditandoMecanico(mecanico);
+    setMostrarFormulario(true);
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast.error('La imagen debe ser menor a 2MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setNuevoMecanico(prev => ({ ...prev, avatar: e.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -1367,6 +1403,13 @@ const MecanicosList = () => {
     'motor', 'transmision', 'frenos', 'electricidad', 'suspension', 
     'climatizacion', 'neumaticos', 'carroceria', 'general'
   ];
+
+  const getAvatarUrl = (avatar, nombre) => {
+    if (avatar) return avatar;
+    // Generar avatar por defecto con iniciales
+    const iniciales = nombre.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return `https://ui-avatars.com/api/?name=${iniciales}&background=000066&color=fcdf0c&size=80&font-size=0.4`;
+  };
 
   return (
     <div className="space-y-6">
