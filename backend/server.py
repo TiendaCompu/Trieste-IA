@@ -711,6 +711,57 @@ async def obtener_historial_kilometraje(vehiculo_id: str):
     historial = await db.historial_kilometraje.find({"vehiculo_id": vehiculo_id}).sort("fecha_actualizacion", -1).to_list(1000)
     return [HistorialKilometraje(**parse_from_mongo(item)) for item in historial]
 
+# Búsqueda Generalizada
+@api_router.get("/buscar")
+async def busqueda_generalizada(q: str):
+    """Búsqueda generalizada por matrícula, nombre de cliente o empresa"""
+    if not q or len(q.strip()) < 2:
+        return {"vehiculos": [], "clientes": []}
+    
+    q = q.strip().upper()
+    
+    # Buscar vehículos por matrícula
+    vehiculos_cursor = db.vehiculos.find({
+        "matricula": {"$regex": q, "$options": "i"}
+    }).limit(10)
+    vehiculos = await vehiculos_cursor.to_list(length=10)
+    
+    # Buscar clientes por nombre o empresa
+    clientes_cursor = db.clientes.find({
+        "$or": [
+            {"nombre": {"$regex": q, "$options": "i"}},
+            {"empresa": {"$regex": q, "$options": "i"}}
+        ]
+    }).limit(10)
+    clientes = await clientes_cursor.to_list(length=10)
+    
+    # Para cada cliente encontrado, buscar sus vehículos
+    vehiculos_por_cliente = []
+    for cliente in clientes:
+        vehiculos_cliente = await db.vehiculos.find({"cliente_id": cliente["id"]}).to_list(1000)
+        vehiculos_por_cliente.extend(vehiculos_cliente)
+    
+    # Combinar y eliminar duplicados
+    todos_vehiculos = vehiculos + vehiculos_por_cliente
+    vehiculos_unicos = {}
+    for vehiculo in todos_vehiculos:
+        vehiculos_unicos[vehiculo["id"]] = vehiculo
+    
+    # Enriquecer vehículos con datos del cliente
+    vehiculos_resultado = []
+    for vehiculo in vehiculos_unicos.values():
+        cliente = await db.clientes.find_one({"id": vehiculo["cliente_id"]})
+        vehiculo_resultado = {
+            **vehiculo,
+            "cliente": cliente if cliente else None
+        }
+        vehiculos_resultado.append(vehiculo_resultado)
+    
+    return {
+        "vehiculos": vehiculos_resultado[:10],  # Limitar a 10 resultados
+        "clientes": [Cliente(**parse_from_mongo(cliente)) for cliente in clientes]
+    }
+
 # Test route
 @api_router.get("/")
 async def root():
