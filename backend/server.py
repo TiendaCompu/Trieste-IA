@@ -263,6 +263,117 @@ async def obtener_cliente(cliente_id: str):
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return Cliente(**parse_from_mongo(cliente))
 
+# Verificar matrícula única
+@api_router.get("/vehiculos/verificar-matricula/{matricula}")
+async def verificar_matricula_unica(matricula: str):
+    """Verifica si una matrícula ya existe en la base de datos"""
+    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula.upper()})
+    return {"existe": vehiculo_existente is not None, "matricula": matricula.upper()}
+
+# Actualizar vehículo (sin matrícula)
+@api_router.put("/vehiculos/{vehiculo_id}", response_model=Vehiculo)
+async def actualizar_vehiculo(vehiculo_id: str, datos: dict):
+    """Actualiza los datos de un vehículo excepto la matrícula"""
+    vehiculo = await db.vehiculos.find_one({"id": vehiculo_id})
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    # Campos permitidos para actualización (sin matrícula)
+    campos_permitidos = ["marca", "modelo", "año", "color", "kilometraje"]
+    datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
+    datos_actualizacion = prepare_for_mongo(datos_actualizacion)
+    
+    await db.vehiculos.update_one({"id": vehiculo_id}, {"$set": datos_actualizacion})
+    
+    vehiculo_actualizado = await db.vehiculos.find_one({"id": vehiculo_id})
+    return Vehiculo(**parse_from_mongo(vehiculo_actualizado))
+
+# Cambiar matrícula manteniendo historial
+@api_router.post("/vehiculos/{vehiculo_id}/cambio-matricula")
+async def cambiar_matricula_vehiculo(vehiculo_id: str, datos: dict):
+    """Cambia la matrícula de un vehículo manteniendo su historial"""
+    vehiculo = await db.vehiculos.find_one({"id": vehiculo_id})
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    matricula_nueva = datos.get("matricula_nueva", "").upper().strip()
+    matricula_anterior = datos.get("matricula_anterior", "")
+    motivo = datos.get("motivo", "")
+    
+    # Validar formato de nueva matrícula
+    import re
+    if not re.match(r'^[A-Z0-9]{4,7}$', matricula_nueva):
+        raise HTTPException(
+            status_code=400, 
+            detail="Matrícula inválida. Debe tener 4-7 caracteres alfanuméricos"
+        )
+    
+    # Verificar que la nueva matrícula no existe
+    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula_nueva})
+    if vehiculo_existente and vehiculo_existente["id"] != vehiculo_id:
+        raise HTTPException(status_code=400, detail="La nueva matrícula ya está registrada")
+    
+    # Crear registro del cambio
+    registro_cambio = {
+        "id": str(uuid.uuid4()),
+        "vehiculo_id": vehiculo_id,
+        "matricula_anterior": matricula_anterior,
+        "matricula_nueva": matricula_nueva,
+        "motivo": motivo,
+        "fecha_cambio": datetime.now(timezone.utc),
+        "usuario": "sistema"  # En el futuro se puede agregar autenticación
+    }
+    
+    await db.cambios_matricula.insert_one(prepare_for_mongo(registro_cambio))
+    
+    # Actualizar la matrícula del vehículo
+    await db.vehiculos.update_one(
+        {"id": vehiculo_id}, 
+        {"$set": {"matricula": matricula_nueva}}
+    )
+    
+    return {"success": True, "matricula_anterior": matricula_anterior, "matricula_nueva": matricula_nueva}
+
+# Eliminar vehículo
+@api_router.delete("/vehiculos/{vehiculo_id}")
+async def eliminar_vehiculo(vehiculo_id: str):
+    """Elimina un vehículo y todo su historial"""
+    vehiculo = await db.vehiculos.find_one({"id": vehiculo_id})
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    # Verificar que no tenga órdenes activas
+    ordenes_activas = await db.ordenes_trabajo.find({
+        "vehiculo_id": vehiculo_id,
+        "estado": {"$nin": ["terminado", "entregado"]}
+    }).to_list(1)
+    
+    if ordenes_activas:
+        raise HTTPException(
+            status_code=400, 
+            detail="No se puede eliminar: el vehículo tiene órdenes de trabajo activas"
+        )
+    
+    # Crear registro de eliminación para auditoría
+    registro_eliminacion = {
+        "id": str(uuid.uuid4()),
+        "vehiculo_eliminado": vehiculo,
+        "fecha_eliminacion": datetime.now(timezone.utc),
+        "usuario": "sistema"
+    }
+    await db.vehiculos_eliminados.insert_one(prepare_for_mongo(registro_eliminacion))
+    
+    # Eliminar vehículo
+    await db.vehiculos.delete_one({"id": vehiculo_id})
+    
+    # Marcar órdenes como "vehículo eliminado" en lugar de eliminarlas
+    await db.ordenes_trabajo.update_many(
+        {"vehiculo_id": vehiculo_id},
+        {"$set": {"vehiculo_eliminado": True, "matricula_original": vehiculo["matricula"]}}
+    )
+    
+    return {"success": True, "matricula": vehiculo["matricula"]}
+
 # Endpoint temporal para limpiar duplicados
 @api_router.post("/admin/limpiar-duplicados")
 async def limpiar_matriculas_duplicadas():
