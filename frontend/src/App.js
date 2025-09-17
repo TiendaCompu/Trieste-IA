@@ -1606,13 +1606,32 @@ const VehiculosList = () => {
   );
 };
 
-// Detalle de Vehículo
+// Detalle de Vehículo (mejorado con edición)
 const VehiculoDetalle = () => {
   const { vehiculoId } = useParams();
   const [vehiculo, setVehiculo] = useState(null);
   const [cliente, setCliente] = useState(null);
   const [ordenesRecientes, setOrdenesRecientes] = useState([]);
   const [cargando, setCargando] = useState(true);
+  
+  // Estados para modales
+  const [mostrarEdicion, setMostrarEdicion] = useState(false);
+  const [mostrarEliminacion, setMostrarEliminacion] = useState(false);
+  const [mostrarCambioMatricula, setMostrarCambioMatricula] = useState(false);
+  
+  // Estados para edición
+  const [datosEdicion, setDatosEdicion] = useState({});
+  const [nuevaMatricula, setNuevaMatricula] = useState('');
+  
+  // Estados para confirmaciones de eliminación
+  const [confirmacionEliminacion, setConfirmacionEliminacion] = useState('');
+  const [pasoEliminacion, setPasoEliminacion] = useState(1);
+  
+  // Estados para cambio de matrícula
+  const [confirmacionMatricula, setConfirmacionMatricula] = useState('');
+  const [pasoMatricula, setPasoMatricula] = useState(1);
+  const [motivoCambio, setMotivoCambio] = useState('');
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -1624,6 +1643,7 @@ const VehiculoDetalle = () => {
       const vehiculoRes = await axios.get(`${API}/vehiculos/${vehiculoId}`);
       const vehiculoData = vehiculoRes.data;
       setVehiculo(vehiculoData);
+      setDatosEdicion(vehiculoData);
 
       const [clienteRes, historialRes] = await Promise.all([
         axios.get(`${API}/clientes/${vehiculoData.cliente_id}`),
@@ -1631,12 +1651,90 @@ const VehiculoDetalle = () => {
       ]);
 
       setCliente(clienteRes.data);
-      setOrdenesRecientes(historialRes.data.slice(0, 5)); // Últimas 5 órdenes
+      setOrdenesRecientes(historialRes.data.slice(0, 5));
     } catch (error) {
       console.error('Error cargando detalles del vehículo:', error);
       toast.error('Error cargando los detalles del vehículo');
     } finally {
       setCargando(false);
+    }
+  };
+
+  const guardarEdicion = async () => {
+    try {
+      await axios.put(`${API}/vehiculos/${vehiculoId}`, {
+        marca: datosEdicion.marca,
+        modelo: datosEdicion.modelo,
+        año: datosEdicion.año ? parseInt(datosEdicion.año) : null,
+        color: datosEdicion.color,
+        kilometraje: datosEdicion.kilometraje ? parseInt(datosEdicion.kilometraje) : null
+      });
+      
+      setVehiculo({...vehiculo, ...datosEdicion});
+      setMostrarEdicion(false);
+      toast.success('Datos del vehículo actualizados');
+    } catch (error) {
+      console.error('Error actualizando vehículo:', error);
+      toast.error('Error al actualizar los datos');
+    }
+  };
+
+  const eliminarVehiculo = async () => {
+    try {
+      // Verificar si tiene órdenes activas
+      if (ordenesRecientes.some(o => !['terminado', 'entregado'].includes(o.estado))) {
+        toast.error('No se puede eliminar: el vehículo tiene órdenes activas');
+        return;
+      }
+
+      await axios.delete(`${API}/vehiculos/${vehiculoId}`);
+      toast.success('Vehículo eliminado correctamente');
+      navigate('/vehiculos');
+    } catch (error) {
+      console.error('Error eliminando vehículo:', error);
+      toast.error('Error al eliminar el vehículo');
+    }
+  };
+
+  const cambiarMatricula = async () => {
+    try {
+      // Validar nueva matrícula
+      const matriculaNormalizada = nuevaMatricula.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      if (matriculaNormalizada.length < 4 || matriculaNormalizada.length > 7) {
+        toast.error('La matrícula debe tener entre 4 y 7 caracteres');
+        return;
+      }
+
+      // Verificar que no existe
+      const verificacion = await axios.get(`${API}/vehiculos/verificar-matricula/${matriculaNormalizada}`);
+      if (verificacion.data.existe) {
+        toast.error('Esta matrícula ya está registrada');
+        return;
+      }
+
+      // Crear registro de cambio en el historial
+      await axios.post(`${API}/vehiculos/${vehiculoId}/cambio-matricula`, {
+        matricula_anterior: vehiculo.matricula,
+        matricula_nueva: matriculaNormalizada,
+        motivo: motivoCambio
+      });
+
+      setVehiculo({...vehiculo, matricula: matriculaNormalizada});
+      setMostrarCambioMatricula(false);
+      setPasoMatricula(1);
+      setNuevaMatricula('');
+      setMotivoCambio('');
+      toast.success('Matrícula cambiada exitosamente');
+    } catch (error) {
+      console.error('Error cambiando matrícula:', error);
+      toast.error('Error al cambiar la matrícula');
+    }
+  };
+
+  const validarMatricula = (valor) => {
+    const limpio = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    if (limpio.length <= 7) {
+      setNuevaMatricula(limpio);
     }
   };
 
