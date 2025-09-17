@@ -1909,40 +1909,207 @@ const RegistroVehiculo = () => {
   );
 };
 
-// Navegación Principal
+// Configuración del Taller
+const ConfiguracionTaller = () => {
+  const [configuracion, setConfiguracion] = useState({
+    nombre_taller: 'Centro de Servicios Automotriz Trieste',
+    direccion: '',
+    telefono: '',
+    email: '',
+    rif: '',
+    gerente: '',
+    horario_atencion: 'Lunes a Viernes 8:00 AM - 6:00 PM',
+    mensaje_bienvenida: 'Bienvenido al mejor centro de servicios automotriz',
+    impuesto_iva: 16,
+    moneda: 'USD'
+  });
+
+  const [mostrarConfig, setMostrarConfig] = useState(false);
+
+  const guardarConfiguracion = () => {
+    // Aquí se guardaría en localStorage o backend
+    localStorage.setItem('trieste_config', JSON.stringify(configuracion));
+    toast.success('Configuración guardada correctamente');
+    setMostrarConfig(false);
+  };
+
+  useEffect(() => {
+    // Cargar configuración guardada
+    const configGuardada = localStorage.getItem('trieste_config');
+    if (configGuardada) {
+      setConfiguracion(JSON.parse(configGuardada));
+    }
+  }, []);
+
+  return (
+    <Dialog open={mostrarConfig} onOpenChange={setMostrarConfig}>
+      <DialogTrigger asChild>
+        <Button className="config-button">
+          <Settings className="w-4 h-4 mr-2" />
+          Configuración
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-center" style={{color: 'var(--trieste-blue)'}}>
+            Configuración del Taller
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Nombre del Taller
+              </label>
+              <Input
+                value={configuracion.nombre_taller}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, nombre_taller: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Teléfono
+              </label>
+              <Input
+                value={configuracion.telefono}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, telefono: e.target.value }))}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Dirección
+              </label>
+              <Input
+                value={configuracion.direccion}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, direccion: e.target.value }))}
+                placeholder="Dirección completa del taller"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Email
+              </label>
+              <Input
+                type="email"
+                value={configuracion.email}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="info@trieste.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                RIF/NIT
+              </label>
+              <Input
+                value={configuracion.rif}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, rif: e.target.value }))}
+                placeholder="J-12345678-9"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Gerente
+              </label>
+              <Input
+                value={configuracion.gerente}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, gerente: e.target.value }))}
+                placeholder="Nombre del gerente"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Horario de Atención
+              </label>
+              <Input
+                value={configuracion.horario_atencion}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, horario_atencion: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                IVA (%)
+              </label>
+              <Input
+                type="number"
+                value={configuracion.impuesto_iva}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, impuesto_iva: parseFloat(e.target.value) }))}
+                min="0"
+                max="30"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                Mensaje de Bienvenida
+              </label>
+              <Textarea
+                value={configuracion.mensaje_bienvenida}
+                onChange={(e) => setConfiguracion(prev => ({ ...prev, mensaje_bienvenida: e.target.value }))}
+                rows={2}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setMostrarConfig(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={guardarConfiguracion} className="btn-primary">
+              Guardar Configuración
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Navegación Principal (actualizada con diseño Trieste)
 const Navigation = () => {
   return (
-    <nav className="bg-gray-900 text-white p-4">
-      <div className="container mx-auto flex items-center justify-between">
-        <Link to="/dashboard" className="text-xl font-bold flex items-center gap-2">
-          <Wrench className="w-6 h-6" />
-          Taller Mecánico IA
+    <nav className="trieste-nav">
+      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        <Link to="/dashboard" className="flex items-center">
+          <img 
+            src="/logo_trieste.png" 
+            alt="Logo Trieste" 
+            className="trieste-logo"
+          />
+          <div className="trieste-brand">
+            Centro de Servicios Automotriz Trieste
+          </div>
         </Link>
-        <div className="flex gap-4">
-          <Link to="/dashboard" className="hover:text-blue-300 flex items-center gap-2">
-            <ClipboardList className="w-4 h-4" />
-            Dashboard
-          </Link>
-          <Link to="/registro" className="hover:text-blue-300 flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Nuevo Registro
-          </Link>
-          <Link to="/ordenes" className="hover:text-blue-300 flex items-center gap-2">
-            <Truck className="w-4 h-4" />
-            Órdenes
-          </Link>
-          <Link to="/mecanicos" className="hover:text-blue-300 flex items-center gap-2">
-            <UserCheck className="w-4 h-4" />
-            Mecánicos
-          </Link>
-          <Link to="/servicios" className="hover:text-blue-300 flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Servicios
-          </Link>
-          <Link to="/vehiculos" className="hover:text-blue-300 flex items-center gap-2">
-            <Car className="w-4 h-4" />
-            Vehículos
-          </Link>
+        
+        <div className="flex items-center gap-6">
+          <div className="flex gap-4">
+            <Link to="/dashboard" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden md:inline">Dashboard</span>
+            </Link>
+            <Link to="/registro" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <Plus className="w-4 h-4" />
+              <span className="hidden md:inline">Registro</span>
+            </Link>
+            <Link to="/ordenes" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <Truck className="w-4 h-4" />
+              <span className="hidden md:inline">Órdenes</span>
+            </Link>
+            <Link to="/mecanicos" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <UserCheck className="w-4 h-4" />
+              <span className="hidden md:inline">Mecánicos</span>
+            </Link>
+            <Link to="/servicios" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <Package className="w-4 h-4" />
+              <span className="hidden md:inline">Servicios</span>
+            </Link>
+            <Link to="/vehiculos" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+              <Car className="w-4 h-4" />
+              <span className="hidden md:inline">Vehículos</span>
+            </Link>
+          </div>
+          
+          <ConfiguracionTaller />
         </div>
       </div>
     </nav>
