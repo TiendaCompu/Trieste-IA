@@ -606,7 +606,7 @@ const OrdenesListado = () => {
         ))}
       </div>
 
-      {ordenesFiltradas.length === 0 && (
+      {ordenes.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
             <ClipboardList className="w-12 h-12 text-gray-400 mx-auto mb-4" />
