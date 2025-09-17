@@ -1634,18 +1634,23 @@ const MecanicosList = () => {
                     style={{borderColor: 'var(--trieste-blue)'}}
                   />
                 </div>
-                <label className="cursor-pointer">
-                  <Button type="button" variant="outline" size="sm" className="w-full">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Cambiar Avatar
-                  </Button>
+                <div>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
+                    id="avatar-upload"
                   />
-                </label>
+                  <label htmlFor="avatar-upload" className="cursor-pointer">
+                    <Button type="button" variant="outline" size="sm" className="w-full" asChild>
+                      <span>
+                        <Camera className="w-4 h-4 mr-2" />
+                        Cambiar Avatar
+                      </span>
+                    </Button>
+                  </label>
+                </div>
               </div>
 
               <div>
