@@ -87,6 +87,10 @@ class Vehiculo(BaseModel):
     año: Optional[int] = None
     color: Optional[str] = None
     kilometraje: Optional[int] = None
+    tipo_combustible: Optional[str] = None  # Gasolina, Diesel, GNV, Eléctrico
+    serial_niv: Optional[str] = None  # Número de Identificación Vehicular
+    tara: Optional[float] = None  # Peso del vehículo en kg
+    foto_vehiculo: Optional[str] = None  # Fotografía del vehículo (Base64)
     cliente_id: str
     foto_matricula: Optional[str] = None  # Base64 encoded
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -98,6 +102,10 @@ class VehiculoCreate(BaseModel):
     año: Optional[int] = None
     color: Optional[str] = None
     kilometraje: Optional[int] = None
+    tipo_combustible: Optional[str] = None
+    serial_niv: Optional[str] = None
+    tara: Optional[float] = None
+    foto_vehiculo: Optional[str] = None
     cliente_id: str
     foto_matricula: Optional[str] = None
 
