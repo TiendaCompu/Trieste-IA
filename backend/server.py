@@ -191,6 +191,111 @@ class HistorialKilometrajeCreate(BaseModel):
     kilometraje_nuevo: int
     observaciones: Optional[str] = None
 
+# Sistema de Tasa de Cambio
+class TasaCambio(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tasa_bs_usd: float  # Bolívares por cada dólar
+    fecha_actualizacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    usuario_actualizacion: Optional[str] = None
+    observaciones: Optional[str] = None
+    activa: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TasaCambioCreate(BaseModel):
+    tasa_bs_usd: float
+    observaciones: Optional[str] = None
+
+# Sistema de Presupuestos
+class ItemPresupuesto(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tipo: str  # "servicio" o "repuesto"
+    descripcion: str
+    cantidad: int
+    precio_unitario_usd: float
+    total_usd: float
+
+class Presupuesto(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    numero_presupuesto: str  # P-2024-001
+    vehiculo_id: str
+    cliente_id: str
+    orden_trabajo_id: Optional[str] = None
+    items: List[ItemPresupuesto] = []
+    subtotal_usd: float = 0.0
+    iva_porcentaje: float = 16.0  # 16% IVA
+    iva_usd: float = 0.0
+    total_usd: float = 0.0
+    estado: str = "pendiente"  # pendiente, aprobado, rechazado
+    fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    fecha_aprobacion: Optional[datetime] = None
+    observaciones: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PresupuestoCreate(BaseModel):
+    vehiculo_id: str
+    cliente_id: str
+    orden_trabajo_id: Optional[str] = None
+    items: List[ItemPresupuesto] = []
+    observaciones: Optional[str] = None
+
+# Sistema de Facturas
+class MetodoPago(BaseModel):
+    tipo: str  # "bolivares" o "dolares"
+    metodo: str  # Para Bs: "tarjeta_debito", "tarjeta_credito", "transferencia", "pago_movil", "efectivo"
+                 # Para USD: "zelle", "efectivo", "transferencia_internacional"
+    monto_usd: float
+    monto_bs: float
+    referencia: Optional[str] = None  # Número de referencia del pago
+    fecha_pago: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Factura(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    numero_factura: str  # FAC-2024-001
+    presupuesto_id: str
+    vehiculo_id: str
+    cliente_id: str
+    # Datos del vehículo al momento de la factura
+    vehiculo_datos: Dict[str, Any] = {}  # matricula, color, año, km_ingreso
+    # Items copiados del presupuesto
+    items: List[ItemPresupuesto] = []
+    # Montos en USD (del presupuesto)
+    subtotal_usd: float
+    iva_usd: float
+    total_usd: float
+    # Conversión a Bolívares
+    tasa_cambio: float
+    subtotal_bs: float
+    iva_bs: float
+    total_bs: float
+    # IGTF 3% si hay pagos en USD
+    aplica_igtf: bool = False
+    igtf_usd: float = 0.0
+    igtf_bs: float = 0.0
+    total_final_bs: float  # Total + IGTF si aplica
+    # Pagos realizados
+    pagos: List[MetodoPago] = []
+    monto_pagado_bs: float = 0.0
+    saldo_pendiente_bs: float = 0.0
+    # Estados
+    estado_pago: str = "pendiente"  # pendiente, pagado_parcial, pagado_total
+    fecha_facturacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    fecha_vencimiento: Optional[datetime] = None
+    observaciones: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FacturaCreate(BaseModel):
+    presupuesto_id: str
+    fecha_vencimiento: Optional[datetime] = None
+    observaciones: Optional[str] = None
+
+class RegistrarPago(BaseModel):
+    factura_id: str
+    tipo: str  # "bolivares" o "dolares"
+    metodo: str
+    monto_usd: Optional[float] = None
+    monto_bs: Optional[float] = None
+    referencia: Optional[str] = None
+
 class AIExtraRequest(BaseModel):
     texto_dictado: Optional[str] = None
     imagen_base64: Optional[str] = None
