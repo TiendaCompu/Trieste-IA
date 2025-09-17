@@ -3401,23 +3401,25 @@ function App() {
   }, []);
 
   return (
-    <div className="App min-h-screen bg-gray-50">
+    <div className="App">
       <BrowserRouter>
         <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/registro" element={<RegistroVehiculo />} />
-            <Route path="/ordenes" element={<OrdenesListado />} />
-            <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
-            <Route path="/mecanicos" element={<MecanicosList />} />
-            <Route path="/servicios" element={<ServiciosRepuestos />} />
-            <Route path="/vehiculos" element={<VehiculosList />} />
-            <Route path="/vehiculo/:vehiculoId" element={<VehiculoDetalle />} />
-            <Route path="/vehiculo/:vehiculoId/historial" element={<VehiculoHistorial />} />
-          </Routes>
-        </main>
+        <div className="main-container">
+          <main className="p-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/registro" element={<RegistroVehiculo />} />
+              <Route path="/ordenes" element={<OrdenesListado />} />
+              <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
+              <Route path="/mecanicos" element={<MecanicosList />} />
+              <Route path="/servicios" element={<ServiciosRepuestos />} />
+              <Route path="/vehiculos" element={<VehiculosList />} />
+              <Route path="/vehiculo/:vehiculoId" element={<VehiculoDetalle />} />
+              <Route path="/vehiculo/:vehiculoId/historial" element={<VehiculoHistorial />} />
+            </Routes>
+          </main>
+        </div>
       </BrowserRouter>
     </div>
   );
