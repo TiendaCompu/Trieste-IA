@@ -1217,6 +1217,139 @@ const ServiciosRepuestos = () => {
         ))}
       </div>
 
+// Gestión de Mecánicos
+const MecanicosList = () => {
+  const [mecanicos, setMecanicos] = useState([]);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [nuevoMecanico, setNuevoMecanico] = useState({
+    nombre: '', especialidad: '', telefono: '', activo: true
+  });
+
+  useEffect(() => {
+    cargarMecanicos();
+  }, []);
+
+  const cargarMecanicos = async () => {
+    try {
+      const response = await axios.get(`${API}/mecanicos`);
+      setMecanicos(response.data);
+    } catch (error) {
+      console.error('Error cargando mecánicos:', error);
+      toast.error('Error cargando los mecánicos');
+    }
+  };
+
+  const guardarMecanico = async () => {
+    try {
+      await axios.post(`${API}/mecanicos`, nuevoMecanico);
+      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true });
+      setMostrarFormulario(false);
+      cargarMecanicos();
+      toast.success('Mecánico agregado correctamente');
+    } catch (error) {
+      console.error('Error guardando mecánico:', error);
+      toast.error('Error guardando el mecánico');
+    }
+  };
+
+  const especialidades = [
+    'motor', 'transmision', 'frenos', 'electricidad', 'suspension', 
+    'climatizacion', 'neumaticos', 'carroceria', 'general'
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Mecánicos Especialistas</h1>
+        <Dialog open={mostrarFormulario} onOpenChange={setMostrarFormulario}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Mecánico
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Agregar Nuevo Mecánico</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre *</label>
+                <Input
+                  value={nuevoMecanico.nombre}
+                  onChange={(e) => setNuevoMecanico(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Nombre completo del mecánico"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Especialidad *</label>
+                <Select 
+                  value={nuevoMecanico.especialidad}
+                  onValueChange={(value) => setNuevoMecanico(prev => ({ ...prev, especialidad: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar especialidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {especialidades.map((esp) => (
+                      <SelectItem key={esp} value={esp}>
+                        {esp.charAt(0).toUpperCase() + esp.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Teléfono</label>
+                <Input
+                  value={nuevoMecanico.telefono}
+                  onChange={(e) => setNuevoMecanico(prev => ({ ...prev, telefono: e.target.value }))}
+                  placeholder="Número de teléfono"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setMostrarFormulario(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={guardarMecanico}
+                  disabled={!nuevoMecanico.nombre || !nuevoMecanico.especialidad}
+                >
+                  Guardar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {mecanicos.map((mecanico) => (
+          <Card key={mecanico.id}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${mecanico.activo ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                  <h3 className="font-semibold">{mecanico.nombre}</h3>
+                </div>
+                <Badge variant="outline">
+                  {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
+                </Badge>
+              </div>
+              {mecanico.telefono && (
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <PhoneCall className="w-3 h-3" />
+                  {mecanico.telefono}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                Agregado: {new Date(mecanico.created_at).toLocaleDateString('es-ES')}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {mecanicos.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
@@ -1227,6 +1360,305 @@ const ServiciosRepuestos = () => {
               onClick={() => setMostrarFormulario(true)}
             >
               Agregar Primer Mecánico
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// Gestión de Servicios y Repuestos
+const ServiciosRepuestos = () => {
+  const [items, setItems] = useState([]);
+  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [editandoItem, setEditandoItem] = useState(null);
+  const [nuevoItem, setNuevoItem] = useState({
+    tipo: 'servicio',
+    nombre: '',
+    descripcion: '',
+    precio: ''
+  });
+
+  useEffect(() => {
+    cargarItems();
+  }, []);
+
+  const cargarItems = async () => {
+    try {
+      const response = await axios.get(`${API}/servicios-repuestos`);
+      setItems(response.data);
+    } catch (error) {
+      console.error('Error cargando servicios y repuestos:', error);
+      toast.error('Error cargando el catálogo');
+    }
+  };
+
+  const guardarItem = async () => {
+    try {
+      const itemData = {
+        ...nuevoItem,
+        precio: parseFloat(nuevoItem.precio)
+      };
+
+      if (editandoItem) {
+        await axios.put(`${API}/servicios-repuestos/${editandoItem.id}`, itemData);
+        toast.success('Item actualizado correctamente');
+      } else {
+        await axios.post(`${API}/servicios-repuestos`, itemData);
+        toast.success('Item agregado correctamente');
+      }
+
+      setNuevoItem({ tipo: 'servicio', nombre: '', descripcion: '', precio: '' });
+      setEditandoItem(null);
+      setMostrarFormulario(false);
+      cargarItems();
+    } catch (error) {
+      console.error('Error guardando item:', error);
+      toast.error('Error al guardar el item');
+    }
+  };
+
+  const editarItem = (item) => {
+    setNuevoItem({
+      tipo: item.tipo,
+      nombre: item.nombre,
+      descripcion: item.descripcion || '',
+      precio: item.precio.toString()
+    });
+    setEditandoItem(item);
+    setMostrarFormulario(true);
+  };
+
+  const eliminarItem = async (itemId) => {
+    if (window.confirm('¿Está seguro de eliminar este item del catálogo?')) {
+      try {
+        await axios.delete(`${API}/servicios-repuestos/${itemId}`);
+        toast.success('Item eliminado correctamente');
+        cargarItems();
+      } catch (error) {
+        console.error('Error eliminando item:', error);
+        toast.error('Error al eliminar el item');
+      }
+    }
+  };
+
+  const itemsFiltrados = items.filter(item => {
+    if (filtroTipo === 'todos') return true;
+    return item.tipo === filtroTipo;
+  });
+
+  const servicios = items.filter(item => item.tipo === 'servicio');
+  const repuestos = items.filter(item => item.tipo === 'repuesto');
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Catálogo de Servicios y Repuestos</h1>
+        <Dialog open={mostrarFormulario} onOpenChange={setMostrarFormulario}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Item
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editandoItem ? 'Editar Item' : 'Agregar Nuevo Item'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Tipo *</label>
+                <Select 
+                  value={nuevoItem.tipo}
+                  onValueChange={(value) => setNuevoItem(prev => ({ ...prev, tipo: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="servicio">Servicio</SelectItem>
+                    <SelectItem value="repuesto">Repuesto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Nombre *</label>
+                <Input
+                  value={nuevoItem.nombre}
+                  onChange={(e) => setNuevoItem(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Ej: Cambio de aceite, Filtro de aire"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Descripción</label>
+                <Textarea
+                  value={nuevoItem.descripcion}
+                  onChange={(e) => setNuevoItem(prev => ({ ...prev, descripcion: e.target.value }))}
+                  placeholder="Descripción detallada del servicio o repuesto"
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Precio (USD) *</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={nuevoItem.precio}
+                  onChange={(e) => setNuevoItem(prev => ({ ...prev, precio: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setMostrarFormulario(false);
+                    setEditandoItem(null);
+                    setNuevoItem({ tipo: 'servicio', nombre: '', descripcion: '', precio: '' });
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={guardarItem}
+                  disabled={!nuevoItem.nombre || !nuevoItem.precio}
+                >
+                  {editandoItem ? 'Actualizar' : 'Guardar'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">{items.length}</div>
+            <p className="text-sm text-gray-600">Total Items</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-600">{servicios.length}</div>
+            <p className="text-sm text-gray-600">Servicios</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-600">{repuestos.length}</div>
+            <p className="text-sm text-gray-600">Repuestos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-600">
+              ${items.length > 0 ? (items.reduce((sum, item) => sum + item.precio, 0) / items.length).toFixed(2) : '0.00'}
+            </div>
+            <p className="text-sm text-gray-600">Precio Promedio</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-2 flex-wrap">
+        <Button 
+          variant={filtroTipo === 'todos' ? 'default' : 'outline'}
+          onClick={() => setFiltroTipo('todos')}
+        >
+          Todos ({items.length})
+        </Button>
+        <Button 
+          variant={filtroTipo === 'servicio' ? 'default' : 'outline'}
+          onClick={() => setFiltroTipo('servicio')}
+        >
+          Servicios ({servicios.length})
+        </Button>
+        <Button 
+          variant={filtroTipo === 'repuesto' ? 'default' : 'outline'}
+          onClick={() => setFiltroTipo('repuesto')}
+        >
+          Repuestos ({repuestos.length})
+        </Button>
+      </div>
+
+      {/* Lista de Items */}
+      <div className="grid gap-4">
+        {itemsFiltrados.map((item) => (
+          <Card key={item.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg ${
+                    item.tipo === 'servicio' 
+                      ? 'bg-green-100 text-green-600' 
+                      : 'bg-purple-100 text-purple-600'
+                  }`}>
+                    {item.tipo === 'servicio' ? <Wrench className="w-6 h-6" /> : <Package className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-semibold">{item.nombre}</h3>
+                      <Badge variant={item.tipo === 'servicio' ? 'default' : 'secondary'}>
+                        {item.tipo === 'servicio' ? 'Servicio' : 'Repuesto'}
+                      </Badge>
+                    </div>
+                    {item.descripcion && (
+                      <p className="text-sm text-gray-600 mt-1">{item.descripcion}</p>
+                    )}
+                    <p className="text-lg font-bold text-green-600 mt-2">
+                      ${item.precio.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => editarItem(item)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => eliminarItem(item.id)}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {itemsFiltrados.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">
+              {filtroTipo === 'todos' 
+                ? 'No hay items en el catálogo' 
+                : `No hay ${filtroTipo}s registrados`}
+            </p>
+            <Button 
+              className="mt-4" 
+              onClick={() => setMostrarFormulario(true)}
+            >
+              Agregar Primer Item
             </Button>
           </CardContent>
         </Card>
