@@ -102,7 +102,10 @@ const BusquedaMatricula = () => {
         const clienteRes = await axios.get(`${API}/clientes/${vehiculo.cliente_id}`);
         setVehiculoEncontrado(vehiculo);
         setCliente(clienteRes.data);
+        setNuevoKilometraje(vehiculo.kilometraje?.toString() || '');
         toast.success('Vehículo encontrado');
+        // Mostrar modal para preguntar si entra al taller
+        setMostrarModalEntrada(true);
       } else {
         // Vehículo no encontrado, ir a registro
         setVehiculoEncontrado(null);
