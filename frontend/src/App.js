@@ -72,6 +72,9 @@ const BusquedaMatricula = () => {
   const [buscando, setBuscando] = useState(false);
   const [vehiculoEncontrado, setVehiculoEncontrado] = useState(null);
   const [cliente, setCliente] = useState(null);
+  const [mostrarModalEntrada, setMostrarModalEntrada] = useState(false);
+  const [nuevoKilometraje, setNuevoKilometraje] = useState('');
+  const [observacionesKm, setObservacionesKm] = useState('');
   const navigate = useNavigate();
 
   const validarMatricula = (valor) => {
