@@ -156,9 +156,11 @@ class WorkshopAPITester:
             print("❌ Skipping vehicle tests - no client ID available")
             return False
         
-        # Create vehicle
+        # Create vehicle with unique license plate
+        import time
+        unique_suffix = str(int(time.time()))[-4:]  # Last 4 digits of timestamp
         vehiculo_data = {
-            "matricula": "TEST123",
+            "matricula": f"TEST{unique_suffix}",
             "marca": "Toyota",
             "modelo": "Corolla",
             "año": 2020,
