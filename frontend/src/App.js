@@ -521,12 +521,6 @@ const OrdenesListado = () => {
     );
   };
 
-  const ordenesFiltradas = ordenes.filter(orden => {
-    if (filtro === 'todas') return true;
-    if (filtro === 'activas') return !['terminado', 'entregado'].includes(orden.estado);
-    return orden.estado === filtro;
-  });
-
   if (cargando) {
     return <div className="flex items-center justify-center h-screen">Cargando órdenes...</div>;
   }
@@ -541,33 +535,31 @@ const OrdenesListado = () => {
         </Button>
       </div>
 
-      {/* Filtros */}
-      <div className="flex gap-2 flex-wrap">
-        <Button 
-          variant={filtro === 'todas' ? 'default' : 'outline'}
-          onClick={() => setFiltro('todas')}
-        >
-          Todas ({ordenes.length})
-        </Button>
-        <Button 
-          variant={filtro === 'activas' ? 'default' : 'outline'}
-          onClick={() => setFiltro('activas')}
-        >
-          Activas ({ordenes.filter(o => !['terminado', 'entregado'].includes(o.estado)).length})
-        </Button>
-        <Button 
-          variant={filtro === 'recibido' ? 'default' : 'outline'}
-          onClick={() => setFiltro('recibido')}
-        >
-          Recibidas ({ordenes.filter(o => o.estado === 'recibido').length})
-        </Button>
-        <Button 
-          variant={filtro === 'en_reparacion' ? 'default' : 'outline'}
-          onClick={() => setFiltro('en_reparacion')}
-        >
-          En Reparación ({ordenes.filter(o => o.estado === 'en_reparacion').length})
-        </Button>
-      </div>
+      {/* Pestañas */}
+      <Tabs value={tabActiva} onValueChange={setTabActiva} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="activas" className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Activas ({ordenes.length})
+          </TabsTrigger>
+          <TabsTrigger value="entregadas" className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Historial
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="activas" className="space-y-4">
+          <div className="text-sm text-gray-600">
+            Órdenes en proceso: recibidas, diagnosticando, presupuestadas, aprobadas, en reparación y terminadas
+          </div>
+        </TabsContent>
+
+        <TabsContent value="entregadas" className="space-y-4">
+          <div className="text-sm text-gray-600">
+            Historial de órdenes completadas y entregadas al cliente
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Lista de Órdenes */}
       <div className="grid gap-4">
