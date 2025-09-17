@@ -473,13 +473,46 @@ async def obtener_mecanicos_activos():
     mecanicos = await db.mecanicos.find({"activo": True}).to_list(1000)
     return [MecanicoEspecialista(**parse_from_mongo(mecanico)) for mecanico in mecanicos]
 
-# Servicios y Repuestos Routes
-@api_router.post("/servicios-repuestos", response_model=ServicioRepuesto)
-async def crear_servicio_repuesto(item: ServicioRepuestoCreate):
-    item_dict = prepare_for_mongo(item.dict())
-    item_obj = ServicioRepuesto(**item_dict)
-    await db.servicios_repuestos.insert_one(prepare_for_mongo(item_obj.dict()))
-    return item_obj
+# Actualizar servicio/repuesto
+@api_router.put("/servicios-repuestos/{item_id}", response_model=ServicioRepuesto)
+async def actualizar_servicio_repuesto(item_id: str, datos: dict):
+    """Actualiza un servicio o repuesto"""
+    item = await db.servicios_repuestos.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    
+    # Campos permitidos para actualización
+    campos_permitidos = ["tipo", "nombre", "descripcion", "precio"]
+    datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
+    datos_actualizacion = prepare_for_mongo(datos_actualizacion)
+    
+    await db.servicios_repuestos.update_one({"id": item_id}, {"$set": datos_actualizacion})
+    
+    item_actualizado = await db.servicios_repuestos.find_one({"id": item_id})
+    return ServicioRepuesto(**parse_from_mongo(item_actualizado))
+
+# Eliminar servicio/repuesto
+@api_router.delete("/servicios-repuestos/{item_id}")
+async def eliminar_servicio_repuesto(item_id: str):
+    """Elimina un servicio o repuesto del catálogo"""
+    item = await db.servicios_repuestos.find_one({"id": item_id})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    
+    # Verificar si está siendo usado en alguna orden activa
+    ordenes_con_item = await db.ordenes_trabajo.find({
+        "servicios_repuestos.id": item_id,
+        "estado": {"$nin": ["terminado", "entregado"]}
+    }).to_list(1)
+    
+    if ordenes_con_item:
+        raise HTTPException(
+            status_code=400, 
+            detail="No se puede eliminar: el item está siendo usado en órdenes activas"
+        )
+    
+    await db.servicios_repuestos.delete_one({"id": item_id})
+    return {"success": True, "item_eliminado": item["nombre"]}
 
 @api_router.get("/servicios-repuestos", response_model=List[ServicioRepuesto])
 async def obtener_servicios_repuestos():
