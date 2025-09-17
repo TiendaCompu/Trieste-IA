@@ -929,6 +929,237 @@ async def busqueda_generalizada(q: str):
         print(f"Error in search: {e}")
         return {"vehiculos": [], "clientes": []}
 
+# Sistema de Tasa de Cambio
+@api_router.post("/tasa-cambio", response_model=TasaCambio)
+async def crear_tasa_cambio(tasa: TasaCambioCreate):
+    """Crear/actualizar tasa de cambio"""
+    # Desactivar tasa anterior
+    await db.tasas_cambio.update_many({"activa": True}, {"$set": {"activa": False}})
+    
+    # Crear nueva tasa activa
+    tasa_dict = prepare_for_mongo(tasa.dict())
+    tasa_obj = TasaCambio(**tasa_dict)
+    await db.tasas_cambio.insert_one(prepare_for_mongo(tasa_obj.dict()))
+    
+    return tasa_obj
+
+@api_router.get("/tasa-cambio/actual", response_model=TasaCambio)
+async def obtener_tasa_actual():
+    """Obtener tasa de cambio actual"""
+    tasa = await db.tasas_cambio.find_one({"activa": True})
+    if not tasa:
+        # Crear tasa por defecto si no existe
+        tasa_default = TasaCambio(tasa_bs_usd=1.0, observaciones="Tasa por defecto")
+        await db.tasas_cambio.insert_one(prepare_for_mongo(tasa_default.dict()))
+        return tasa_default
+    
+    return TasaCambio(**parse_from_mongo(tasa))
+
+@api_router.get("/tasa-cambio/historial", response_model=List[TasaCambio])
+async def obtener_historial_tasas():
+    """Obtener historial de tasas de cambio"""
+    tasas = await db.tasas_cambio.find().sort("created_at", -1).to_list(100)
+    return [TasaCambio(**parse_from_mongo(tasa)) for tasa in tasas]
+
+# Sistema de Presupuestos
+@api_router.post("/presupuestos", response_model=Presupuesto)
+async def crear_presupuesto(presupuesto: PresupuestoCreate):
+    """Crear nuevo presupuesto"""
+    # Generar número consecutivo
+    count = await db.presupuestos.count_documents({})
+    numero_presupuesto = f"P-2024-{str(count + 1).zfill(3)}"
+    
+    # Calcular totales
+    subtotal = sum(item.total_usd for item in presupuesto.items)
+    iva = subtotal * 0.16  # 16% IVA
+    total = subtotal + iva
+    
+    presupuesto_dict = prepare_for_mongo(presupuesto.dict())
+    presupuesto_obj = Presupuesto(
+        **presupuesto_dict,
+        numero_presupuesto=numero_presupuesto,
+        subtotal_usd=subtotal,
+        iva_usd=iva,
+        total_usd=total
+    )
+    
+    await db.presupuestos.insert_one(prepare_for_mongo(presupuesto_obj.dict()))
+    return presupuesto_obj
+
+@api_router.get("/presupuestos", response_model=List[Presupuesto])
+async def obtener_presupuestos():
+    """Obtener todos los presupuestos"""
+    presupuestos = await db.presupuestos.find().sort("created_at", -1).to_list(1000)
+    return [Presupuesto(**parse_from_mongo(p)) for p in presupuestos]
+
+@api_router.get("/presupuestos/{presupuesto_id}", response_model=Presupuesto)
+async def obtener_presupuesto(presupuesto_id: str):
+    """Obtener presupuesto por ID"""
+    presupuesto = await db.presupuestos.find_one({"id": presupuesto_id})
+    if not presupuesto:
+        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    return Presupuesto(**parse_from_mongo(presupuesto))
+
+@api_router.put("/presupuestos/{presupuesto_id}/aprobar")
+async def aprobar_presupuesto(presupuesto_id: str):
+    """Aprobar presupuesto"""
+    await db.presupuestos.update_one(
+        {"id": presupuesto_id}, 
+        {"$set": {"estado": "aprobado", "fecha_aprobacion": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Presupuesto aprobado"}
+
+@api_router.put("/presupuestos/{presupuesto_id}/rechazar")
+async def rechazar_presupuesto(presupuesto_id: str):
+    """Rechazar presupuesto"""
+    await db.presupuestos.update_one(
+        {"id": presupuesto_id}, 
+        {"$set": {"estado": "rechazado"}}
+    )
+    return {"message": "Presupuesto rechazado"}
+
+# Sistema de Facturas
+@api_router.post("/facturas", response_model=Factura)
+async def crear_factura(factura: FacturaCreate):
+    """Crear factura desde presupuesto aprobado"""
+    # Verificar presupuesto
+    presupuesto = await db.presupuestos.find_one({"id": factura.presupuesto_id})
+    if not presupuesto:
+        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    
+    if presupuesto.get("estado") != "aprobado":
+        raise HTTPException(status_code=400, detail="El presupuesto debe estar aprobado")
+    
+    # Obtener tasa de cambio actual
+    tasa_cambio = await db.tasas_cambio.find_one({"activa": True})
+    if not tasa_cambio:
+        raise HTTPException(status_code=400, detail="No hay tasa de cambio configurada")
+    
+    tasa = tasa_cambio["tasa_bs_usd"]
+    
+    # Obtener datos del vehículo
+    vehiculo = await db.vehiculos.find_one({"id": presupuesto["vehiculo_id"]})
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        
+    # Generar número de factura
+    count = await db.facturas.count_documents({})
+    numero_factura = f"FAC-2024-{str(count + 1).zfill(3)}"
+    
+    # Calcular conversión a bolívares
+    subtotal_usd = presupuesto["subtotal_usd"]
+    iva_usd = presupuesto["iva_usd"]
+    total_usd = presupuesto["total_usd"]
+    
+    subtotal_bs = subtotal_usd * tasa
+    iva_bs = iva_usd * tasa
+    total_bs = total_usd * tasa
+    
+    # Crear factura
+    factura_dict = prepare_for_mongo(factura.dict())
+    factura_obj = Factura(
+        **factura_dict,
+        numero_factura=numero_factura,
+        vehiculo_id=presupuesto["vehiculo_id"],
+        cliente_id=presupuesto["cliente_id"],
+        vehiculo_datos={
+            "matricula": vehiculo.get("matricula"),
+            "color": vehiculo.get("color"),
+            "año": vehiculo.get("año"),
+            "km_ingreso": vehiculo.get("kilometraje")
+        },
+        items=presupuesto["items"],
+        subtotal_usd=subtotal_usd,
+        iva_usd=iva_usd,
+        total_usd=total_usd,
+        tasa_cambio=tasa,
+        subtotal_bs=subtotal_bs,
+        iva_bs=iva_bs,
+        total_bs=total_bs,
+        total_final_bs=total_bs,
+        saldo_pendiente_bs=total_bs
+    )
+    
+    await db.facturas.insert_one(prepare_for_mongo(factura_obj.dict()))
+    return factura_obj
+
+@api_router.get("/facturas", response_model=List[Factura])
+async def obtener_facturas():
+    """Obtener todas las facturas"""
+    facturas = await db.facturas.find().sort("created_at", -1).to_list(1000)
+    return [Factura(**parse_from_mongo(f)) for f in facturas]
+
+@api_router.post("/facturas/{factura_id}/pagos")
+async def registrar_pago(factura_id: str, pago: RegistrarPago):
+    """Registrar pago en factura"""
+    factura = await db.facturas.find_one({"id": factura_id})
+    if not factura:
+        raise HTTPException(status_code=404, detail="Factura no encontrada")
+    
+    # Obtener tasa actual
+    tasa_cambio_doc = await db.tasas_cambio.find_one({"activa": True})
+    tasa = tasa_cambio_doc["tasa_bs_usd"] if tasa_cambio_doc else factura["tasa_cambio"]
+    
+    # Calcular monto en bolívares
+    if pago.tipo == "dolares":
+        monto_bs = pago.monto_usd * tasa
+        monto_usd = pago.monto_usd
+    else:
+        monto_bs = pago.monto_bs
+        monto_usd = pago.monto_bs / tasa
+    
+    # Crear objeto de pago
+    nuevo_pago = MetodoPago(
+        tipo=pago.tipo,
+        metodo=pago.metodo,
+        monto_usd=monto_usd,
+        monto_bs=monto_bs,
+        referencia=pago.referencia
+    )
+    
+    # Actualizar factura
+    total_pagado_bs = factura["monto_pagado_bs"] + monto_bs
+    saldo_pendiente = factura["total_final_bs"] - total_pagado_bs
+    
+    # Calcular IGTF si hay pagos en USD
+    aplica_igtf = any(p.get("tipo") == "dolares" for p in factura.get("pagos", [])) or pago.tipo == "dolares"
+    igtf_usd = 0.0
+    igtf_bs = 0.0
+    total_final_bs = factura["total_bs"]
+    
+    if aplica_igtf:
+        igtf_usd = factura["total_usd"] * 0.03  # 3% IGTF
+        igtf_bs = igtf_usd * factura["tasa_cambio"]
+        total_final_bs = factura["total_bs"] + igtf_bs
+        saldo_pendiente = total_final_bs - total_pagado_bs
+    
+    # Determinar estado de pago
+    if saldo_pendiente <= 0:
+        estado_pago = "pagado_total"
+    elif total_pagado_bs > 0:
+        estado_pago = "pagado_parcial"
+    else:
+        estado_pago = "pendiente"
+    
+    # Actualizar en base de datos
+    await db.facturas.update_one(
+        {"id": factura_id},
+        {
+            "$push": {"pagos": prepare_for_mongo(nuevo_pago.dict())},
+            "$set": {
+                "monto_pagado_bs": total_pagado_bs,
+                "saldo_pendiente_bs": max(0, saldo_pendiente),
+                "estado_pago": estado_pago,
+                "aplica_igtf": aplica_igtf,
+                "igtf_usd": igtf_usd,
+                "igtf_bs": igtf_bs,
+                "total_final_bs": total_final_bs
+            }
+        }
+    )
+    
+    return {"message": "Pago registrado correctamente", "saldo_pendiente": max(0, saldo_pendiente)}
+
 # Test route
 @api_router.get("/")
 async def root():
