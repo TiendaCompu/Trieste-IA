@@ -506,6 +506,451 @@ class WorkshopAPITester:
         
         return success and success2
 
+    def test_historial_kilometraje(self):
+        """Test NEW FUNCTIONALITY: Mileage history operations"""
+        print("\n" + "="*50)
+        print("TESTING NEW FUNCTIONALITY: HISTORIAL DE KILOMETRAJE")
+        print("="*50)
+        
+        if not self.created_ids['vehiculo']:
+            print("❌ Skipping mileage history tests - no vehicle ID available")
+            return False
+        
+        # First, get current vehicle data to know current mileage
+        success_get, vehicle_data = self.run_test(
+            "Get Vehicle Current Data",
+            "GET",
+            f"vehiculos/{self.created_ids['vehiculo']}",
+            200
+        )
+        
+        if not success_get:
+            print("❌ Cannot get vehicle data for mileage testing")
+            return False
+        
+        current_km = vehicle_data.get('kilometraje', 50000)  # Default from creation
+        new_km = current_km + 5000  # Add 5000 km
+        
+        print(f"📊 Current vehicle mileage: {current_km} km")
+        print(f"📊 New mileage to set: {new_km} km")
+        
+        # Test 1: Update mileage with history (POST /api/vehiculos/{id}/actualizar-kilometraje)
+        mileage_data = {
+            "vehiculo_id": self.created_ids['vehiculo'],
+            "kilometraje_nuevo": new_km,
+            "observaciones": "Entrada para mantenimiento programado"
+        }
+        
+        print(f"📝 Updating mileage with data: {json.dumps(mileage_data, indent=2)}")
+        success1, response1 = self.run_test(
+            "POST /api/vehiculos/{id}/actualizar-kilometraje - Update Mileage with History",
+            "POST",
+            f"vehiculos/{self.created_ids['vehiculo']}/actualizar-kilometraje",
+            200,
+            data=mileage_data
+        )
+        
+        if success1 and isinstance(response1, dict):
+            print("✅ Mileage updated successfully")
+            
+            # Verify response contains required fields
+            required_fields = ['id', 'vehiculo_id', 'kilometraje_anterior', 'kilometraje_nuevo', 'fecha_actualizacion', 'observaciones']
+            missing_fields = [field for field in required_fields if field not in response1]
+            if missing_fields:
+                print(f"⚠️  Missing fields in response: {missing_fields}")
+            else:
+                print("✅ All required fields present in mileage history response")
+            
+            # Verify values
+            if response1.get('kilometraje_anterior') == current_km:
+                print(f"✅ Previous mileage correctly recorded: {current_km}")
+            else:
+                print(f"❌ Previous mileage mismatch: expected {current_km}, got {response1.get('kilometraje_anterior')}")
+            
+            if response1.get('kilometraje_nuevo') == new_km:
+                print(f"✅ New mileage correctly recorded: {new_km}")
+            else:
+                print(f"❌ New mileage mismatch: expected {new_km}, got {response1.get('kilometraje_nuevo')}")
+            
+            if response1.get('observaciones') == mileage_data['observaciones']:
+                print("✅ Observations correctly saved")
+            else:
+                print(f"❌ Observations mismatch: expected '{mileage_data['observaciones']}', got '{response1.get('observaciones')}'")
+        
+        # Test 2: Get mileage history (GET /api/vehiculos/{id}/historial-kilometraje)
+        success2, response2 = self.run_test(
+            "GET /api/vehiculos/{id}/historial-kilometraje - Get Mileage History",
+            "GET",
+            f"vehiculos/{self.created_ids['vehiculo']}/historial-kilometraje",
+            200
+        )
+        
+        if success2 and isinstance(response2, list):
+            print(f"✅ Retrieved mileage history with {len(response2)} entries")
+            
+            if len(response2) > 0:
+                latest_entry = response2[0]  # Should be sorted by date desc
+                print(f"📋 Latest history entry: {json.dumps(latest_entry, indent=2, default=str)}")
+                
+                # Verify the latest entry matches our update
+                if latest_entry.get('kilometraje_nuevo') == new_km:
+                    print("✅ Latest history entry matches our update")
+                else:
+                    print(f"❌ Latest history entry mismatch: expected {new_km}, got {latest_entry.get('kilometraje_nuevo')}")
+            else:
+                print("❌ No history entries found")
+                success2 = False
+        
+        # Test 3: Validation - try to set lower mileage (should fail)
+        invalid_km = current_km - 1000  # Lower than current
+        invalid_data = {
+            "vehiculo_id": self.created_ids['vehiculo'],
+            "kilometraje_nuevo": invalid_km,
+            "observaciones": "This should fail"
+        }
+        
+        print(f"🚫 Testing validation with invalid mileage: {invalid_km} (should be < current {new_km})")
+        success3, response3 = self.run_test(
+            "POST /api/vehiculos/{id}/actualizar-kilometraje - Validation Test (Should Fail)",
+            "POST",
+            f"vehiculos/{self.created_ids['vehiculo']}/actualizar-kilometraje",
+            400,  # Should return 400 Bad Request
+            data=invalid_data
+        )
+        
+        if success3:
+            print("✅ Validation correctly rejected lower mileage")
+            if isinstance(response3, dict) and 'detail' in response3:
+                print(f"   Error message: {response3['detail']}")
+        else:
+            print("❌ Validation failed - lower mileage was accepted (this is wrong)")
+        
+        # Test 4: Verify vehicle mileage was actually updated
+        success4, updated_vehicle = self.run_test(
+            "GET /api/vehiculos/{id} - Verify Vehicle Mileage Updated",
+            "GET",
+            f"vehiculos/{self.created_ids['vehiculo']}",
+            200
+        )
+        
+        if success4 and isinstance(updated_vehicle, dict):
+            if updated_vehicle.get('kilometraje') == new_km:
+                print(f"✅ Vehicle mileage correctly updated to {new_km}")
+            else:
+                print(f"❌ Vehicle mileage not updated: expected {new_km}, got {updated_vehicle.get('kilometraje')}")
+                success4 = False
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4
+        
+        print(f"\n📊 MILEAGE HISTORY TESTS SUMMARY:")
+        print(f"   ✅ Update mileage with history: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Get mileage history: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Validation (reject lower km): {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Vehicle mileage updated: {'PASSED' if success4 else 'FAILED'}")
+        
+        return all_tests_passed
+
+    def test_busqueda_generalizada(self):
+        """Test NEW FUNCTIONALITY: Generalized search"""
+        print("\n" + "="*50)
+        print("TESTING NEW FUNCTIONALITY: BÚSQUEDA GENERALIZADA")
+        print("="*50)
+        
+        # Test 1: Search by license plate
+        success1, response1 = self.run_test(
+            "GET /api/buscar?q=TEST - Search by License Plate",
+            "GET",
+            "buscar?q=TEST",
+            200
+        )
+        
+        if success1 and isinstance(response1, dict):
+            vehiculos = response1.get('vehiculos', [])
+            clientes = response1.get('clientes', [])
+            
+            print(f"✅ Search by 'TEST' returned {len(vehiculos)} vehicles and {len(clientes)} clients")
+            
+            # Verify response structure
+            if 'vehiculos' in response1 and 'clientes' in response1:
+                print("✅ Response has correct structure (vehiculos and clientes)")
+            else:
+                print("❌ Response missing required fields (vehiculos, clientes)")
+                success1 = False
+            
+            # Check if our test vehicle is found
+            if any(v.get('matricula', '').startswith('TEST') for v in vehiculos):
+                print("✅ Test vehicle found in search results")
+            else:
+                print("⚠️  Test vehicle not found in search results (may be expected if no TEST vehicles exist)")
+        
+        # Test 2: Search by client name
+        success2, response2 = self.run_test(
+            "GET /api/buscar?q=Fleet - Search by Client Name",
+            "GET",
+            "buscar?q=Fleet",
+            200
+        )
+        
+        if success2 and isinstance(response2, dict):
+            vehiculos = response2.get('vehiculos', [])
+            clientes = response2.get('clientes', [])
+            
+            print(f"✅ Search by 'Fleet' returned {len(vehiculos)} vehicles and {len(clientes)} clients")
+            
+            # Check if any clients match the search term
+            matching_clients = [c for c in clientes if 'Fleet' in c.get('nombre', '') or 'Fleet' in c.get('empresa', '')]
+            if matching_clients:
+                print(f"✅ Found {len(matching_clients)} clients matching 'Fleet'")
+            else:
+                print("⚠️  No clients found matching 'Fleet' (may be expected)")
+        
+        # Test 3: Search by company name
+        success3, response3 = self.run_test(
+            "GET /api/buscar?q=Management - Search by Company Name",
+            "GET",
+            "buscar?q=Management",
+            200
+        )
+        
+        if success3 and isinstance(response3, dict):
+            vehiculos = response3.get('vehiculos', [])
+            clientes = response3.get('clientes', [])
+            
+            print(f"✅ Search by 'Management' returned {len(vehiculos)} vehicles and {len(clientes)} clients")
+            
+            # Check if any clients have matching company
+            matching_companies = [c for c in clientes if 'Management' in c.get('empresa', '')]
+            if matching_companies:
+                print(f"✅ Found {len(matching_companies)} clients with company matching 'Management'")
+            else:
+                print("⚠️  No companies found matching 'Management' (may be expected)")
+        
+        # Test 4: Search with our test client
+        if self.created_ids['cliente']:
+            success4, response4 = self.run_test(
+                "GET /api/buscar?q=Test - Search for Test Client",
+                "GET",
+                "buscar?q=Test",
+                200
+            )
+            
+            if success4 and isinstance(response4, dict):
+                vehiculos = response4.get('vehiculos', [])
+                clientes = response4.get('clientes', [])
+                
+                print(f"✅ Search by 'Test' returned {len(vehiculos)} vehicles and {len(clientes)} clients")
+                
+                # Check if our test client is found
+                our_client_found = any(c.get('id') == self.created_ids['cliente'] for c in clientes)
+                if our_client_found:
+                    print("✅ Our test client found in search results")
+                else:
+                    print("❌ Our test client not found in search results")
+                    success4 = False
+                
+                # Check if our test vehicle is found (should be included via client relationship)
+                our_vehicle_found = any(v.get('id') == self.created_ids['vehiculo'] for v in vehiculos)
+                if our_vehicle_found:
+                    print("✅ Our test vehicle found in search results (via client relationship)")
+                else:
+                    print("⚠️  Our test vehicle not found in search results")
+        else:
+            success4 = True  # Skip if no test client
+            print("⚠️  Skipping test client search - no test client available")
+        
+        # Test 5: Empty search (should return empty results)
+        success5, response5 = self.run_test(
+            "GET /api/buscar?q= - Empty Search",
+            "GET",
+            "buscar?q=",
+            200
+        )
+        
+        if success5 and isinstance(response5, dict):
+            vehiculos = response5.get('vehiculos', [])
+            clientes = response5.get('clientes', [])
+            
+            if len(vehiculos) == 0 and len(clientes) == 0:
+                print("✅ Empty search correctly returned no results")
+            else:
+                print(f"⚠️  Empty search returned {len(vehiculos)} vehicles and {len(clientes)} clients")
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4 and success5
+        
+        print(f"\n📊 GENERALIZED SEARCH TESTS SUMMARY:")
+        print(f"   ✅ Search by license plate: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Search by client name: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Search by company name: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Search test client: {'PASSED' if success4 else 'FAILED'}")
+        print(f"   ✅ Empty search handling: {'PASSED' if success5 else 'FAILED'}")
+        
+        return all_tests_passed
+
+    def test_filtrado_ordenes(self):
+        """Test NEW FUNCTIONALITY: Order filtering"""
+        print("\n" + "="*50)
+        print("TESTING NEW FUNCTIONALITY: FILTRADO DE ÓRDENES")
+        print("="*50)
+        
+        # First, create some test orders with different states
+        if not self.created_ids['cliente'] or not self.created_ids['vehiculo']:
+            print("❌ Skipping order filtering tests - missing client or vehicle ID")
+            return False
+        
+        # Create additional orders with different states for testing
+        test_orders = []
+        
+        # Order 1: Active order (recibido)
+        orden1_data = {
+            "vehiculo_id": self.created_ids['vehiculo'],
+            "cliente_id": self.created_ids['cliente'],
+            "diagnostico": "Test active order",
+            "observaciones": "Active order for filtering test"
+        }
+        
+        success_create1, response_create1 = self.run_test(
+            "Create Active Test Order",
+            "POST",
+            "ordenes",
+            200,
+            data=orden1_data
+        )
+        
+        if success_create1 and isinstance(response_create1, dict):
+            test_orders.append(response_create1.get('id'))
+        
+        # Order 2: Update one to delivered state
+        if test_orders:
+            update_data = {"estado": "entregado"}
+            success_update, _ = self.run_test(
+                "Update Order to Delivered",
+                "PUT",
+                f"ordenes/{test_orders[0]}",
+                200,
+                data=update_data
+            )
+        
+        # Test 1: Get active orders (filtro=activas)
+        success1, response1 = self.run_test(
+            "GET /api/ordenes?filtro=activas - Get Active Orders Only",
+            "GET",
+            "ordenes?filtro=activas",
+            200
+        )
+        
+        if success1 and isinstance(response1, list):
+            print(f"✅ Active orders filter returned {len(response1)} orders")
+            
+            # Verify all returned orders are NOT delivered
+            non_delivered_count = sum(1 for order in response1 if order.get('estado') != 'entregado')
+            if non_delivered_count == len(response1):
+                print("✅ All active orders are non-delivered (correct filtering)")
+            else:
+                print(f"❌ Found {len(response1) - non_delivered_count} delivered orders in active filter")
+                success1 = False
+            
+            # Show states of active orders
+            estados_activos = [order.get('estado') for order in response1]
+            print(f"   Active order states: {set(estados_activos)}")
+        
+        # Test 2: Get delivered orders (filtro=entregadas)
+        success2, response2 = self.run_test(
+            "GET /api/ordenes?filtro=entregadas - Get Delivered Orders Only",
+            "GET",
+            "ordenes?filtro=entregadas",
+            200
+        )
+        
+        if success2 and isinstance(response2, list):
+            print(f"✅ Delivered orders filter returned {len(response2)} orders")
+            
+            # Verify all returned orders are delivered
+            delivered_count = sum(1 for order in response2 if order.get('estado') == 'entregado')
+            if delivered_count == len(response2):
+                print("✅ All returned orders are delivered (correct filtering)")
+            else:
+                print(f"❌ Found {len(response2) - delivered_count} non-delivered orders in delivered filter")
+                success2 = False
+            
+            # Show states of delivered orders
+            estados_entregados = [order.get('estado') for order in response2]
+            print(f"   Delivered order states: {set(estados_entregados)}")
+        
+        # Test 3: Get all orders (filtro=todas)
+        success3, response3 = self.run_test(
+            "GET /api/ordenes?filtro=todas - Get All Orders",
+            "GET",
+            "ordenes?filtro=todas",
+            200
+        )
+        
+        if success3 and isinstance(response3, list):
+            print(f"✅ All orders filter returned {len(response3)} orders")
+            
+            # Verify we get both active and delivered orders
+            active_in_all = sum(1 for order in response3 if order.get('estado') != 'entregado')
+            delivered_in_all = sum(1 for order in response3 if order.get('estado') == 'entregado')
+            
+            print(f"   Active orders in 'all': {active_in_all}")
+            print(f"   Delivered orders in 'all': {delivered_in_all}")
+            
+            # Verify counts match individual filters
+            if len(response1) == active_in_all and len(response2) == delivered_in_all:
+                print("✅ Order counts match between individual filters and 'all' filter")
+            else:
+                print(f"❌ Count mismatch: active filter={len(response1)}, delivered filter={len(response2)}, all active={active_in_all}, all delivered={delivered_in_all}")
+                success3 = False
+        
+        # Test 4: Get orders without filter (should return all)
+        success4, response4 = self.run_test(
+            "GET /api/ordenes - Get Orders Without Filter",
+            "GET",
+            "ordenes",
+            200
+        )
+        
+        if success4 and isinstance(response4, list):
+            print(f"✅ Orders without filter returned {len(response4)} orders")
+            
+            # Should be same as filtro=todas
+            if len(response4) == len(response3):
+                print("✅ No filter returns same count as 'todas' filter")
+            else:
+                print(f"❌ Count mismatch: no filter={len(response4)}, todas filter={len(response3)}")
+                success4 = False
+        
+        # Test 5: Verify filter parameter validation
+        success5, response5 = self.run_test(
+            "GET /api/ordenes?filtro=invalid - Invalid Filter Parameter",
+            "GET",
+            "ordenes?filtro=invalid",
+            200  # Should still return 200 but treat as no filter
+        )
+        
+        if success5 and isinstance(response5, list):
+            print(f"✅ Invalid filter parameter handled gracefully, returned {len(response5)} orders")
+            
+            # Should return all orders (same as no filter)
+            if len(response5) == len(response4):
+                print("✅ Invalid filter treated as no filter (correct behavior)")
+            else:
+                print(f"❌ Invalid filter behavior unexpected: got {len(response5)}, expected {len(response4)}")
+                success5 = False
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4 and success5
+        
+        print(f"\n📊 ORDER FILTERING TESTS SUMMARY:")
+        print(f"   ✅ Active orders filter: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Delivered orders filter: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ All orders filter: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ No filter (default): {'PASSED' if success4 else 'FAILED'}")
+        print(f"   ✅ Invalid filter handling: {'PASSED' if success5 else 'FAILED'}")
+        
+        return all_tests_passed
+
 def main():
     print("🚗 WORKSHOP MANAGEMENT API TESTING")
     print("=" * 60)
