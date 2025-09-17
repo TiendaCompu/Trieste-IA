@@ -57,17 +57,27 @@ Si algún dato no está disponible, usa null. Responde SOLO con el JSON, sin tex
 # Define Models
 class Cliente(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    nombre: str
+    nombre: str  # Nombre o Razón Social
+    tipo_documento: str  # "CI" o "RIF"
+    prefijo_documento: str  # V-, E-, J-, G-
+    numero_documento: str  # 12345678 o 12345678-9
     telefono: Optional[str] = None
+    telefono_secundario: Optional[str] = None
+    direccion_fiscal: str  # Campo requerido para facturación
     empresa: Optional[str] = None
-    email: Optional[str] = None
+    email: str  # Campo requerido para facturación
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ClienteCreate(BaseModel):
     nombre: str
+    tipo_documento: str
+    prefijo_documento: str
+    numero_documento: str
     telefono: Optional[str] = None
+    telefono_secundario: Optional[str] = None
+    direccion_fiscal: str
     empresa: Optional[str] = None
-    email: Optional[str] = None
+    email: str
 
 class Vehiculo(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
