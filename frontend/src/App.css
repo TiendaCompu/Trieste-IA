@@ -1,5 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* Variables CSS para Centro de Servicios Automotriz Trieste */
+:root {
+  --trieste-yellow: #fcdf0c;
+  --trieste-white: #ffffff;
+  --trieste-blue: #000066;
+  --trieste-dark-blue: #000044;
+  --trieste-light-yellow: #fef3c7;
+  --trieste-gray: #f3f4f6;
+  --trieste-text-dark: #1f2937;
+  --trieste-text-light: #6b7280;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -12,14 +24,178 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
-  color: #1e293b;
+  background-color: var(--trieste-yellow);
+  color: var(--trieste-text-dark);
 }
 
 .App {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  background: var(--trieste-yellow);
 }
+
+/* Estilos para tarjetas y formularios */
+.card, [data-radix-collection-item] {
+  background-color: var(--trieste-white) !important;
+  border: 2px solid var(--trieste-blue) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 102, 0.1), 0 2px 4px -1px rgba(0, 0, 102, 0.06) !important;
+}
+
+/* Estilos para inputs y formularios */
+.input, input, textarea, select {
+  background-color: var(--trieste-white) !important;
+  border: 2px solid var(--trieste-blue) !important;
+  border-radius: 8px !important;
+  color: var(--trieste-text-dark) !important;
+}
+
+.input:focus, input:focus, textarea:focus, select:focus {
+  border-color: var(--trieste-dark-blue) !important;
+  box-shadow: 0 0 0 3px rgba(252, 223, 12, 0.3) !important;
+}
+
+/* Botones principales */
+.btn-primary, .bg-blue-600 {
+  background-color: var(--trieste-blue) !important;
+  border-color: var(--trieste-blue) !important;
+  color: var(--trieste-white) !important;
+}
+
+.btn-primary:hover, .bg-blue-600:hover {
+  background-color: var(--trieste-dark-blue) !important;
+  border-color: var(--trieste-dark-blue) !important;
+}
+
+/* Navegación principal */
+.trieste-nav {
+  background: linear-gradient(135deg, var(--trieste-blue) 0%, var(--trieste-dark-blue) 100%);
+  border-bottom: 3px solid var(--trieste-yellow);
+}
+
+/* Estadísticas con colores corporativos */
+.stat-card-blue {
+  background: linear-gradient(135deg, var(--trieste-blue) 0%, #0066cc 100%);
+  color: var(--trieste-white);
+}
+
+.stat-card-yellow {
+  background: linear-gradient(135deg, var(--trieste-yellow) 0%, #e6c700 100%);
+  color: var(--trieste-text-dark);
+}
+
+.stat-card-white {
+  background: var(--trieste-white);
+  border: 2px solid var(--trieste-blue);
+  color: var(--trieste-text-dark);
+}
+
+/* Logo y marca */
+.trieste-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 12px;
+}
+
+.trieste-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--trieste-white);
+}
+
+/* Modales y dialogs */
+.dialog-content {
+  background-color: var(--trieste-white) !important;
+  border: 3px solid var(--trieste-blue) !important;
+}
+
+/* Botón de configuración */
+.config-button {
+  background: var(--trieste-yellow);
+  color: var(--trieste-blue);
+  border: 2px solid var(--trieste-blue);
+  font-weight: 600;
+}
+
+.config-button:hover {
+  background: var(--trieste-light-yellow);
+  color: var(--trieste-dark-blue);
+}
+
+/* Badges con colores corporativos */
+.badge-trieste-blue {
+  background-color: var(--trieste-blue);
+  color: var(--trieste-white);
+}
+
+.badge-trieste-yellow {
+  background-color: var(--trieste-yellow);
+  color: var(--trieste-blue);
+}
+
+/* Contenedor principal */
+.main-container {
+  background-color: var(--trieste-white);
+  border-radius: 16px;
+  border: 3px solid var(--trieste-blue);
+  margin: 20px;
+  min-height: calc(100vh - 140px);
+}
+
+/* Estilos específicos para el taller */
+.workshop-header {
+  background: linear-gradient(135deg, var(--trieste-blue) 0%, var(--trieste-dark-blue) 100%);
+  color: var(--trieste-white);
+  padding: 1rem;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 3px solid var(--trieste-yellow);
+}
+
+/* Búsqueda principal */
+.search-widget {
+  background: var(--trieste-white);
+  border: 3px solid var(--trieste-blue);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 102, 0.1);
+}
+
+/* Efectos hover mejorados */
+.card-hover {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 102, 0.15);
+  border-color: var(--trieste-yellow);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .main-container {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .trieste-brand {
+    font-size: 1rem;
+  }
+  
+  .trieste-logo {
+    height: 32px;
+  }
+}
+
+/* Estados de órdenes con colores corporativos */
+.estado-recibido { background-color: var(--trieste-yellow); color: var(--trieste-blue); }
+.estado-diagnosticando { background-color: #fbbf24; color: var(--trieste-blue); }
+.estado-presupuestado { background-color: var(--trieste-blue); color: var(--trieste-white); }
+.estado-aprobado { background-color: #10b981; color: var(--trieste-white); }
+.estado-en-reparacion { background-color: #f59e0b; color: var(--trieste-white); }
+.estado-terminado { background-color: #6b7280; color: var(--trieste-white); }
+.estado-entregado { background-color: #059669; color: var(--trieste-white); }
 
 /* Estilos personalizados para el taller mecánico */
 .gradient-bg {
