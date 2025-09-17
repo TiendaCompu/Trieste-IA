@@ -121,6 +121,46 @@ const BusquedaMatricula = () => {
     }
   };
 
+  const actualizarKilometraje = async () => {
+    if (!nuevoKilometraje || isNaN(nuevoKilometraje)) {
+      toast.error('Ingrese un kilometraje válido');
+      return;
+    }
+
+    const kmNuevo = parseInt(nuevoKilometraje);
+    const kmActual = vehiculoEncontrado.kilometraje || 0;
+
+    if (kmNuevo < kmActual) {
+      toast.error(`El kilometraje nuevo (${kmNuevo}) no puede ser inferior al actual (${kmActual})`);
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/vehiculos/${vehiculoEncontrado.id}/actualizar-kilometraje`, {
+        vehiculo_id: vehiculoEncontrado.id,
+        kilometraje_nuevo: kmNuevo,
+        observaciones: observacionesKm
+      });
+
+      toast.success('Kilometraje actualizado correctamente');
+
+      // Actualizar el vehículo encontrado con el nuevo kilometraje
+      setVehiculoEncontrado(prev => ({ ...prev, kilometraje: kmNuevo }));
+      setMostrarModalEntrada(false);
+
+      // Proceder a crear nueva orden
+      crearNuevaOrden();
+    } catch (error) {
+      console.error('Error actualizando kilometraje:', error);
+      toast.error(error.response?.data?.detail || 'Error actualizando el kilometraje');
+    }
+  };
+
+  const saltarActualizacionKm = () => {
+    setMostrarModalEntrada(false);
+    crearNuevaOrden();
+  };
+
   const crearNuevaOrden = () => {
     navigate('/registro', { 
       state: { 
