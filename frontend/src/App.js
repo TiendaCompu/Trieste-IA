@@ -2067,6 +2067,8 @@ const ConfiguracionTaller = () => {
 
 // Navegación Principal (actualizada con diseño Trieste)
 const Navigation = () => {
+  const location = useLocation();
+
   return (
     <nav className="trieste-nav">
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
@@ -2081,30 +2083,53 @@ const Navigation = () => {
           </div>
         </Link>
         
-        <div className="flex items-center gap-6">
-          <div className="flex gap-4">
-            <Link to="/dashboard" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <ClipboardList className="w-4 h-4" />
+        <div className="flex items-center gap-3">
+          <div className="flex gap-3">
+            <Link 
+              to="/dashboard" 
+              className={`nav-button ${location.pathname === '/dashboard' ? 'active' : ''}`}
+            >
+              <ClipboardList className="nav-icon" />
               <span className="hidden md:inline">Dashboard</span>
             </Link>
-            <Link to="/registro" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <Plus className="w-4 h-4" />
+            
+            <Link 
+              to="/registro" 
+              className={`nav-button ${location.pathname === '/registro' ? 'active' : ''}`}
+            >
+              <Plus className="nav-icon" />
               <span className="hidden md:inline">Registro</span>
             </Link>
-            <Link to="/ordenes" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <Truck className="w-4 h-4" />
+            
+            <Link 
+              to="/ordenes" 
+              className={`nav-button ${location.pathname === '/ordenes' ? 'active' : ''}`}
+            >
+              <Truck className="nav-icon" />
               <span className="hidden md:inline">Órdenes</span>
             </Link>
-            <Link to="/mecanicos" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <UserCheck className="w-4 h-4" />
+            
+            <Link 
+              to="/mecanicos" 
+              className={`nav-button ${location.pathname === '/mecanicos' ? 'active' : ''}`}
+            >
+              <UserCheck className="nav-icon" />
               <span className="hidden md:inline">Mecánicos</span>
             </Link>
-            <Link to="/servicios" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <Package className="w-4 h-4" />
+            
+            <Link 
+              to="/servicios" 
+              className={`nav-button ${location.pathname === '/servicios' ? 'active' : ''}`}
+            >
+              <Package className="nav-icon" />
               <span className="hidden md:inline">Servicios</span>
             </Link>
-            <Link to="/vehiculos" className="hover:text-yellow-300 flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-              <Car className="w-4 h-4" />
+            
+            <Link 
+              to="/vehiculos" 
+              className={`nav-button ${location.pathname === '/vehiculos' ? 'active' : ''}`}
+            >
+              <Car className="nav-icon" />
               <span className="hidden md:inline">Vehículos</span>
             </Link>
           </div>
