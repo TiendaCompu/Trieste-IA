@@ -2095,36 +2095,93 @@ const RegistroVehiculo = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nombre del Cliente/Empresa *</label>
+                  <label className="block text-sm font-medium mb-2">Nombre/Razón Social *</label>
                   <Input
                     value={cliente.nombre}
-                    onChange={(e) => setCliente(prev => ({ ...prev, nombre: e.target.value }))}
-                    placeholder="Nombre completo o razón social"
+                    onChange={(e) => setCliente(prev => ({ ...prev, nombre: e.target.value.toUpperCase() }))}
+                    placeholder="NOMBRE COMPLETO O RAZÓN SOCIAL"
+                    style={{textTransform: 'uppercase'}}
                   />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono</label>
+                  <label className="block text-sm font-medium mb-2">Tipo de Documento *</label>
+                  <div className="flex gap-2">
+                    <Select 
+                      value={`${cliente.tipo_documento}-${cliente.prefijo_documento}`}
+                      onValueChange={(value) => {
+                        const [tipo, prefijo] = value.split('-');
+                        setCliente(prev => ({ ...prev, tipo_documento: tipo, prefijo_documento: prefijo }));
+                      }}
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CI-V">V-</SelectItem>
+                        <SelectItem value="CI-E">E-</SelectItem>
+                        <SelectItem value="RIF-J">J-</SelectItem>
+                        <SelectItem value="RIF-G">G-</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={cliente.numero_documento}
+                      onChange={(e) => setCliente(prev => ({ ...prev, numero_documento: e.target.value.replace(/\D/g, '') }))}
+                      placeholder={cliente.tipo_documento === 'RIF' ? '12345678-9' : '12345678'}
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {cliente.tipo_documento === 'RIF' ? 'Formato: J-12345678-9 o G-12345678-9' : 'Formato: V-12345678 o E-12345678'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Teléfono Principal</label>
                   <Input
                     value={cliente.telefono}
                     onChange={(e) => setCliente(prev => ({ ...prev, telefono: e.target.value }))}
-                    placeholder="Número de teléfono"
+                    placeholder="0414-555.12.34"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-2">Empresa</label>
+                  <label className="block text-sm font-medium mb-2">Teléfono Secundario</label>
+                  <Input
+                    value={cliente.telefono_secundario}
+                    onChange={(e) => setCliente(prev => ({ ...prev, telefono_secundario: e.target.value }))}
+                    placeholder="0412-987.65.43"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Dirección Fiscal *</label>
+                  <Textarea
+                    value={cliente.direccion_fiscal}
+                    onChange={(e) => setCliente(prev => ({ ...prev, direccion_fiscal: e.target.value.toUpperCase() }))}
+                    placeholder="DIRECCIÓN COMPLETA PARA FACTURACIÓN"
+                    style={{textTransform: 'uppercase'}}
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Empresa/Flota</label>
                   <Input
                     value={cliente.empresa}
-                    onChange={(e) => setCliente(prev => ({ ...prev, empresa: e.target.value }))}
-                    placeholder="Nombre de la empresa (si es flota)"
+                    onChange={(e) => setCliente(prev => ({ ...prev, empresa: e.target.value.toUpperCase() }))}
+                    placeholder="NOMBRE DE LA EMPRESA (OPCIONAL)"
+                    style={{textTransform: 'uppercase'}}
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-sm font-medium mb-2">Email *</label>
                   <Input
                     type="email"
                     value={cliente.email}
-                    onChange={(e) => setCliente(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Correo electrónico"
+                    onChange={(e) => setCliente(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
+                    placeholder="correo@empresa.com"
                   />
                 </div>
               </div>
