@@ -2424,9 +2424,12 @@ const RegistroVehiculo = () => {
                   <h3 className="font-semibold mb-3">Información del Cliente</h3>
                   <div className="space-y-2 text-sm">
                     <p><strong>Nombre:</strong> {cliente.nombre}</p>
+                    <p><strong>Documento:</strong> {cliente.prefijo_documento}-{cliente.numero_documento}</p>
                     {cliente.telefono && <p><strong>Teléfono:</strong> {cliente.telefono}</p>}
+                    {cliente.telefono_secundario && <p><strong>Teléfono 2:</strong> {cliente.telefono_secundario}</p>}
+                    <p><strong>Dirección:</strong> {cliente.direccion_fiscal}</p>
                     {cliente.empresa && <p><strong>Empresa:</strong> {cliente.empresa}</p>}
-                    {cliente.email && <p><strong>Email:</strong> {cliente.email}</p>}
+                    <p><strong>Email:</strong> {cliente.email}</p>
                   </div>
                 </div>
                 <div>
