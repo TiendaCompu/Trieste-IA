@@ -1944,9 +1944,8 @@ const ConfiguracionTaller = () => {
   return (
     <Dialog open={mostrarConfig} onOpenChange={setMostrarConfig}>
       <DialogTrigger asChild>
-        <Button className="config-button">
-          <Settings className="w-4 h-4 mr-2" />
-          Configuración
+        <Button className="config-button" title="Configuración del Taller">
+          <Settings className="nav-icon" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content">
