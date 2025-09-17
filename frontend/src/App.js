@@ -1522,26 +1522,54 @@ const MecanicosList = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mecanicos.map((mecanico) => (
-          <Card key={mecanico.id}>
+          <Card key={mecanico.id} className="card-hover">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${mecanico.activo ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                  <h3 className="font-semibold">{mecanico.nombre}</h3>
+                  <img
+                    src={getAvatarUrl(mecanico.avatar, mecanico.nombre)}
+                    alt={`Avatar de ${mecanico.nombre}`}
+                    className="w-12 h-12 rounded-full border-2"
+                    style={{borderColor: 'var(--trieste-blue)'}}
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${mecanico.activo ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                      <h3 className="font-semibold" style={{color: 'var(--trieste-blue)'}}>{mecanico.nombre}</h3>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className="mt-1 badge-trieste-blue"
+                    >
+                      {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
+                    </Badge>
+                  </div>
                 </div>
-                <Badge variant="outline">
-                  {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
-                </Badge>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => editarMecanico(mecanico)}
+                  className="config-button"
+                  title="Editar mecánico"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
               </div>
+              
               {mecanico.telefono && (
-                <p className="text-sm text-gray-600 flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                   <PhoneCall className="w-3 h-3" />
-                  {mecanico.telefono}
-                </p>
+                  <span>{mecanico.telefono}</span>
+                </div>
               )}
-              <p className="text-xs text-gray-500 mt-2">
-                Agregado: {new Date(mecanico.created_at).toLocaleDateString('es-ES')}
-              </p>
+              
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>Agregado: {new Date(mecanico.created_at).toLocaleDateString('es-ES')}</span>
+                <span className={`px-2 py-1 rounded ${mecanico.activo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                  {mecanico.activo ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
             </CardContent>
           </Card>
         ))}
