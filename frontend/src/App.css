@@ -33,12 +33,25 @@ body {
   background: var(--trieste-yellow);
 }
 
-/* Estilos para tarjetas y formularios */
-.card, [data-radix-collection-item] {
+/* Estilos para tarjetas y formularios - TODOS con bordes azules */
+.card, [data-radix-collection-item], .border {
   background-color: var(--trieste-white) !important;
   border: 2px solid var(--trieste-blue) !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 102, 0.1), 0 2px 4px -1px rgba(0, 0, 102, 0.06) !important;
+}
+
+/* Bordes azules para elementos específicos */
+.rounded-lg, .rounded, .border-gray-200, .border-gray-300, .border-green-200, 
+.border-blue-200, .border-purple-200, .border-orange-200, .border-red-200,
+.border-yellow-200 {
+  border-color: var(--trieste-blue) !important;
+}
+
+/* Cards hover con borde amarillo */
+.card-hover:hover, .hover\:shadow-md:hover {
+  border-color: var(--trieste-yellow) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 102, 0.15) !important;
 }
 
 /* Estilos para inputs y formularios */
