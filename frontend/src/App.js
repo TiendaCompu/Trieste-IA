@@ -334,7 +334,7 @@ const Dashboard = () => {
     try {
       const [statsRes, ordenesRes] = await Promise.all([
         axios.get(`${API}/dashboard/estadisticas`),
-        axios.get(`${API}/ordenes`)
+        axios.get(`${API}/ordenes?filtro=activas`)
       ]);
       
       setEstadisticas(statsRes.data);
