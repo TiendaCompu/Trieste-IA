@@ -96,6 +96,7 @@ class MecanicoEspecialista(BaseModel):
     nombre: str
     especialidad: str  # "motor", "transmision", "frenos", "electricidad", "suspension"
     telefono: Optional[str] = None
+    avatar: Optional[str] = None  # URL o base64 de la imagen
     activo: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -103,6 +104,7 @@ class MecanicoCreate(BaseModel):
     nombre: str
     especialidad: str
     telefono: Optional[str] = None
+    avatar: Optional[str] = None
     activo: bool = True
 
 class ServicioRepuesto(BaseModel):
