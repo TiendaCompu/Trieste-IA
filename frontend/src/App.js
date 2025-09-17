@@ -488,14 +488,21 @@ const OrdenesListado = () => {
   );
 };
 
-// Detalle de Orden de Trabajo
+// Detalle de Orden de Trabajo (mejorado con presupuestos)
 const OrdenDetalle = () => {
   const { ordenId } = useParams();
   const [orden, setOrden] = useState(null);
   const [vehiculo, setVehiculo] = useState(null);
   const [cliente, setCliente] = useState(null);
   const [mecanicos, setMecanicos] = useState([]);
+  const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
   const [cargando, setCargando] = useState(true);
+  
+  // Estados para agregar servicios
+  const [mostrarAgregarServicio, setMostrarAgregarServicio] = useState(false);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState('');
+  const [cantidadServicio, setCantidadServicio] = useState(1);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -504,14 +511,16 @@ const OrdenDetalle = () => {
 
   const cargarDetalles = async () => {
     try {
-      const [ordenRes, mecanicosRes] = await Promise.all([
+      const [ordenRes, mecanicosRes, serviciosRes] = await Promise.all([
         axios.get(`${API}/ordenes/${ordenId}`),
-        axios.get(`${API}/mecanicos/activos`)
+        axios.get(`${API}/mecanicos/activos`),
+        axios.get(`${API}/servicios-repuestos`)
       ]);
       
       const ordenData = ordenRes.data;
       setOrden(ordenData);
       setMecanicos(mecanicosRes.data);
+      setServiciosDisponibles(serviciosRes.data);
 
       // Cargar datos del vehículo y cliente
       const [vehiculoRes, clienteRes] = await Promise.all([
@@ -526,6 +535,68 @@ const OrdenDetalle = () => {
       toast.error('Error cargando los detalles de la orden');
     } finally {
       setCargando(false);
+    }
+  };
+
+  const agregarServicioAOrden = async () => {
+    try {
+      const servicioInfo = serviciosDisponibles.find(s => s.id === servicioSeleccionado);
+      if (!servicioInfo) return;
+
+      const nuevoServicio = {
+        id: servicioInfo.id,
+        nombre: servicioInfo.nombre,
+        tipo: servicioInfo.tipo,
+        precio_unitario: servicioInfo.precio,
+        cantidad: parseInt(cantidadServicio),
+        subtotal: servicioInfo.precio * parseInt(cantidadServicio)
+      };
+
+      const serviciosActualizados = [...(orden.servicios_repuestos || []), nuevoServicio];
+      const presupuestoTotal = serviciosActualizados.reduce((total, item) => total + item.subtotal, 0);
+
+      await axios.put(`${API}/ordenes/${ordenId}`, {
+        servicios_repuestos: serviciosActualizados,
+        presupuesto_total: presupuestoTotal
+      });
+
+      setOrden(prev => ({
+        ...prev,
+        servicios_repuestos: serviciosActualizados,
+        presupuesto_total: presupuestoTotal
+      }));
+
+      setMostrarAgregarServicio(false);
+      setServicioSeleccionado('');
+      setCantidadServicio(1);
+      
+      toast.success('Servicio agregado al presupuesto');
+    } catch (error) {
+      console.error('Error agregando servicio:', error);
+      toast.error('Error al agregar el servicio');
+    }
+  };
+
+  const eliminarServicioDeOrden = async (indiceServicio) => {
+    try {
+      const serviciosActualizados = orden.servicios_repuestos.filter((_, index) => index !== indiceServicio);
+      const presupuestoTotal = serviciosActualizados.reduce((total, item) => total + item.subtotal, 0);
+
+      await axios.put(`${API}/ordenes/${ordenId}`, {
+        servicios_repuestos: serviciosActualizados,
+        presupuesto_total: presupuestoTotal
+      });
+
+      setOrden(prev => ({
+        ...prev,
+        servicios_repuestos: serviciosActualizados,
+        presupuesto_total: presupuestoTotal
+      }));
+
+      toast.success('Servicio eliminado del presupuesto');
+    } catch (error) {
+      console.error('Error eliminando servicio:', error);
+      toast.error('Error al eliminar el servicio');
     }
   };
 
