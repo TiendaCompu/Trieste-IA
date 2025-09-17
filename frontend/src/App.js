@@ -480,17 +480,18 @@ const Dashboard = () => {
 // Gestión de Órdenes de Trabajo
 const OrdenesListado = () => {
   const [ordenes, setOrdenes] = useState([]);
-  const [filtro, setFiltro] = useState('todas');
+  const [tabActiva, setTabActiva] = useState('activas');
   const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    cargarOrdenes();
-  }, []);
+    cargarOrdenes(tabActiva);
+  }, [tabActiva]);
 
-  const cargarOrdenes = async () => {
+  const cargarOrdenes = async (filtro = 'activas') => {
+    setCargando(true);
     try {
-      const response = await axios.get(`${API}/ordenes`);
+      const response = await axios.get(`${API}/ordenes?filtro=${filtro}`);
       setOrdenes(response.data);
     } catch (error) {
       console.error('Error cargando órdenes:', error);
