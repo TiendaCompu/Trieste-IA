@@ -1561,8 +1561,47 @@ const MecanicosList = () => {
                 <Input
                   value={nuevoMecanico.telefono}
                   onChange={(e) => setNuevoMecanico(prev => ({ ...prev, telefono: e.target.value }))}
-                  placeholder="Número de teléfono"
+                  placeholder="0000-000.00.00"
+                  maxLength={15}
                 />
+                <p className="text-xs text-gray-500 mt-1">Formato: 0000-000.00.00</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  WhatsApp
+                </label>
+                <Input
+                  value={nuevoMecanico.whatsapp}
+                  onChange={(e) => setNuevoMecanico(prev => ({ ...prev, whatsapp: e.target.value }))}
+                  placeholder="0000-000.00.00"
+                  maxLength={15}
+                />
+                <p className="text-xs text-gray-500 mt-1">Número de WhatsApp (opcional)</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Estado Actual *
+                </label>
+                <Select 
+                  value={nuevoMecanico.estado}
+                  onValueChange={(value) => setNuevoMecanico(prev => ({ ...prev, estado: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estadosMecanico.map((estado) => (
+                      <SelectItem key={estado.valor} value={estado.valor}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${estado.color}`}></div>
+                          {estado.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="flex justify-end gap-2">
