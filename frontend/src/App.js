@@ -243,47 +243,47 @@ const Dashboard = () => {
 
       {/* Estadísticas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <Card className="stat-card-blue">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">Órdenes Activas</CardTitle>
-            <ClipboardList className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-white">Órdenes Activas</CardTitle>
+            <ClipboardList className="large-icon text-yellow-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{estadisticas.ordenes_activas}</div>
-            <p className="text-xs text-blue-600">En proceso actualmente</p>
+            <div className="text-2xl font-bold text-white">{estadisticas.ordenes_activas}</div>
+            <p className="text-xs text-yellow-200">En proceso actualmente</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <Card className="stat-card-yellow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Total Órdenes</CardTitle>
-            <Truck className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium" style={{color: 'var(--trieste-blue)'}}>Total Órdenes</CardTitle>
+            <Truck className="large-icon" style={{color: 'var(--trieste-blue)'}} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-900">{estadisticas.total_ordenes}</div>
-            <p className="text-xs text-green-600">Órdenes registradas</p>
+            <div className="text-2xl font-bold" style={{color: 'var(--trieste-blue)'}}>{estadisticas.total_ordenes}</div>
+            <p className="text-xs" style={{color: 'var(--trieste-blue)'}}>Órdenes registradas</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="stat-card-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700">Vehículos</CardTitle>
-            <Car className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-sm font-medium" style={{color: 'var(--trieste-blue)'}}>Vehículos</CardTitle>
+            <Car className="large-icon" style={{color: 'var(--trieste-blue)'}} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-900">{estadisticas.total_vehiculos}</div>
-            <p className="text-xs text-purple-600">En base de datos</p>
+            <div className="text-2xl font-bold" style={{color: 'var(--trieste-blue)'}}>{estadisticas.total_vehiculos}</div>
+            <p className="text-xs" style={{color: 'var(--trieste-text-light)'}}>En base de datos</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+        <Card className="stat-card-blue">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-700">Clientes</CardTitle>
-            <Users className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium text-white">Clientes</CardTitle>
+            <Users className="large-icon text-yellow-300" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900">{estadisticas.total_clientes}</div>
-            <p className="text-xs text-orange-600">Empresas registradas</p>
+            <div className="text-2xl font-bold text-white">{estadisticas.total_clientes}</div>
+            <p className="text-xs text-yellow-200">Empresas registradas</p>
           </CardContent>
         </Card>
       </div>
