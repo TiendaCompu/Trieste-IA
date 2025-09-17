@@ -301,6 +301,19 @@ class AIExtraRequest(BaseModel):
     imagen_base64: Optional[str] = None
 
 # Helper functions
+def convert_to_uppercase(data):
+    """Convert text fields to uppercase for Venezuelan requirements"""
+    if isinstance(data, dict):
+        text_fields = [
+            'nombre', 'empresa', 'direccion_fiscal', 'numero_documento',
+            'matricula', 'marca', 'modelo', 'color', 'tipo_combustible',
+            'serial_niv', 'descripcion', 'observaciones'
+        ]
+        for key, value in data.items():
+            if key in text_fields and isinstance(value, str):
+                data[key] = value.upper().strip()
+    return data
+
 def prepare_for_mongo(data):
     """Convert datetime objects to ISO strings for MongoDB storage"""
     if isinstance(data, dict):
