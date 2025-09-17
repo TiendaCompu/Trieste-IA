@@ -405,7 +405,8 @@ async def extraer_datos_vehiculo(request: AIExtraRequest):
 # Cliente Routes
 @api_router.post("/clientes", response_model=Cliente)
 async def crear_cliente(cliente: ClienteCreate):
-    cliente_dict = prepare_for_mongo(cliente.dict())
+    cliente_dict = convert_to_uppercase(cliente.dict())
+    cliente_dict = prepare_for_mongo(cliente_dict)
     cliente_obj = Cliente(**cliente_dict)
     await db.clientes.insert_one(prepare_for_mongo(cliente_obj.dict()))
     return cliente_obj
