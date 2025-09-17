@@ -600,6 +600,26 @@ const OrdenDetalle = () => {
     }
   };
 
+  const aprobarPresupuesto = async (aprobado) => {
+    try {
+      await axios.put(`${API}/ordenes/${ordenId}`, {
+        aprobado_cliente: aprobado,
+        estado: aprobado ? 'aprobado' : 'presupuestado'
+      });
+
+      setOrden(prev => ({
+        ...prev,
+        aprobado_cliente: aprobado,
+        estado: aprobado ? 'aprobado' : 'presupuestado'
+      }));
+
+      toast.success(aprobado ? 'Presupuesto aprobado' : 'Presupuesto rechazado');
+    } catch (error) {
+      console.error('Error actualizando aprobación:', error);
+      toast.error('Error al actualizar la aprobación');
+    }
+  };
+
   const cambiarEstado = async (nuevoEstado) => {
     try {
       await axios.put(`${API}/ordenes/${ordenId}`, { estado: nuevoEstado });
