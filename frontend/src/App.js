@@ -107,11 +107,21 @@ const BusquedaMatricula = () => {
         // Mostrar modal para preguntar si entra al taller
         setMostrarModalEntrada(true);
       } else {
-        // Vehículo no encontrado, ir a registro
+        // Vehículo no encontrado, preguntar si desea agregarlo
         setVehiculoEncontrado(null);
         setCliente(null);
-        toast.info('Vehículo no encontrado. Ir a registro.');
-        navigate('/registro', { state: { matricula_predefinida: matricula } });
+        
+        // Mostrar confirmación para agregar vehículo nuevo
+        const confirmar = window.confirm(
+          `No se encontró un vehículo con matrícula "${matricula}".\n\n¿Desea registrar este vehículo nuevo?`
+        );
+        
+        if (confirmar) {
+          toast.success('Redirigiendo al registro de vehículo nuevo');
+          navigate('/registro', { state: { matricula_predefinida: matricula } });
+        } else {
+          toast.info('Búsqueda cancelada');
+        }
       }
     } catch (error) {
       console.error('Error buscando vehículo:', error);
