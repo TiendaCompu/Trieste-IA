@@ -199,47 +199,177 @@ class WorkshopAPITester:
         return success and success2 and success3
 
     def test_mecanico_operations(self):
-        """Test mechanic operations"""
+        """Test comprehensive mechanic operations with new fields"""
         print("\n" + "="*50)
-        print("TESTING MECHANIC OPERATIONS")
+        print("TESTING MECHANIC OPERATIONS - COMPREHENSIVE")
         print("="*50)
         
-        # Create mechanic
+        # Test 1: Create mechanic with all new fields (whatsapp, estado)
         mecanico_data = {
-            "nombre": "Test Mechanic",
+            "nombre": "Test Mechanic Backend",
             "especialidad": "motor",
-            "telefono": "987654321",
+            "telefono": "0414-555.12.34",
+            "whatsapp": "0412-987.65.43",
+            "estado": "disponible",
             "activo": True
         }
         
-        success, response = self.run_test(
-            "Create Mechanic",
+        print(f"📝 Creating mechanic with data: {json.dumps(mecanico_data, indent=2)}")
+        success1, response1 = self.run_test(
+            "POST /api/mecanicos - Create Mechanic with WhatsApp and Estado",
             "POST",
             "mecanicos",
             200,
             data=mecanico_data
         )
         
-        if success and isinstance(response, dict):
-            self.created_ids['mecanico'] = response.get('id')
+        if success1 and isinstance(response1, dict):
+            self.created_ids['mecanico'] = response1.get('id')
+            print(f"✅ Mechanic created successfully with ID: {self.created_ids['mecanico']}")
+            
+            # Verify all fields are present in response
+            required_fields = ['id', 'nombre', 'especialidad', 'telefono', 'whatsapp', 'estado', 'activo', 'created_at']
+            missing_fields = [field for field in required_fields if field not in response1]
+            if missing_fields:
+                print(f"⚠️  Missing fields in response: {missing_fields}")
+            else:
+                print("✅ All required fields present in response")
+            
+            # Verify field values
+            if response1.get('whatsapp') == mecanico_data['whatsapp']:
+                print("✅ WhatsApp field saved correctly")
+            else:
+                print(f"❌ WhatsApp field mismatch: expected {mecanico_data['whatsapp']}, got {response1.get('whatsapp')}")
+            
+            if response1.get('estado') == mecanico_data['estado']:
+                print("✅ Estado field saved correctly")
+            else:
+                print(f"❌ Estado field mismatch: expected {mecanico_data['estado']}, got {response1.get('estado')}")
         
-        # Get all mechanics
-        success2, _ = self.run_test(
-            "Get All Mechanics",
+        # Test 2: Get all mechanics
+        success2, response2 = self.run_test(
+            "GET /api/mecanicos - Get All Mechanics",
             "GET",
             "mecanicos",
             200
         )
         
-        # Get active mechanics
-        success3, _ = self.run_test(
-            "Get Active Mechanics",
+        if success2 and isinstance(response2, list):
+            print(f"✅ Retrieved {len(response2)} mechanics")
+            # Find our created mechanic in the list
+            our_mechanic = next((m for m in response2 if m.get('id') == self.created_ids['mecanico']), None)
+            if our_mechanic:
+                print("✅ Created mechanic found in list")
+                print(f"   Mechanic data: {json.dumps(our_mechanic, indent=2, default=str)}")
+            else:
+                print("❌ Created mechanic not found in list")
+        
+        # Test 3: Get active mechanics
+        success3, response3 = self.run_test(
+            "GET /api/mecanicos/activos - Get Active Mechanics",
             "GET",
             "mecanicos/activos",
             200
         )
         
-        return success and success2 and success3
+        if success3 and isinstance(response3, list):
+            print(f"✅ Retrieved {len(response3)} active mechanics")
+            # Find our created mechanic in the active list
+            our_active_mechanic = next((m for m in response3 if m.get('id') == self.created_ids['mecanico']), None)
+            if our_active_mechanic:
+                print("✅ Created mechanic found in active list")
+            else:
+                print("❌ Created mechanic not found in active list")
+        
+        # Test 4: Update mechanic including whatsapp and estado fields
+        if self.created_ids['mecanico']:
+            update_data = {
+                "nombre": "Test Mechanic Backend Updated",
+                "especialidad": "motor",
+                "telefono": "0414-555.12.34",
+                "whatsapp": "0412-987.65.43",
+                "estado": "fuera_servicio",  # Change estado as requested
+                "activo": True
+            }
+            
+            print(f"📝 Updating mechanic with data: {json.dumps(update_data, indent=2)}")
+            success4, response4 = self.run_test(
+                "PUT /api/mecanicos/{id} - Update Mechanic with WhatsApp and Estado",
+                "PUT",
+                f"mecanicos/{self.created_ids['mecanico']}",
+                200,
+                data=update_data
+            )
+            
+            if success4 and isinstance(response4, dict):
+                print("✅ Mechanic updated successfully")
+                
+                # Verify updated fields
+                if response4.get('nombre') == update_data['nombre']:
+                    print("✅ Name updated correctly")
+                else:
+                    print(f"❌ Name update failed: expected {update_data['nombre']}, got {response4.get('nombre')}")
+                
+                if response4.get('whatsapp') == update_data['whatsapp']:
+                    print("✅ WhatsApp field updated correctly")
+                else:
+                    print(f"❌ WhatsApp update failed: expected {update_data['whatsapp']}, got {response4.get('whatsapp')}")
+                
+                if response4.get('estado') == update_data['estado']:
+                    print("✅ Estado field updated correctly to 'fuera_servicio'")
+                else:
+                    print(f"❌ Estado update failed: expected {update_data['estado']}, got {response4.get('estado')}")
+                
+                # Verify date format handling
+                if 'created_at' in response4:
+                    try:
+                        created_at = response4['created_at']
+                        if isinstance(created_at, str):
+                            # Try to parse the date
+                            datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                            print("✅ Date format handled correctly")
+                        else:
+                            print(f"✅ Date format: {type(created_at)} - {created_at}")
+                    except Exception as e:
+                        print(f"⚠️  Date format issue: {e}")
+                
+                print(f"📋 Updated mechanic data: {json.dumps(response4, indent=2, default=str)}")
+            else:
+                success4 = False
+        else:
+            success4 = False
+            print("❌ Cannot test update - no mechanic ID available")
+        
+        # Test 5: Verify the mechanic is still in active list after estado change
+        success5, response5 = self.run_test(
+            "GET /api/mecanicos/activos - Verify Active Status After Estado Change",
+            "GET",
+            "mecanicos/activos",
+            200
+        )
+        
+        if success5 and isinstance(response5, list):
+            our_updated_mechanic = next((m for m in response5 if m.get('id') == self.created_ids['mecanico']), None)
+            if our_updated_mechanic:
+                print("✅ Mechanic still appears in active list (activo=True maintained)")
+                if our_updated_mechanic.get('estado') == 'fuera_servicio':
+                    print("✅ Estado correctly shows 'fuera_servicio' in active list")
+                else:
+                    print(f"❌ Estado in active list: expected 'fuera_servicio', got {our_updated_mechanic.get('estado')}")
+            else:
+                print("❌ Updated mechanic not found in active list")
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4 and success5
+        
+        print(f"\n📊 MECHANIC TESTS SUMMARY:")
+        print(f"   ✅ Create with new fields: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Get all mechanics: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Get active mechanics: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Update with new fields: {'PASSED' if success4 else 'FAILED'}")
+        print(f"   ✅ Verify active status: {'PASSED' if success5 else 'FAILED'}")
+        
+        return all_tests_passed
 
     def test_servicio_operations(self):
         """Test service/parts operations"""
