@@ -101,3 +101,74 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: Completar mejoras en la sección de Mecánicos con formato de fechas y teléfonos (DD/MM/AAAA, 0000-000.00.00), campo WhatsApp, estados detallados (Disponible, Fuera de Servicio, Vacaciones), y corrección de subida de fotos para avatares.
+
+backend:
+  - task: "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
+    implemented: false
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Identificado que la ruta PUT no permite actualizar whatsapp ni estado, solo permite nombre, especialidad, telefono, activo, avatar"
+
+frontend:
+  - task: "Mostrar campo WhatsApp en tarjetas de mecánicos"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "La UI no muestra el campo WhatsApp en las tarjetas de mecánicos"
+
+  - task: "Actualizar UI para mostrar estado detallado en lugar de solo activo/inactivo"
+    implemented: false
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "La UI sigue mostrando estado basado en campo 'activo' en lugar del nuevo campo 'estado' con valores detallados"
+
+  - task: "Agregar controles para cambiar estado de mecánicos en la UI"
+    implemented: false
+    working: "NA"  
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Función cambiarEstadoMecanico existe pero no hay controles en la UI para usarla"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
+    - "Mostrar campo WhatsApp en tarjetas de mecánicos"
+    - "Actualizar UI para mostrar estado detallado en lugar de solo activo/inactivo"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Iniciando correcciones en la funcionalidad de mecánicos. Identificados problemas en backend (ruta PUT) y frontend (visualización de WhatsApp y estados detallados)"
