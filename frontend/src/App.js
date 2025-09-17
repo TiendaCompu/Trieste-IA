@@ -2119,6 +2119,10 @@ const Navigation = () => {
             <UserCheck className="w-4 h-4" />
             Mecánicos
           </Link>
+          <Link to="/servicios" className="hover:text-blue-300 flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            Servicios
+          </Link>
           <Link to="/vehiculos" className="hover:text-blue-300 flex items-center gap-2">
             <Car className="w-4 h-4" />
             Vehículos
