@@ -653,13 +653,21 @@ const OrdenDetalle = () => {
       setServiciosDisponibles(serviciosRes.data);
 
       // Cargar datos del vehículo y cliente
-      const [vehiculoRes, clienteRes] = await Promise.all([
-        axios.get(`${API}/vehiculos/${ordenData.vehiculo_id}`),
-        axios.get(`${API}/clientes/${ordenData.cliente_id}`)
-      ]);
+      try {
+        const vehiculoRes = await axios.get(`${API}/vehiculos/${ordenData.vehiculo_id}`);
+        setVehiculo(vehiculoRes.data);
+      } catch (vehiculoError) {
+        console.error('Error cargando vehículo:', vehiculoError);
+        toast.error(`Error cargando vehículo: ${vehiculoError.response?.data?.detail || vehiculoError.message}`);
+      }
 
-      setVehiculo(vehiculoRes.data);
-      setCliente(clienteRes.data);
+      try {
+        const clienteRes = await axios.get(`${API}/clientes/${ordenData.cliente_id}`);
+        setCliente(clienteRes.data);
+      } catch (clienteError) {
+        console.error('Error cargando cliente:', clienteError);
+        toast.error(`Error cargando cliente: ${clienteError.response?.data?.detail || clienteError.message}`);
+      }
     } catch (error) {
       console.error('Error cargando detalles:', error);
       toast.error('Error cargando los detalles de la orden');
