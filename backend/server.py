@@ -501,8 +501,8 @@ async def actualizar_mecanico(mecanico_id: str, datos: dict):
     if not mecanico:
         raise HTTPException(status_code=404, detail="Mecánico no encontrado")
     
-    # Campos permitidos para actualización
-    campos_permitidos = ["nombre", "especialidad", "telefono", "activo", "avatar"]
+    # Campos permitidos para actualización - incluye whatsapp y estado
+    campos_permitidos = ["nombre", "especialidad", "telefono", "whatsapp", "avatar", "estado", "activo"]
     datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
     datos_actualizacion = prepare_for_mongo(datos_actualizacion)
     
