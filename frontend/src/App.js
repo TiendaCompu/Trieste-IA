@@ -1954,13 +1954,16 @@ const VehiculoDetalle = () => {
       setVehiculo(vehiculoData);
       setDatosEdicion(vehiculoData);
 
-      const [clienteRes, historialRes] = await Promise.all([
+      const [clienteRes, historialRes, clientesRes] = await Promise.all([
         axios.get(`${API}/clientes/${vehiculoData.cliente_id}`),
-        axios.get(`${API}/vehiculos/${vehiculoId}/historial`)
+        axios.get(`${API}/vehiculos/${vehiculoId}/historial`),
+        axios.get(`${API}/clientes`)
       ]);
 
       setCliente(clienteRes.data);
+      setClienteEdicion(clienteRes.data);
       setOrdenesRecientes(historialRes.data.slice(0, 5));
+      setClientes(clientesRes.data);
     } catch (error) {
       console.error('Error cargando detalles del vehículo:', error);
       toast.error('Error cargando los detalles del vehículo');
