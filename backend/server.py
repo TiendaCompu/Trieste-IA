@@ -486,6 +486,23 @@ async def crear_mecanico(mecanico: MecanicoCreate):
     await db.mecanicos.insert_one(prepare_for_mongo(mecanico_obj.dict()))
     return mecanico_obj
 
+@api_router.put("/mecanicos/{mecanico_id}", response_model=MecanicoEspecialista)
+async def actualizar_mecanico(mecanico_id: str, datos: dict):
+    """Actualiza los datos de un mecánico"""
+    mecanico = await db.mecanicos.find_one({"id": mecanico_id})
+    if not mecanico:
+        raise HTTPException(status_code=404, detail="Mecánico no encontrado")
+    
+    # Campos permitidos para actualización
+    campos_permitidos = ["nombre", "especialidad", "telefono", "activo", "avatar"]
+    datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
+    datos_actualizacion = prepare_for_mongo(datos_actualizacion)
+    
+    await db.mecanicos.update_one({"id": mecanico_id}, {"$set": datos_actualizacion})
+    
+    mecanico_actualizado = await db.mecanicos.find_one({"id": mecanico_id})
+    return MecanicoEspecialista(**parse_from_mongo(mecanico_actualizado))
+
 @api_router.get("/mecanicos", response_model=List[MecanicoEspecialista])
 async def obtener_mecanicos():
     mecanicos = await db.mecanicos.find().to_list(1000)
