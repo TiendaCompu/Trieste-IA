@@ -2436,11 +2436,14 @@ const RegistroVehiculo = () => {
                   <h3 className="font-semibold mb-3">Información del Vehículo</h3>
                   <div className="space-y-2 text-sm">
                     <p><strong>Matrícula:</strong> {vehiculo.matricula}</p>
-                    {vehiculo.marca && <p><strong>Marca:</strong> {vehiculo.marca}</p>}
-                    {vehiculo.modelo && <p><strong>Modelo:</strong> {vehiculo.modelo}</p>}
+                    <p><strong>Marca:</strong> {vehiculo.marca}</p>
+                    <p><strong>Modelo:</strong> {vehiculo.modelo}</p>
                     {vehiculo.año && <p><strong>Año:</strong> {vehiculo.año}</p>}
                     {vehiculo.color && <p><strong>Color:</strong> {vehiculo.color}</p>}
                     {vehiculo.kilometraje && <p><strong>Kilometraje:</strong> {vehiculo.kilometraje.toLocaleString()} km</p>}
+                    {vehiculo.tipo_combustible && <p><strong>Combustible:</strong> {vehiculo.tipo_combustible}</p>}
+                    {vehiculo.serial_niv && <p><strong>N.I.V.:</strong> {vehiculo.serial_niv}</p>}
+                    {vehiculo.tara && <p><strong>Tara:</strong> {vehiculo.tara} kg</p>}
                   </div>
                 </div>
               </div>
