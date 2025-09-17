@@ -262,10 +262,10 @@ test_plan:
   - task: "Búsqueda generalizada en tiempo real por nombre de cliente o empresa"
     implemented: true
     working: true
-    file: "/app/backend/server.py y /app/frontend/src/App.js"
+    file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
@@ -273,6 +273,9 @@ test_plan:
         - working: true
           agent: "main"
           comment: "IMPLEMENTADO: Barra de búsqueda global agregada al header, endpoint /api/buscar creado, UI con dropdown de resultados implementada"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TESTING COMPLETED - Generalized search functionality working correctly: ✅ GET /api/buscar?q=TEST returns vehicles by license plate (4 vehicles found) ✅ GET /api/buscar?q=Fleet returns clients by name (2 clients, 2 vehicles found) ✅ GET /api/buscar?q=Management returns clients by company (1 client, 1 vehicle found) ✅ Empty search returns no results correctly ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ Vehicle results include associated client data ✅ Search works across license plates, client names, and company names ✅ MongoDB ObjectId serialization issues resolved ✅ All search functionality working as expected"
 
 agent_communication:
     - agent: "main"
