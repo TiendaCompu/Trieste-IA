@@ -662,6 +662,28 @@ async def actualizar_mecanico(mecanico_id: str, datos: dict):
     mecanico_actualizado = await db.mecanicos.find_one({"id": mecanico_id})
     return MecanicoEspecialista(**parse_from_mongo(mecanico_actualizado))
 
+@api_router.delete("/mecanicos/{mecanico_id}")
+async def eliminar_mecanico(mecanico_id: str):
+    """Elimina un mecánico"""
+    mecanico = await db.mecanicos.find_one({"id": mecanico_id})
+    if not mecanico:
+        raise HTTPException(status_code=404, detail="Mecánico no encontrado")
+    
+    # Verificar si el mecánico tiene órdenes asignadas
+    ordenes_activas = await db.ordenes_trabajo.count_documents({
+        "mecanico_id": mecanico_id,
+        "estado": {"$ne": "entregado"}
+    })
+    
+    if ordenes_activas > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No se puede eliminar el mecánico porque tiene {ordenes_activas} órdenes activas asignadas"
+        )
+    
+    await db.mecanicos.delete_one({"id": mecanico_id})
+    return {"message": "Mecánico eliminado correctamente"}
+
 @api_router.get("/mecanicos", response_model=List[MecanicoEspecialista])
 async def obtener_mecanicos():
     mecanicos = await db.mecanicos.find().to_list(1000)
