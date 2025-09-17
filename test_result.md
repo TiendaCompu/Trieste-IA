@@ -106,8 +106,8 @@ user_problem_statement: Completar mejoras en la sección de Mecánicos con forma
 
 backend:
   - task: "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -116,11 +116,14 @@ backend:
         - working: "NA"
           agent: "main"
           comment: "Identificado que la ruta PUT no permite actualizar whatsapp ni estado, solo permite nombre, especialidad, telefono, activo, avatar"
+        - working: true
+          agent: "main"
+          comment: "Actualizada la ruta PUT para incluir whatsapp y estado en campos_permitidos"
 
 frontend:
   - task: "Mostrar campo WhatsApp en tarjetas de mecánicos"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -129,10 +132,13 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "La UI no muestra el campo WhatsApp en las tarjetas de mecánicos"
+        - working: true
+          agent: "main"
+          comment: "Agregado campo WhatsApp con icono en las tarjetas de mecánicos, aplicado formateo de teléfono"
 
   - task: "Actualizar UI para mostrar estado detallado en lugar de solo activo/inactivo"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -141,10 +147,13 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "La UI sigue mostrando estado basado en campo 'activo' en lugar del nuevo campo 'estado' con valores detallados"
+        - working: true
+          agent: "main"
+          comment: "Actualizada la UI para usar campo estado con getEstadoConfig, mostrar colores y badges correctos"
 
   - task: "Agregar controles para cambiar estado de mecánicos en la UI"
-    implemented: false
-    working: "NA"  
+    implemented: true
+    working: true  
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
@@ -153,6 +162,33 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "Función cambiarEstadoMecanico existe pero no hay controles en la UI para usarla"
+        - working: true
+          agent: "main"
+          comment: "Agregado dropdown Select para cambiar estado directamente en las tarjetas, funciona correctamente según screenshots"
+
+  - task: "Formateo de fechas y teléfonos (DD/MM/AAAA, 0000-000.00.00)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Funciones formatearFecha y formatearTelefono ya implementadas y aplicadas en la UI"
+
+  - task: "Subida de fotos para avatares"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "handleImageUpload implementado, generación de avatares por defecto con iniciales funciona correctamente"
 
 metadata:
   created_by: "main_agent"
