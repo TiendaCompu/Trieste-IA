@@ -295,8 +295,14 @@ async def actualizar_vehiculo(vehiculo_id: str, datos: dict):
     if not vehiculo:
         raise HTTPException(status_code=404, detail="Vehículo no encontrado")
     
-    # Campos permitidos para actualización (sin matrícula)
-    campos_permitidos = ["marca", "modelo", "año", "color", "kilometraje"]
+    # Verificar que el nuevo cliente existe si se está cambiando
+    if "cliente_id" in datos and datos["cliente_id"] != vehiculo["cliente_id"]:
+        cliente = await db.clientes.find_one({"id": datos["cliente_id"]})
+        if not cliente:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    
+    # Campos permitidos para actualización (incluyendo cliente_id)
+    campos_permitidos = ["marca", "modelo", "año", "color", "kilometraje", "cliente_id"]
     datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
     datos_actualizacion = prepare_for_mongo(datos_actualizacion)
     
