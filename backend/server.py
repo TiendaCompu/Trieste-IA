@@ -496,6 +496,24 @@ async def obtener_mecanicos_activos():
     mecanicos = await db.mecanicos.find({"activo": True}).to_list(1000)
     return [MecanicoEspecialista(**parse_from_mongo(mecanico)) for mecanico in mecanicos]
 
+# Servicios y Repuestos Routes
+@api_router.post("/servicios-repuestos", response_model=ServicioRepuesto)
+async def crear_servicio_repuesto(item: ServicioRepuestoCreate):
+    item_dict = prepare_for_mongo(item.dict())
+    item_obj = ServicioRepuesto(**item_dict)
+    await db.servicios_repuestos.insert_one(prepare_for_mongo(item_obj.dict()))
+    return item_obj
+
+@api_router.get("/servicios-repuestos", response_model=List[ServicioRepuesto])
+async def obtener_servicios_repuestos():
+    items = await db.servicios_repuestos.find().to_list(1000)
+    return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
+
+@api_router.get("/servicios-repuestos/tipo/{tipo}", response_model=List[ServicioRepuesto])
+async def obtener_por_tipo(tipo: str):
+    items = await db.servicios_repuestos.find({"tipo": tipo}).to_list(1000)
+    return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
+
 # Actualizar servicio/repuesto
 @api_router.put("/servicios-repuestos/{item_id}", response_model=ServicioRepuesto)
 async def actualizar_servicio_repuesto(item_id: str, datos: dict):
@@ -536,16 +554,6 @@ async def eliminar_servicio_repuesto(item_id: str):
     
     await db.servicios_repuestos.delete_one({"id": item_id})
     return {"success": True, "item_eliminado": item["nombre"]}
-
-@api_router.get("/servicios-repuestos", response_model=List[ServicioRepuesto])
-async def obtener_servicios_repuestos():
-    items = await db.servicios_repuestos.find().to_list(1000)
-    return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
-
-@api_router.get("/servicios-repuestos/tipo/{tipo}", response_model=List[ServicioRepuesto])
-async def obtener_por_tipo(tipo: str):
-    items = await db.servicios_repuestos.find({"tipo": tipo}).to_list(1000)
-    return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
 
 # Órdenes de Trabajo Routes
 @api_router.post("/ordenes", response_model=OrdenTrabajo)
