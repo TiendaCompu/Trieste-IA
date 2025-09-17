@@ -613,8 +613,25 @@ async def crear_orden_trabajo(orden: OrdenTrabajoCreate):
     return orden_obj
 
 @api_router.get("/ordenes", response_model=List[OrdenTrabajo])
-async def obtener_ordenes_trabajo():
-    ordenes = await db.ordenes_trabajo.find().sort("created_at", -1).to_list(1000)
+async def obtener_ordenes_trabajo(estado: Optional[str] = None, filtro: Optional[str] = None):
+    """
+    Obtiene órdenes de trabajo con filtros opcionales
+    - estado: filtrar por estado específico
+    - filtro: 'activas' para estados no entregados, 'entregadas' para entregadas, 'todas' para todas
+    """
+    query = {}
+    
+    if estado:
+        query["estado"] = estado
+    elif filtro == "activas":
+        # Estados activos (no entregadas)
+        query["estado"] = {"$ne": "entregado"}
+    elif filtro == "entregadas":
+        # Solo órdenes entregadas
+        query["estado"] = "entregado"
+    # Si filtro es 'todas' o None, no agregar filtro
+    
+    ordenes = await db.ordenes_trabajo.find(query).sort("created_at", -1).to_list(1000)
     return [OrdenTrabajo(**parse_from_mongo(orden)) for orden in ordenes]
 
 @api_router.get("/ordenes/{orden_id}", response_model=OrdenTrabajo)
