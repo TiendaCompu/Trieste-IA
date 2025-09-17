@@ -96,15 +96,21 @@ class MecanicoEspecialista(BaseModel):
     nombre: str
     especialidad: str  # "motor", "transmision", "frenos", "electricidad", "suspension"
     telefono: Optional[str] = None
+    whatsapp: Optional[str] = None  # Número de WhatsApp
     avatar: Optional[str] = None  # URL o base64 de la imagen
-    activo: bool = True
+    estado: str = "disponible"  # "disponible", "fuera_servicio", "vacaciones", "inactivo"
+    activo: bool = True  # Para compatibilidad
+    ubicacion_actual: Optional[str] = None  # Para futuro control de asistencia
+    ultimo_acceso: Optional[datetime] = None  # Para control automático
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class MecanicoCreate(BaseModel):
     nombre: str
     especialidad: str
     telefono: Optional[str] = None
+    whatsapp: Optional[str] = None
     avatar: Optional[str] = None
+    estado: str = "disponible"
     activo: bool = True
 
 class ServicioRepuesto(BaseModel):
