@@ -1086,6 +1086,9 @@ const ServiciosRepuestos = () => {
     </div>
   );
 };
+
+// Gestión de Mecánicos
+const MecanicosList = () => {
   const [mecanicos, setMecanicos] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [nuevoMecanico, setNuevoMecanico] = useState({
