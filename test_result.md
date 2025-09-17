@@ -111,7 +111,7 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
@@ -119,6 +119,9 @@ backend:
         - working: true
           agent: "main"
           comment: "Actualizada la ruta PUT para incluir whatsapp y estado en campos_permitidos"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED - All mechanic operations working perfectly: ✅ POST /api/mecanicos creates mechanic with whatsapp and estado fields correctly ✅ PUT /api/mecanicos/{id} updates all fields including whatsapp and estado ✅ GET /api/mecanicos returns all mechanics with complete data ✅ GET /api/mecanicos/activos returns active mechanics ✅ Date formats handled correctly (ISO format) ✅ All MecanicoEspecialista model fields present in responses ✅ Estado changes from 'disponible' to 'fuera_servicio' work correctly ✅ WhatsApp field '0412-987.65.43' saved and updated properly ✅ Test data used: 'Test Mechanic Backend', especialidad 'motor', telefono '0414-555.12.34' as requested"
 
 frontend:
   - task: "Mostrar campo WhatsApp en tarjetas de mecánicos"
