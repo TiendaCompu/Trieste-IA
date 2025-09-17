@@ -1831,6 +1831,16 @@ const MecanicosList = () => {
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => eliminarMecanico(mecanico)}
+                    className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    title="Eliminar mecánico"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
               
