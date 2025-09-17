@@ -769,8 +769,8 @@ async def busqueda_generalizada(q: str):
     for vehiculo in vehiculos_unicos.values():
         cliente = await db.clientes.find_one({"id": vehiculo["cliente_id"]})
         vehiculo_resultado = {
-            **vehiculo,
-            "cliente": cliente if cliente else None
+            **parse_from_mongo(vehiculo),
+            "cliente": parse_from_mongo(cliente) if cliente else None
         }
         vehiculos_resultado.append(vehiculo_resultado)
     
