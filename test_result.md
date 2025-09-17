@@ -276,54 +276,75 @@ test_plan:
 
   - task: "Modelos Cliente y Vehículo actualizados para facturación venezolana"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Cliente: campos fiscales (CI/RIF, dirección fiscal, email). Vehículo: combustible, N.I.V., tara, fotografía"
+        - working: true
+          agent: "testing"
+          comment: "✅ CRITICAL TESTING COMPLETED - Venezuelan billing models working perfectly: ✅ POST /api/clientes creates client with ALL fiscal fields (tipo_documento, prefijo_documento, numero_documento, telefono, telefono_secundario, direccion_fiscal, empresa, email) ✅ POST /api/vehiculos creates vehicle with ALL technical fields (tipo_combustible, serial_niv, tara, foto_vehiculo) ✅ UPPERCASE conversion working correctly for all text fields (nombre, empresa, direccion_fiscal, matricula, marca, modelo, color, tipo_combustible, serial_niv) ✅ Numeric fields preserved correctly (año, kilometraje, tara) ✅ Test data: Client 'juan carlos perez' → 'JUAN CARLOS PEREZ', Vehicle 'test999' → 'TEST999' ✅ All Venezuelan requirements implemented correctly"
 
   - task: "Sistema de tasa de cambio manual"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Modelo TasaCambio y endpoints para crear/obtener tasa actual y historial"
+        - working: true
+          agent: "testing"
+          comment: "✅ EXCHANGE RATE SYSTEM TESTING COMPLETED - All functionality working perfectly: ✅ POST /api/tasa-cambio creates exchange rate (36.50 Bs/USD) and marks as active ✅ GET /api/tasa-cambio/actual retrieves current active rate correctly ✅ GET /api/tasa-cambio/historial returns complete history ✅ Previous rates automatically deactivated when new rate created ✅ Rate validation and persistence working correctly ✅ All exchange rate management functionality operational"
 
   - task: "Sistema de presupuestos en USD con IVA 16%"
     implemented: true
-    working: "NA" 
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Modelo Presupuesto con items, cálculos automáticos, estados (pendiente/aprobado/rechazado)"
+        - working: true
+          agent: "testing"
+          comment: "✅ BUDGET SYSTEM WITH IVA 16% TESTING COMPLETED - All calculations working perfectly: ✅ POST /api/presupuestos creates budget with automatic calculations (Subtotal: $65.00, IVA 16%: $10.40, Total: $75.40) ✅ Budget number format correct (P-2024-001) ✅ GET /api/presupuestos retrieves all budgets ✅ PUT /api/presupuestos/{id}/aprobar approves budget successfully ✅ Items structure with tipo, descripcion, cantidad, precio_unitario_usd working correctly ✅ All budget management and IVA calculations operational"
 
   - task: "Sistema de facturación en Bs con IGTF 3%"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py" 
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Modelo Factura con conversión USD→Bs, IGTF para pagos USD, múltiples métodos de pago"
         - working: true
           agent: "testing"
-          comment: "✅ COMPREHENSIVE TESTING COMPLETED - Generalized search functionality working correctly: ✅ GET /api/buscar?q=TEST returns vehicles by license plate (4 vehicles found) ✅ GET /api/buscar?q=Fleet returns clients by name (2 clients, 2 vehicles found) ✅ GET /api/buscar?q=Management returns clients by company (1 client, 1 vehicle found) ✅ Empty search returns no results correctly ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ Vehicle results include associated client data ✅ Search works across license plates, client names, and company names ✅ MongoDB ObjectId serialization issues resolved ✅ All search functionality working as expected"
+          comment: "✅ INVOICE SYSTEM WITH IGTF 3% TESTING COMPLETED - All functionality working perfectly: ✅ POST /api/facturas creates invoice from approved budget with currency conversion ($75.40 USD → Bs. 2,752.10 at 36.5 rate) ✅ Invoice number format correct (FAC-2024-001) ✅ Vehicle data properly included in invoice ✅ POST /api/facturas/{id}/pagos registers USD payment and triggers IGTF 3% calculation ($2.26 IGTF on $75.40) ✅ GET /api/facturas retrieves all invoices with IGTF applied correctly ✅ Payment processing and balance calculation working (remaining: Bs. 1,739.66) ✅ All Venezuelan billing requirements fully operational"
+
+  - task: "Búsquedas funcionando correctamente"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ SEARCH FUNCTIONALITY TESTING COMPLETED - All search operations working perfectly: ✅ GET /api/buscar?q=TEST finds vehicles by license plate (TEST999 found) ✅ GET /api/buscar?q=JUAN finds clients by name (JUAN CARLOS PEREZ found) ✅ GET /api/buscar?q=EMPRESA finds clients by company (EMPRESA DE PRUEBA found) ✅ Vehicle-client relationships working correctly in search results ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ UPPERCASE conversion working in search (test999 → TEST999) ✅ All search functionality operational and finding records correctly"
 
 agent_communication:
     - agent: "main"
