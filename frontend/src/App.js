@@ -40,6 +40,32 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Funciones de formateo globales
+const formatearFecha = (fecha) => {
+  if (!fecha) return '';
+  const date = new Date(fecha);
+  const dia = date.getDate().toString().padStart(2, '0');
+  const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+  const año = date.getFullYear();
+  return `${dia}/${mes}/${año}`;
+};
+
+const formatearTelefono = (telefono) => {
+  if (!telefono) return '';
+  // Remover caracteres no numéricos
+  const numeros = telefono.replace(/\D/g, '');
+  // Formatear como 0000-000.00.00
+  if (numeros.length >= 11) {
+    return `${numeros.slice(0, 4)}-${numeros.slice(4, 7)}.${numeros.slice(7, 9)}.${numeros.slice(9, 11)}`;
+  }
+  return telefono;
+};
+
+const validarTelefono = (telefono) => {
+  const numeros = telefono.replace(/\D/g, '');
+  return numeros.length >= 10 && numeros.length <= 11;
+};
+
 // Búsqueda Principal por Matrícula
 const BusquedaMatricula = () => {
   const [matricula, setMatricula] = useState('');
