@@ -1974,20 +1974,51 @@ const VehiculoDetalle = () => {
 
   const guardarEdicion = async () => {
     try {
+      // Guardar cambios del vehículo
       await axios.put(`${API}/vehiculos/${vehiculoId}`, {
         marca: datosEdicion.marca,
         modelo: datosEdicion.modelo,
         año: datosEdicion.año ? parseInt(datosEdicion.año) : null,
         color: datosEdicion.color,
-        kilometraje: datosEdicion.kilometraje ? parseInt(datosEdicion.kilometraje) : null
+        kilometraje: datosEdicion.kilometraje ? parseInt(datosEdicion.kilometraje) : null,
+        cliente_id: clienteEdicion.id // Permitir cambio de propietario
       });
       
-      setVehiculo({...vehiculo, ...datosEdicion});
+      // Guardar cambios del cliente si se modificó
+      if (clienteEdicion.id === cliente.id) {
+        await axios.put(`${API}/clientes/${clienteEdicion.id}`, {
+          nombre: clienteEdicion.nombre,
+          telefono: clienteEdicion.telefono,
+          empresa: clienteEdicion.empresa,
+          email: clienteEdicion.email
+        });
+      }
+      
+      setVehiculo({...vehiculo, ...datosEdicion, cliente_id: clienteEdicion.id});
+      setCliente(clienteEdicion);
       setMostrarEdicion(false);
-      toast.success('Datos del vehículo actualizados');
+      toast.success('Datos actualizados correctamente');
     } catch (error) {
-      console.error('Error actualizando vehículo:', error);
+      console.error('Error actualizando datos:', error);
       toast.error('Error al actualizar los datos');
+    }
+  };
+
+  const crearNuevoCliente = async () => {
+    try {
+      const response = await axios.post(`${API}/clientes`, nuevoCliente);
+      const clienteCreado = response.data;
+      
+      // Agregar a la lista de clientes y seleccionarlo
+      setClientes(prev => [...prev, clienteCreado]);
+      setClienteEdicion(clienteCreado);
+      setNuevoCliente({ nombre: '', telefono: '', empresa: '', email: '' });
+      setCreandoNuevoCliente(false);
+      
+      toast.success('Cliente creado y asignado correctamente');
+    } catch (error) {
+      console.error('Error creando cliente:', error);
+      toast.error('Error al crear el cliente');
     }
   };
 
