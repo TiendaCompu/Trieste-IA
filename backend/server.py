@@ -672,6 +672,45 @@ async def obtener_historial_vehiculo(vehiculo_id: str):
     ordenes = await db.ordenes_trabajo.find({"vehiculo_id": vehiculo_id}).sort("created_at", -1).to_list(1000)
     return [OrdenTrabajo(**parse_from_mongo(orden)) for orden in ordenes]
 
+# Historial de Kilometraje Routes
+@api_router.post("/vehiculos/{vehiculo_id}/actualizar-kilometraje", response_model=HistorialKilometraje)
+async def actualizar_kilometraje_vehiculo(vehiculo_id: str, datos: HistorialKilometrajeCreate):
+    """Actualiza el kilometraje del vehículo y guarda historial"""
+    # Verificar que el vehículo existe
+    vehiculo = await db.vehiculos.find_one({"id": vehiculo_id})
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+    
+    # Validar que el nuevo kilometraje no sea inferior al anterior
+    kilometraje_actual = vehiculo.get("kilometraje", 0)
+    if datos.kilometraje_nuevo < kilometraje_actual:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"El kilometraje nuevo ({datos.kilometraje_nuevo}) no puede ser inferior al actual ({kilometraje_actual})"
+        )
+    
+    # Crear registro de historial
+    historial_data = datos.dict()
+    historial_data["kilometraje_anterior"] = kilometraje_actual
+    historial_obj = HistorialKilometraje(**historial_data)
+    
+    # Guardar historial en base de datos
+    await db.historial_kilometraje.insert_one(prepare_for_mongo(historial_obj.dict()))
+    
+    # Actualizar kilometraje del vehículo
+    await db.vehiculos.update_one(
+        {"id": vehiculo_id}, 
+        {"$set": {"kilometraje": datos.kilometraje_nuevo}}
+    )
+    
+    return historial_obj
+
+@api_router.get("/vehiculos/{vehiculo_id}/historial-kilometraje", response_model=List[HistorialKilometraje])
+async def obtener_historial_kilometraje(vehiculo_id: str):
+    """Obtiene el historial de kilometraje de un vehículo"""
+    historial = await db.historial_kilometraje.find({"vehiculo_id": vehiculo_id}).sort("fecha_actualizacion", -1).to_list(1000)
+    return [HistorialKilometraje(**parse_from_mongo(item)) for item in historial]
+
 # Test route
 @api_router.get("/")
 async def root():
