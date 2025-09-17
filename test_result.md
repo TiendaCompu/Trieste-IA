@@ -286,6 +286,8 @@ agent_communication:
       message: "NUEVAS FUNCIONALIDADES SOLICITADAS: 1) Detección matrícula existente con modal entrada al taller y historial kilometraje, 2) Filtrado órdenes (Dashboard solo activas, pestaña Historial), 3) Búsqueda generalizada tiempo real por nombre/empresa. Comenzando implementación."
     - agent: "main"
       message: "TODAS LAS NUEVAS FUNCIONALIDADES IMPLEMENTADAS Y FUNCIONANDO: ✅ Modal entrada al taller con actualización kilometraje ✅ Órdenes con pestañas Activas/Historial ✅ Búsqueda globalizada en header ✅ Backend endpoints creados ✅ Screenshots confirman funcionalidad. Listo para testing backend."
+    - agent: "main"
+      message: "INICIANDO SISTEMA DE FACTURACIÓN VENEZOLANO: ✅ Modelos Cliente y Vehículo actualizados con campos fiscales ✅ Sistema tasa de cambio implementado ✅ Modelos Presupuesto y Factura creados ✅ Endpoints para presupuestos, facturas y pagos ✅ Cálculos IVA 16% e IGTF 3% ✅ Múltiples monedas y métodos de pago"
     - agent: "testing"
       message: "BACKEND TESTING COMPLETED SUCCESSFULLY - All mechanic functionality working perfectly. Comprehensive tests performed on all 4 required endpoints with exact test data requested. All CRUD operations for mechanics including whatsapp and estado fields are functioning correctly. Date formats handled properly. No critical issues found. Backend implementation is solid and ready for production use."
     - agent: "testing"
