@@ -742,7 +742,7 @@ async def busqueda_generalizada(q: str):
         vehiculos_cursor = db.vehiculos.find({
             "matricula": {"$regex": q, "$options": "i"}
         }).limit(10)
-        vehiculos = await vehiculos_cursor.to_list(length=10)
+        vehiculos_raw = await vehiculos_cursor.to_list(length=10)
         
         # Buscar clientes por nombre o empresa
         clientes_cursor = db.clientes.find({
@@ -751,57 +751,54 @@ async def busqueda_generalizada(q: str):
                 {"empresa": {"$regex": q, "$options": "i"}}
             ]
         }).limit(10)
-        clientes = await clientes_cursor.to_list(length=10)
+        clientes_raw = await clientes_cursor.to_list(length=10)
         
         # Para cada cliente encontrado, buscar sus vehículos
         vehiculos_por_cliente = []
-        for cliente in clientes:
+        for cliente in clientes_raw:
             vehiculos_cliente = await db.vehiculos.find({"cliente_id": cliente["id"]}).to_list(1000)
             vehiculos_por_cliente.extend(vehiculos_cliente)
         
         # Combinar y eliminar duplicados
-        todos_vehiculos = vehiculos + vehiculos_por_cliente
+        todos_vehiculos = vehiculos_raw + vehiculos_por_cliente
         vehiculos_unicos = {}
         for vehiculo in todos_vehiculos:
             vehiculos_unicos[vehiculo["id"]] = vehiculo
         
-        # Enriquecer vehículos con datos del cliente y parsear correctamente
+        # Convertir a modelos Pydantic para serialización correcta
         vehiculos_resultado = []
-        for vehiculo in vehiculos_unicos.values():
+        for vehiculo_raw in vehiculos_unicos.values():
             try:
-                cliente = await db.clientes.find_one({"id": vehiculo["cliente_id"]})
+                # Crear objeto Vehiculo usando Pydantic
+                vehiculo_obj = Vehiculo(**parse_from_mongo(vehiculo_raw))
                 
-                # Parse vehicle data
-                vehiculo_parsed = parse_from_mongo(vehiculo.copy())
+                # Buscar cliente asociado
+                cliente_raw = await db.clientes.find_one({"id": vehiculo_raw["cliente_id"]})
+                cliente_obj = None
+                if cliente_raw:
+                    cliente_obj = Cliente(**parse_from_mongo(cliente_raw))
                 
-                # Parse client data if exists
-                cliente_parsed = None
-                if cliente:
-                    cliente_parsed = parse_from_mongo(cliente.copy())
+                # Crear respuesta con cliente incluido
+                vehiculo_dict = vehiculo_obj.dict()
+                vehiculo_dict["cliente"] = cliente_obj.dict() if cliente_obj else None
                 
-                vehiculo_resultado = {
-                    **vehiculo_parsed,
-                    "cliente": cliente_parsed
-                }
-                vehiculos_resultado.append(vehiculo_resultado)
+                vehiculos_resultado.append(vehiculo_dict)
             except Exception as e:
-                # Skip problematic vehicles but continue processing
-                print(f"Error processing vehicle {vehiculo.get('id', 'unknown')}: {e}")
+                print(f"Error processing vehicle {vehiculo_raw.get('id', 'unknown')}: {e}")
                 continue
         
-        # Parse clients data
+        # Convertir clientes a modelos Pydantic
         clientes_resultado = []
-        for cliente in clientes:
+        for cliente_raw in clientes_raw:
             try:
-                cliente_parsed = parse_from_mongo(cliente.copy())
-                clientes_resultado.append(cliente_parsed)
+                cliente_obj = Cliente(**parse_from_mongo(cliente_raw))
+                clientes_resultado.append(cliente_obj.dict())
             except Exception as e:
-                # Skip problematic clients but continue processing
-                print(f"Error processing client {cliente.get('id', 'unknown')}: {e}")
+                print(f"Error processing client {cliente_raw.get('id', 'unknown')}: {e}")
                 continue
         
         return {
-            "vehiculos": vehiculos_resultado[:10],  # Limitar a 10 resultados
+            "vehiculos": vehiculos_resultado[:10],
             "clientes": clientes_resultado[:10]
         }
         
