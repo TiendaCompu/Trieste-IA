@@ -251,6 +251,23 @@ async def crear_cliente(cliente: ClienteCreate):
     await db.clientes.insert_one(prepare_for_mongo(cliente_obj.dict()))
     return cliente_obj
 
+@api_router.put("/clientes/{cliente_id}", response_model=Cliente)
+async def actualizar_cliente(cliente_id: str, datos: dict):
+    """Actualiza los datos de un cliente"""
+    cliente = await db.clientes.find_one({"id": cliente_id})
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    
+    # Campos permitidos para actualización
+    campos_permitidos = ["nombre", "telefono", "empresa", "email"]
+    datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
+    datos_actualizacion = prepare_for_mongo(datos_actualizacion)
+    
+    await db.clientes.update_one({"id": cliente_id}, {"$set": datos_actualizacion})
+    
+    cliente_actualizado = await db.clientes.find_one({"id": cliente_id})
+    return Cliente(**parse_from_mongo(cliente_actualizado))
+
 @api_router.get("/clientes", response_model=List[Cliente])
 async def obtener_clientes():
     clientes = await db.clientes.find().to_list(1000)
