@@ -598,30 +598,29 @@ async def limpiar_matriculas_duplicadas():
 # Vehículo Routes
 @api_router.post("/vehiculos", response_model=Vehiculo)
 async def crear_vehiculo(vehiculo: VehiculoCreate):
+    # Convertir a mayúsculas
+    vehiculo_dict = convert_to_uppercase(vehiculo.dict())
+    
     # Verificar que el cliente existe
     cliente = await db.clientes.find_one({"id": vehiculo.cliente_id})
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     
-    # Normalizar matrícula a mayúsculas y validar formato
-    matricula_normalizada = vehiculo.matricula.upper().strip()
-    
     # Validar formato de matrícula (4-7 caracteres alfanuméricos)
     import re
-    if not re.match(r'^[A-Z0-9]{4,7}$', matricula_normalizada):
+    if not re.match(r'^[A-Z0-9]{4,7}$', vehiculo_dict["matricula"]):
         raise HTTPException(
             status_code=400, 
             detail="Matrícula inválida. Debe tener 4-7 caracteres alfanuméricos sin símbolos"
         )
     
     # Verificar que la matrícula no existe
-    vehiculo_existente = await db.vehiculos.find_one({"matricula": matricula_normalizada})
+    vehiculo_existente = await db.vehiculos.find_one({"matricula": vehiculo_dict["matricula"]})
     if vehiculo_existente:
         raise HTTPException(status_code=400, detail="Esta matrícula ya está registrada")
     
-    # Crear vehículo con matrícula normalizada
-    vehiculo_dict = prepare_for_mongo(vehiculo.dict())
-    vehiculo_dict["matricula"] = matricula_normalizada
+    # Crear vehículo
+    vehiculo_dict = prepare_for_mongo(vehiculo_dict)
     vehiculo_obj = Vehiculo(**vehiculo_dict)
     await db.vehiculos.insert_one(prepare_for_mongo(vehiculo_obj.dict()))
     return vehiculo_obj
