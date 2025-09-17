@@ -2162,68 +2162,211 @@ const VehiculoDetalle = () => {
       
       {/* Modal de Edición */}
       <Dialog open={mostrarEdicion} onOpenChange={setMostrarEdicion}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar Datos del Vehículo</DialogTitle>
+            <DialogTitle>Editar Vehículo y Propietario</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Marca</label>
-                <Input
-                  value={datosEdicion.marca || ''}
-                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, marca: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Modelo</label>
-                <Input
-                  value={datosEdicion.modelo || ''}
-                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, modelo: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Año</label>
-                <Input
-                  type="number"
-                  value={datosEdicion.año || ''}
-                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, año: e.target.value }))}
-                  min="1950"
-                  max="2030"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Color</label>
-                <Input
-                  value={datosEdicion.color || ''}
-                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, color: e.target.value }))}
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium mb-2">Kilometraje</label>
-                <Input
-                  type="number"
-                  value={datosEdicion.kilometraje || ''}
-                  onChange={(e) => setDatosEdicion(prev => ({ ...prev, kilometraje: e.target.value }))}
-                />
-              </div>
-            </div>
+          
+          <Tabs defaultValue="vehiculo" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="vehiculo">Datos del Vehículo</TabsTrigger>
+              <TabsTrigger value="propietario">Propietario</TabsTrigger>
+            </TabsList>
             
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>Nota:</strong> La matrícula no se puede modificar desde aquí. 
-                Use la función "Cambiar Matrícula" para casos especiales.
-              </p>
-            </div>
+            <TabsContent value="vehiculo" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Marca</label>
+                  <Input
+                    value={datosEdicion.marca || ''}
+                    onChange={(e) => setDatosEdicion(prev => ({ ...prev, marca: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Modelo</label>
+                  <Input
+                    value={datosEdicion.modelo || ''}
+                    onChange={(e) => setDatosEdicion(prev => ({ ...prev, modelo: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Año</label>
+                  <Input
+                    type="number"
+                    value={datosEdicion.año || ''}
+                    onChange={(e) => setDatosEdicion(prev => ({ ...prev, año: e.target.value }))}
+                    min="1950"
+                    max="2030"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color</label>
+                  <Input
+                    value={datosEdicion.color || ''}
+                    onChange={(e) => setDatosEdicion(prev => ({ ...prev, color: e.target.value }))}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-2">Kilometraje</label>
+                  <Input
+                    type="number"
+                    value={datosEdicion.kilometraje || ''}
+                    onChange={(e) => setDatosEdicion(prev => ({ ...prev, kilometraje: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  <strong>Matrícula:</strong> {vehiculo.matricula} 
+                  <span className="text-gray-500 ml-2">(Use "Cambiar Matrícula" para modificar)</span>
+                </p>
+              </div>
+            </TabsContent>
             
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setMostrarEdicion(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={guardarEdicion}>
-                Guardar Cambios
-              </Button>
-            </div>
+            <TabsContent value="propietario" className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Propietario del Vehículo</h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCreandoNuevoCliente(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Nuevo Cliente
+                  </Button>
+                </div>
+              </div>
+
+              {!creandoNuevoCliente ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Seleccionar Cliente</label>
+                    <Select 
+                      value={clienteEdicion.id}
+                      onValueChange={(value) => {
+                        const clienteSeleccionado = clientes.find(c => c.id === value);
+                        if (clienteSeleccionado) {
+                          setClienteEdicion(clienteSeleccionado);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cliente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clientes.map((cli) => (
+                          <SelectItem key={cli.id} value={cli.id}>
+                            {cli.empresa ? `${cli.empresa} - ${cli.nombre}` : cli.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Datos del Cliente</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Nombre *</label>
+                        <Input
+                          value={clienteEdicion.nombre || ''}
+                          onChange={(e) => setClienteEdicion(prev => ({ ...prev, nombre: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Teléfono</label>
+                        <Input
+                          value={clienteEdicion.telefono || ''}
+                          onChange={(e) => setClienteEdicion(prev => ({ ...prev, telefono: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Empresa</label>
+                        <Input
+                          value={clienteEdicion.empresa || ''}
+                          onChange={(e) => setClienteEdicion(prev => ({ ...prev, empresa: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Email</label>
+                        <Input
+                          type="email"
+                          value={clienteEdicion.email || ''}
+                          onChange={(e) => setClienteEdicion(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="border p-4 rounded-lg bg-blue-50">
+                  <h4 className="font-medium mb-3">Crear Nuevo Cliente</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Nombre *</label>
+                      <Input
+                        value={nuevoCliente.nombre}
+                        onChange={(e) => setNuevoCliente(prev => ({ ...prev, nombre: e.target.value }))}
+                        placeholder="Nombre completo"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Teléfono</label>
+                      <Input
+                        value={nuevoCliente.telefono}
+                        onChange={(e) => setNuevoCliente(prev => ({ ...prev, telefono: e.target.value }))}
+                        placeholder="Número de teléfono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Empresa</label>
+                      <Input
+                        value={nuevoCliente.empresa}
+                        onChange={(e) => setNuevoCliente(prev => ({ ...prev, empresa: e.target.value }))}
+                        placeholder="Nombre de la empresa"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Email</label>
+                      <Input
+                        type="email"
+                        value={nuevoCliente.email}
+                        onChange={(e) => setNuevoCliente(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="Correo electrónico"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setCreandoNuevoCliente(false);
+                        setNuevoCliente({ nombre: '', telefono: '', empresa: '', email: '' });
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={crearNuevoCliente}
+                      disabled={!nuevoCliente.nombre}
+                    >
+                      Crear y Asignar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+          
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={() => setMostrarEdicion(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={guardarEdicion}>
+              Guardar Todos los Cambios
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
