@@ -977,6 +977,15 @@ def main():
     # Dashboard
     test_results.append(("Dashboard Operations", tester.test_dashboard_operations()))
     
+    # NEW FUNCTIONALITY TESTS (Priority Focus)
+    print("\n" + "🆕" * 20)
+    print("TESTING NEW FUNCTIONALITIES - PRIORITY FOCUS")
+    print("🆕" * 20)
+    
+    test_results.append(("🆕 Historial Kilometraje", tester.test_historial_kilometraje()))
+    test_results.append(("🆕 Búsqueda Generalizada", tester.test_busqueda_generalizada()))
+    test_results.append(("🆕 Filtrado de Órdenes", tester.test_filtrado_ordenes()))
+    
     # Print final results
     print("\n" + "="*60)
     print("FINAL TEST RESULTS")
@@ -984,9 +993,15 @@ def main():
     
     for test_name, result in test_results:
         status = "✅ PASSED" if result else "❌ FAILED"
-        print(f"{test_name:<25} {status}")
+        print(f"{test_name:<30} {status}")
     
     print(f"\n📊 Overall Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    # Special focus on new functionality results
+    new_functionality_results = test_results[-3:]  # Last 3 are the new ones
+    new_passed = sum(1 for _, result in new_functionality_results if result)
+    
+    print(f"\n🆕 NEW FUNCTIONALITY Results: {new_passed}/3 new features passed")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
