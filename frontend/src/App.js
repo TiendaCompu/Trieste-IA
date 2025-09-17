@@ -1897,12 +1897,19 @@ const RegistroVehiculo = () => {
   const [modoCreacionDirecta, setModoCreacionDirecta] = useState(false);
 
   useEffect(() => {
+    // Cargar matrícula predefinida si viene del Dashboard
+    if (location.state?.matricula_predefinida) {
+      setVehiculo(prev => ({ 
+        ...prev, 
+        matricula: location.state.matricula_predefinida.toUpperCase() 
+      }));
+      toast.info(`Registro iniciado para matrícula: ${location.state.matricula_predefinida}`);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     // Verificar si viene de búsqueda con datos predefinidos
     if (location.state) {
-      if (location.state.matricula_predefinida) {
-        setVehiculo(prev => ({ ...prev, matricula: location.state.matricula_predefinida }));
-      }
-      
       if (location.state.vehiculo_existente && location.state.cliente_existente) {
         setVehiculo(location.state.vehiculo_existente);
         setCliente(location.state.cliente_existente);
