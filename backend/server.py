@@ -737,47 +737,77 @@ async def busqueda_generalizada(q: str):
     
     q = q.strip().upper()
     
-    # Buscar vehículos por matrícula
-    vehiculos_cursor = db.vehiculos.find({
-        "matricula": {"$regex": q, "$options": "i"}
-    }).limit(10)
-    vehiculos = await vehiculos_cursor.to_list(length=10)
-    
-    # Buscar clientes por nombre o empresa
-    clientes_cursor = db.clientes.find({
-        "$or": [
-            {"nombre": {"$regex": q, "$options": "i"}},
-            {"empresa": {"$regex": q, "$options": "i"}}
-        ]
-    }).limit(10)
-    clientes = await clientes_cursor.to_list(length=10)
-    
-    # Para cada cliente encontrado, buscar sus vehículos
-    vehiculos_por_cliente = []
-    for cliente in clientes:
-        vehiculos_cliente = await db.vehiculos.find({"cliente_id": cliente["id"]}).to_list(1000)
-        vehiculos_por_cliente.extend(vehiculos_cliente)
-    
-    # Combinar y eliminar duplicados
-    todos_vehiculos = vehiculos + vehiculos_por_cliente
-    vehiculos_unicos = {}
-    for vehiculo in todos_vehiculos:
-        vehiculos_unicos[vehiculo["id"]] = vehiculo
-    
-    # Enriquecer vehículos con datos del cliente
-    vehiculos_resultado = []
-    for vehiculo in vehiculos_unicos.values():
-        cliente = await db.clientes.find_one({"id": vehiculo["cliente_id"]})
-        vehiculo_resultado = {
-            **parse_from_mongo(vehiculo),
-            "cliente": parse_from_mongo(cliente) if cliente else None
+    try:
+        # Buscar vehículos por matrícula
+        vehiculos_cursor = db.vehiculos.find({
+            "matricula": {"$regex": q, "$options": "i"}
+        }).limit(10)
+        vehiculos = await vehiculos_cursor.to_list(length=10)
+        
+        # Buscar clientes por nombre o empresa
+        clientes_cursor = db.clientes.find({
+            "$or": [
+                {"nombre": {"$regex": q, "$options": "i"}},
+                {"empresa": {"$regex": q, "$options": "i"}}
+            ]
+        }).limit(10)
+        clientes = await clientes_cursor.to_list(length=10)
+        
+        # Para cada cliente encontrado, buscar sus vehículos
+        vehiculos_por_cliente = []
+        for cliente in clientes:
+            vehiculos_cliente = await db.vehiculos.find({"cliente_id": cliente["id"]}).to_list(1000)
+            vehiculos_por_cliente.extend(vehiculos_cliente)
+        
+        # Combinar y eliminar duplicados
+        todos_vehiculos = vehiculos + vehiculos_por_cliente
+        vehiculos_unicos = {}
+        for vehiculo in todos_vehiculos:
+            vehiculos_unicos[vehiculo["id"]] = vehiculo
+        
+        # Enriquecer vehículos con datos del cliente y parsear correctamente
+        vehiculos_resultado = []
+        for vehiculo in vehiculos_unicos.values():
+            try:
+                cliente = await db.clientes.find_one({"id": vehiculo["cliente_id"]})
+                
+                # Parse vehicle data
+                vehiculo_parsed = parse_from_mongo(vehiculo.copy())
+                
+                # Parse client data if exists
+                cliente_parsed = None
+                if cliente:
+                    cliente_parsed = parse_from_mongo(cliente.copy())
+                
+                vehiculo_resultado = {
+                    **vehiculo_parsed,
+                    "cliente": cliente_parsed
+                }
+                vehiculos_resultado.append(vehiculo_resultado)
+            except Exception as e:
+                # Skip problematic vehicles but continue processing
+                print(f"Error processing vehicle {vehiculo.get('id', 'unknown')}: {e}")
+                continue
+        
+        # Parse clients data
+        clientes_resultado = []
+        for cliente in clientes:
+            try:
+                cliente_parsed = parse_from_mongo(cliente.copy())
+                clientes_resultado.append(cliente_parsed)
+            except Exception as e:
+                # Skip problematic clients but continue processing
+                print(f"Error processing client {cliente.get('id', 'unknown')}: {e}")
+                continue
+        
+        return {
+            "vehiculos": vehiculos_resultado[:10],  # Limitar a 10 resultados
+            "clientes": clientes_resultado[:10]
         }
-        vehiculos_resultado.append(vehiculo_resultado)
-    
-    return {
-        "vehiculos": vehiculos_resultado[:10],  # Limitar a 10 resultados
-        "clientes": [Cliente(**parse_from_mongo(cliente)) for cliente in clientes]
-    }
+        
+    except Exception as e:
+        print(f"Error in search: {e}")
+        return {"vehiculos": [], "clientes": []}
 
 # Test route
 @api_router.get("/")
