@@ -1566,6 +1566,23 @@ const MecanicosList = () => {
     setMostrarFormulario(true);
   };
 
+  const eliminarMecanico = async (mecanico) => {
+    const confirmar = window.confirm(
+      `¿Está seguro de que desea eliminar al mecánico "${mecanico.nombre}"?\n\nEsta acción no se puede deshacer.`
+    );
+    
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`${API}/mecanicos/${mecanico.id}`);
+      toast.success('Mecánico eliminado correctamente');
+      cargarMecanicos();
+    } catch (error) {
+      console.error('Error eliminando mecánico:', error);
+      toast.error('Error eliminando el mecánico');
+    }
+  };
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
