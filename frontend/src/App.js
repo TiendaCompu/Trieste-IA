@@ -563,7 +563,7 @@ const OrdenesListado = () => {
 
       {/* Lista de Órdenes */}
       <div className="grid gap-4">
-        {ordenesFiltradas.map((orden) => (
+        {ordenes.map((orden) => (
           <Card key={orden.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
