@@ -246,6 +246,75 @@ const BusquedaMatricula = () => {
             </div>
           </div>
         )}
+
+        {/* Modal de Entrada al Taller */}
+        <Dialog open={mostrarModalEntrada} onOpenChange={setMostrarModalEntrada}>
+          <DialogContent className="max-w-md dialog-content">
+            <DialogHeader>
+              <DialogTitle style={{color: 'var(--trieste-blue)'}}>
+                ¿El vehículo entra al taller?
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm">
+                  <strong>Vehículo:</strong> {vehiculoEncontrado?.matricula} - {vehiculoEncontrado?.marca} {vehiculoEncontrado?.modelo}
+                </p>
+                <p className="text-sm">
+                  <strong>Propietario:</strong> {cliente?.empresa ? `${cliente.empresa} - ${cliente.nombre}` : cliente?.nombre}
+                </p>
+                <p className="text-sm">
+                  <strong>Kilometraje actual:</strong> {vehiculoEncontrado?.kilometraje?.toLocaleString() || 'No registrado'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Nuevo Kilometraje *
+                </label>
+                <Input
+                  type="number"
+                  value={nuevoKilometraje}
+                  onChange={(e) => setNuevoKilometraje(e.target.value)}
+                  placeholder="Kilometraje actual del vehículo"
+                  min={vehiculoEncontrado?.kilometraje || 0}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Debe ser mayor o igual a {vehiculoEncontrado?.kilometraje?.toLocaleString() || 0} km
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Observaciones (opcional)
+                </label>
+                <Textarea
+                  value={observacionesKm}
+                  onChange={(e) => setObservacionesKm(e.target.value)}
+                  placeholder="Observaciones sobre la entrada al taller..."
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={saltarActualizacionKm}
+                  className="flex-1"
+                >
+                  No actualizar
+                </Button>
+                <Button 
+                  onClick={actualizarKilometraje}
+                  className="btn-primary flex-1"
+                  disabled={!nuevoKilometraje || isNaN(nuevoKilometraje)}
+                >
+                  Actualizar y Continuar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
