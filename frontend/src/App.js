@@ -2237,19 +2237,21 @@ const RegistroVehiculo = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Marca</label>
+                  <label className="block text-sm font-medium mb-2">Marca *</label>
                   <Input
                     value={vehiculo.marca}
-                    onChange={(e) => setVehiculo(prev => ({ ...prev, marca: e.target.value }))}
-                    placeholder="Toyota, Honda, etc."
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, marca: e.target.value.toUpperCase() }))}
+                    placeholder="TOYOTA, HONDA, ETC."
+                    style={{textTransform: 'uppercase'}}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Modelo</label>
+                  <label className="block text-sm font-medium mb-2">Modelo *</label>
                   <Input
                     value={vehiculo.modelo}
-                    onChange={(e) => setVehiculo(prev => ({ ...prev, modelo: e.target.value }))}
-                    placeholder="Modelo del vehículo"
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, modelo: e.target.value.toUpperCase() }))}
+                    placeholder="MODELO DEL VEHÍCULO"
+                    style={{textTransform: 'uppercase'}}
                   />
                 </div>
                 <div>
@@ -2267,8 +2269,9 @@ const RegistroVehiculo = () => {
                   <label className="block text-sm font-medium mb-2">Color</label>
                   <Input
                     value={vehiculo.color}
-                    onChange={(e) => setVehiculo(prev => ({ ...prev, color: e.target.value }))}
-                    placeholder="Blanco, Negro, etc."
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, color: e.target.value.toUpperCase() }))}
+                    placeholder="BLANCO, NEGRO, ETC."
+                    style={{textTransform: 'uppercase'}}
                   />
                 </div>
                 <div>
@@ -2278,6 +2281,43 @@ const RegistroVehiculo = () => {
                     value={vehiculo.kilometraje}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, kilometraje: e.target.value }))}
                     placeholder="100000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tipo de Combustible</label>
+                  <Select 
+                    value={vehiculo.tipo_combustible}
+                    onValueChange={(value) => setVehiculo(prev => ({ ...prev, tipo_combustible: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="TIPO DE COMBUSTIBLE" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GASOLINA">GASOLINA</SelectItem>
+                      <SelectItem value="DIESEL">DIESEL</SelectItem>
+                      <SelectItem value="GNV">GNV (GAS NATURAL)</SelectItem>
+                      <SelectItem value="ELECTRICO">ELÉCTRICO</SelectItem>
+                      <SelectItem value="HIBRIDO">HÍBRIDO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Serial N.I.V.</label>
+                  <Input
+                    value={vehiculo.serial_niv}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, serial_niv: e.target.value.toUpperCase() }))}
+                    placeholder="NÚMERO DE IDENTIFICACIÓN VEHICULAR"
+                    style={{textTransform: 'uppercase'}}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tara (Peso en Kg)</label>
+                  <Input
+                    type="number"
+                    value={vehiculo.tara}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, tara: e.target.value }))}
+                    placeholder="1500"
+                    step="0.1"
                   />
                 </div>
               </div>
