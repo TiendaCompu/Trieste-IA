@@ -232,10 +232,6 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard del Taller</h1>
-        <Button onClick={() => navigate('/registro')} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Registro Manual
-        </Button>
       </div>
 
       {/* Búsqueda Principal por Matrícula */}
