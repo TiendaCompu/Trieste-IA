@@ -3246,6 +3246,7 @@ function App() {
             <Route path="/ordenes" element={<OrdenesListado />} />
             <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
             <Route path="/mecanicos" element={<MecanicosList />} />
+            <Route path="/servicios" element={<ServiciosRepuestos />} />
             <Route path="/vehiculos" element={<VehiculosList />} />
             <Route path="/vehiculo/:vehiculoId" element={<VehiculoDetalle />} />
             <Route path="/vehiculo/:vehiculoId/historial" element={<VehiculoHistorial />} />
