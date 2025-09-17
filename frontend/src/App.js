@@ -2000,9 +2000,35 @@ const RegistroVehiculo = () => {
 
   const guardarRegistro = async () => {
     try {
-      // Validar matrícula
-      if (vehiculo.matricula.length < 4) {
+      // Validaciones del cliente
+      if (!cliente.nombre.trim()) {
+        toast.error('El nombre del cliente es requerido');
+        return;
+      }
+      if (!cliente.numero_documento.trim()) {
+        toast.error('El número de documento es requerido');
+        return;
+      }
+      if (!cliente.direccion_fiscal.trim()) {
+        toast.error('La dirección fiscal es requerida para facturación');
+        return;
+      }
+      if (!cliente.email.trim()) {
+        toast.error('El email es requerido para facturación');
+        return;
+      }
+
+      // Validaciones del vehículo
+      if (!vehiculo.matricula || vehiculo.matricula.length < 4) {
         toast.error('La matrícula debe tener al menos 4 caracteres');
+        return;
+      }
+      if (!vehiculo.marca.trim()) {
+        toast.error('La marca del vehículo es requerida');
+        return;
+      }
+      if (!vehiculo.modelo.trim()) {
+        toast.error('El modelo del vehículo es requerido');
         return;
       }
 
