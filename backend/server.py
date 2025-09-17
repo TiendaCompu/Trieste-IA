@@ -158,6 +158,21 @@ class OrdenTrabajoUpdate(BaseModel):
     observaciones: Optional[str] = None
     aprobado_cliente: Optional[bool] = None
 
+class HistorialKilometraje(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    vehiculo_id: str
+    kilometraje_anterior: int
+    kilometraje_nuevo: int
+    fecha_actualizacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    motivo: str = "Entrada al taller"
+    observaciones: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class HistorialKilometrajeCreate(BaseModel):
+    vehiculo_id: str
+    kilometraje_nuevo: int
+    observaciones: Optional[str] = None
+
 class AIExtraRequest(BaseModel):
     texto_dictado: Optional[str] = None
     imagen_base64: Optional[str] = None
