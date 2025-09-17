@@ -1032,7 +1032,6 @@ const OrdenDetalle = () => {
     </div>
   );
 };
-};
 
 // Gestión de Servicios y Repuestos
 const ServiciosRepuestos = () => {
