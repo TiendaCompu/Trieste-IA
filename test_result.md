@@ -244,10 +244,10 @@ test_plan:
   - task: "Filtrado de órdenes de trabajo - Dashboard solo activas, pestaña Historial para entregadas"
     implemented: true
     working: true
-    file: "/app/frontend/src/App.js"
+    file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
@@ -255,6 +255,9 @@ test_plan:
         - working: true
           agent: "main"
           comment: "FUNCIONANDO PERFECTAMENTE: Dashboard muestra solo órdenes activas (7), pestaña Historial muestra órdenes entregadas (1), contadores actualizados dinámicamente"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TESTING COMPLETED - Order filtering functionality working perfectly: ✅ GET /api/ordenes?filtro=activas returns only non-delivered orders (9 active orders) ✅ GET /api/ordenes?filtro=entregadas returns only delivered orders (3 delivered orders) ✅ GET /api/ordenes?filtro=todas returns all orders (12 total orders) ✅ GET /api/ordenes without filter returns all orders (same as 'todas') ✅ Invalid filter parameters handled gracefully ✅ Order counts match correctly between filters ✅ Active order states: 'recibido', 'diagnosticando' ✅ Delivered order states: 'entregado' ✅ All filtering logic working as expected"
 
   - task: "Búsqueda generalizada en tiempo real por nombre de cliente o empresa"
     implemented: true
