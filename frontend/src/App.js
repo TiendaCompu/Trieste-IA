@@ -1850,8 +1850,29 @@ const RegistroVehiculo = () => {
   const navigate = useNavigate();
   
   const [paso, setPaso] = useState(1);
-  const [cliente, setCliente] = useState({ nombre: '', telefono: '', empresa: '', email: '' });
-  const [vehiculo, setVehiculo] = useState({ matricula: '', marca: '', modelo: '', año: '', color: '', kilometraje: '' });
+  const [cliente, setCliente] = useState({ 
+    nombre: '', 
+    tipo_documento: 'CI', 
+    prefijo_documento: 'V', 
+    numero_documento: '',
+    telefono: '', 
+    telefono_secundario: '',
+    direccion_fiscal: '',
+    empresa: '', 
+    email: '' 
+  });
+  const [vehiculo, setVehiculo] = useState({ 
+    matricula: '', 
+    marca: '', 
+    modelo: '', 
+    año: '', 
+    color: '', 
+    kilometraje: '',
+    tipo_combustible: '',
+    serial_niv: '',
+    tara: '',
+    foto_vehiculo: ''
+  });
   const [grabando, setGrabando] = useState(false);
   const [procesandoIA, setProcesandoIA] = useState(false);
   const [fotoMatricula, setFotoMatricula] = useState(null);
