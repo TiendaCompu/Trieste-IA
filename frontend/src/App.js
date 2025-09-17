@@ -1354,13 +1354,13 @@ const ServiciosRepuestos = () => {
   );
 };
 
-// Gestión de Mecánicos (mejorado con edición y avatares)
+// Gestión de Mecánicos (mejorado con estados y WhatsApp)
 const MecanicosList = () => {
   const [mecanicos, setMecanicos] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoMecanico, setEditandoMecanico] = useState(null);
   const [nuevoMecanico, setNuevoMecanico] = useState({
-    nombre: '', especialidad: '', telefono: '', activo: true, avatar: ''
+    nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: ''
   });
 
   useEffect(() => {
@@ -1379,15 +1379,31 @@ const MecanicosList = () => {
 
   const guardarMecanico = async () => {
     try {
+      // Validar teléfonos
+      if (nuevoMecanico.telefono && !validarTelefono(nuevoMecanico.telefono)) {
+        toast.error('Formato de teléfono inválido. Use 0000-000.00.00');
+        return;
+      }
+      if (nuevoMecanico.whatsapp && !validarTelefono(nuevoMecanico.whatsapp)) {
+        toast.error('Formato de WhatsApp inválido. Use 0000-000.00.00');
+        return;
+      }
+
+      const mecanicoData = {
+        ...nuevoMecanico,
+        telefono: nuevoMecanico.telefono ? formatearTelefono(nuevoMecanico.telefono) : null,
+        whatsapp: nuevoMecanico.whatsapp ? formatearTelefono(nuevoMecanico.whatsapp) : null
+      };
+
       if (editandoMecanico) {
-        await axios.put(`${API}/mecanicos/${editandoMecanico.id}`, nuevoMecanico);
+        await axios.put(`${API}/mecanicos/${editandoMecanico.id}`, mecanicoData);
         toast.success('Mecánico actualizado correctamente');
       } else {
-        await axios.post(`${API}/mecanicos`, nuevoMecanico);
+        await axios.post(`${API}/mecanicos`, mecanicoData);
         toast.success('Mecánico agregado correctamente');
       }
       
-      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true, avatar: '' });
+      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: '' });
       setEditandoMecanico(null);
       setMostrarFormulario(false);
       cargarMecanicos();
@@ -1397,11 +1413,26 @@ const MecanicosList = () => {
     }
   };
 
+  const cambiarEstadoMecanico = async (mecanicoId, nuevoEstado) => {
+    try {
+      await axios.put(`${API}/mecanicos/${mecanicoId}`, { estado: nuevoEstado });
+      setMecanicos(prev => prev.map(m => 
+        m.id === mecanicoId ? { ...m, estado: nuevoEstado } : m
+      ));
+      toast.success(`Estado cambiado a ${nuevoEstado.replace('_', ' ')}`);
+    } catch (error) {
+      console.error('Error cambiando estado:', error);
+      toast.error('Error al cambiar el estado');
+    }
+  };
+
   const editarMecanico = (mecanico) => {
     setNuevoMecanico({
       nombre: mecanico.nombre,
       especialidad: mecanico.especialidad,
       telefono: mecanico.telefono || '',
+      whatsapp: mecanico.whatsapp || '',
+      estado: mecanico.estado || 'disponible',
       activo: mecanico.activo,
       avatar: mecanico.avatar || ''
     });
@@ -1420,6 +1451,7 @@ const MecanicosList = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setNuevoMecanico(prev => ({ ...prev, avatar: e.target.result }));
+        toast.success('Imagen cargada correctamente');
       };
       reader.readAsDataURL(file);
     }
@@ -1429,6 +1461,17 @@ const MecanicosList = () => {
     'motor', 'transmision', 'frenos', 'electricidad', 'suspension', 
     'climatizacion', 'neumaticos', 'carroceria', 'general'
   ];
+
+  const estadosMecanico = [
+    { valor: 'disponible', label: 'Disponible', color: 'bg-green-500', textColor: 'text-green-800' },
+    { valor: 'fuera_servicio', label: 'Fuera de Servicio', color: 'bg-orange-500', textColor: 'text-orange-800' },
+    { valor: 'vacaciones', label: 'Vacaciones', color: 'bg-blue-500', textColor: 'text-blue-800' },
+    { valor: 'inactivo', label: 'Inactivo', color: 'bg-gray-500', textColor: 'text-gray-800' }
+  ];
+
+  const getEstadoConfig = (estado) => {
+    return estadosMecanico.find(e => e.valor === estado) || estadosMecanico[0];
+  };
 
   const getAvatarUrl = (avatar, nombre) => {
     if (avatar) return avatar;
