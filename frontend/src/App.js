@@ -2321,13 +2321,57 @@ const RegistroVehiculo = () => {
                   />
                 </div>
               </div>
-              
-              {fotoMatricula && (
+
+              {/* Sección de Fotografías */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Foto de la Matrícula</label>
-                  <img src={fotoMatricula} alt="Matrícula" className="max-w-xs h-auto border rounded" />
+                  <label className="block text-sm font-medium mb-2">Fotografía del Vehículo</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    {vehiculo.foto_vehiculo ? (
+                      <div>
+                        <img src={vehiculo.foto_vehiculo} alt="Vehículo" className="max-w-full h-32 object-cover mx-auto rounded mb-2" />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setVehiculo(prev => ({ ...prev, foto_vehiculo: '' }))}
+                        >
+                          Cambiar Foto
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setVehiculo(prev => ({ ...prev, foto_vehiculo: e.target.result }));
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="foto-vehiculo"
+                        />
+                        <label htmlFor="foto-vehiculo" className="cursor-pointer">
+                          <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Subir foto del vehículo</p>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                {fotoMatricula && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Foto de la Matrícula</label>
+                    <img src={fotoMatricula} alt="Matrícula" className="max-w-full h-32 object-cover border rounded" />
+                  </div>
+                )}
+              </div>
               
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setPaso(1)}>
