@@ -2061,6 +2061,7 @@ const RegistroVehiculo = () => {
         cliente_id: clienteId,
         año: vehiculo.año ? parseInt(vehiculo.año) : null,
         kilometraje: vehiculo.kilometraje ? parseInt(vehiculo.kilometraje) : null,
+        tara: vehiculo.tara ? parseFloat(vehiculo.tara) : null,
         foto_matricula: fotoMatricula
       };
       
