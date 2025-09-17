@@ -209,8 +209,8 @@ test_plan:
   test_priority: "high_first"
 
   - task: "Detección automática de matrícula existente con modal de entrada al taller"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/backend/server.py y /app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -219,10 +219,13 @@ test_plan:
         - working: "NA"
           agent: "main"
           comment: "Nueva funcionalidad: cuando se busque matrícula existente, mostrar modal preguntando si entra al taller para actualizar kilometraje"
+        - working: true
+          agent: "main"
+          comment: "IMPLEMENTADO Y FUNCIONANDO: Modal aparece correctamente al buscar matrícula existente (TEST456), muestra datos del vehículo, propietario, km actual, permite actualizar km con validación"
 
   - task: "Modelo HistorialKilometraje y validación km nuevo >= anterior"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -231,10 +234,13 @@ test_plan:
         - working: "NA"
           agent: "main"
           comment: "Crear modelo para historial de kilometraje con validación que km nuevo no sea inferior al anterior"
+        - working: true
+          agent: "main"
+          comment: "COMPLETADO: Modelo HistorialKilometraje creado, endpoints /api/vehiculos/{id}/actualizar-kilometraje y /api/vehiculos/{id}/historial-kilometraje implementados con validación"
 
   - task: "Filtrado de órdenes de trabajo - Dashboard solo activas, pestaña Historial para entregadas"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -243,10 +249,13 @@ test_plan:
         - working: "NA"
           agent: "main"
           comment: "Dashboard debe mostrar solo órdenes activas, agregar pestaña Historial en misma página para órdenes entregadas"
+        - working: true
+          agent: "main"
+          comment: "FUNCIONANDO PERFECTAMENTE: Dashboard muestra solo órdenes activas (7), pestaña Historial muestra órdenes entregadas (1), contadores actualizados dinámicamente"
 
   - task: "Búsqueda generalizada en tiempo real por nombre de cliente o empresa"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "/app/backend/server.py y /app/frontend/src/App.js"
     stuck_count: 0
     priority: "medium"
@@ -255,6 +264,9 @@ test_plan:
         - working: "NA"
           agent: "main"
           comment: "Segunda barra de búsqueda para buscar por nombre de cliente o empresa en tiempo real"
+        - working: true
+          agent: "main"
+          comment: "IMPLEMENTADO: Barra de búsqueda global agregada al header, endpoint /api/buscar creado, UI con dropdown de resultados implementada"
 
 agent_communication:
     - agent: "main"
