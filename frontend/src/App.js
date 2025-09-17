@@ -1417,26 +1417,57 @@ const MecanicosList = () => {
         <h1 className="text-3xl font-bold text-gray-900">Mecánicos Especialistas</h1>
         <Dialog open={mostrarFormulario} onOpenChange={setMostrarFormulario}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="btn-primary">
               <Plus className="w-4 h-4 mr-2" />
               Nuevo Mecánico
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md dialog-content">
             <DialogHeader>
-              <DialogTitle>Agregar Nuevo Mecánico</DialogTitle>
+              <DialogTitle style={{color: 'var(--trieste-blue)'}}>
+                {editandoMecanico ? 'Editar Mecánico' : 'Agregar Nuevo Mecánico'}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {/* Avatar Section */}
+              <div className="text-center">
+                <div className="mb-3">
+                  <img
+                    src={getAvatarUrl(nuevoMecanico.avatar, nuevoMecanico.nombre || 'NM')}
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full mx-auto border-2"
+                    style={{borderColor: 'var(--trieste-blue)'}}
+                  />
+                </div>
+                <label className="cursor-pointer">
+                  <Button type="button" variant="outline" size="sm" className="w-full">
+                    <Camera className="w-4 h-4 mr-2" />
+                    Cambiar Avatar
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Nombre *</label>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Nombre *
+                </label>
                 <Input
                   value={nuevoMecanico.nombre}
                   onChange={(e) => setNuevoMecanico(prev => ({ ...prev, nombre: e.target.value }))}
                   placeholder="Nombre completo del mecánico"
                 />
               </div>
+              
               <div>
-                <label className="block text-sm font-medium mb-2">Especialidad *</label>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Especialidad *
+                </label>
                 <Select 
                   value={nuevoMecanico.especialidad}
                   onValueChange={(value) => setNuevoMecanico(prev => ({ ...prev, especialidad: value }))}
@@ -1453,23 +1484,35 @@ const MecanicosList = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div>
-                <label className="block text-sm font-medium mb-2">Teléfono</label>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Teléfono
+                </label>
                 <Input
                   value={nuevoMecanico.telefono}
                   onChange={(e) => setNuevoMecanico(prev => ({ ...prev, telefono: e.target.value }))}
                   placeholder="Número de teléfono"
                 />
               </div>
+              
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setMostrarFormulario(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setMostrarFormulario(false);
+                    setEditandoMecanico(null);
+                    setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', activo: true, avatar: '' });
+                  }}
+                >
                   Cancelar
                 </Button>
                 <Button 
                   onClick={guardarMecanico}
                   disabled={!nuevoMecanico.nombre || !nuevoMecanico.especialidad}
+                  className="btn-primary"
                 >
-                  Guardar
+                  {editandoMecanico ? 'Actualizar' : 'Guardar'}
                 </Button>
               </div>
             </div>
