@@ -1924,7 +1924,13 @@ const VehiculoDetalle = () => {
   
   // Estados para edición
   const [datosEdicion, setDatosEdicion] = useState({});
+  const [clienteEdicion, setClienteEdicion] = useState({});
   const [nuevaMatricula, setNuevaMatricula] = useState('');
+  const [clientes, setClientes] = useState([]);
+  const [creandoNuevoCliente, setCreandoNuevoCliente] = useState(false);
+  const [nuevoCliente, setNuevoCliente] = useState({
+    nombre: '', telefono: '', empresa: '', email: ''
+  });
   
   // Estados para confirmaciones de eliminación
   const [confirmacionEliminacion, setConfirmacionEliminacion] = useState('');
