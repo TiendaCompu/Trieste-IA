@@ -840,23 +840,178 @@ const OrdenDetalle = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Presupuesto
+                  Presupuesto Total
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-green-600">
                   ${orden.presupuesto_total.toFixed(2)}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   {orden.aprobado_cliente ? 'Aprobado por cliente' : 'Pendiente de aprobación'}
                 </p>
+                {!orden.aprobado_cliente && orden.presupuesto_total > 0 && (
+                  <div className="flex gap-2 mt-3">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => aprobarPresupuesto(true)}
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Aprobar
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => aprobarPresupuesto(false)}
+                    >
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Rechazar
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
+
+          {/* Gestión de Servicios/Repuestos */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Servicios y Repuestos</CardTitle>
+                <Dialog open={mostrarAgregarServicio} onOpenChange={setMostrarAgregarServicio}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-3 h-3 mr-1" />
+                      Agregar Item
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Agregar Servicio o Repuesto</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Servicio/Repuesto</label>
+                        <Select value={servicioSeleccionado} onValueChange={setServicioSeleccionado}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar item" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {serviciosDisponibles.map((servicio) => (
+                              <SelectItem key={servicio.id} value={servicio.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{servicio.nombre}</span>
+                                  <Badge variant={servicio.tipo === 'servicio' ? 'default' : 'secondary'} className="ml-2">
+                                    {servicio.tipo}
+                                  </Badge>
+                                  <span className="ml-2 font-bold">${servicio.precio.toFixed(2)}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {servicioSeleccionado && (
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-sm">
+                            <strong>Descripción:</strong> {serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.descripcion || 'Sin descripción'}
+                          </p>
+                          <p className="text-sm">
+                            <strong>Precio unitario:</strong> ${serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.precio.toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Cantidad</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={cantidadServicio}
+                          onChange={(e) => setCantidadServicio(e.target.value)}
+                        />
+                      </div>
+                      
+                      {servicioSeleccionado && cantidadServicio && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="font-medium">
+                            Subtotal: ${(serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.precio * parseInt(cantidadServicio)).toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setMostrarAgregarServicio(false)}>
+                          Cancelar
+                        </Button>
+                        <Button 
+                          onClick={agregarServicioAOrden}
+                          disabled={!servicioSeleccionado || cantidadServicio < 1}
+                        >
+                          Agregar al Presupuesto
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {orden.servicios_repuestos && orden.servicios_repuestos.length > 0 ? (
+                <div className="space-y-3">
+                  {orden.servicios_repuestos.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{item.nombre}</h4>
+                          <Badge variant={item.tipo === 'servicio' ? 'default' : 'secondary'}>
+                            {item.tipo}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Cantidad: {item.cantidad} × ${item.precio_unitario.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-green-600">
+                          ${item.subtotal.toFixed(2)}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => eliminarServicioDeOrden(index)}
+                        >
+                          <AlertCircle className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="border-t pt-3 mt-3">
+                    <div className="flex justify-between items-center text-lg font-bold">
+                      <span>Total del Presupuesto:</span>
+                      <span className="text-green-600">${orden.presupuesto_total?.toFixed(2) || '0.00'}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600">No hay servicios agregados</p>
+                  <p className="text-sm text-gray-500">Haga clic en "Agregar Item" para comenzar el presupuesto</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   );
+};
 };
 
 // Gestión de Servicios y Repuestos
