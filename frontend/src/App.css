@@ -165,17 +165,26 @@ body {
   border: 3px solid var(--trieste-blue) !important;
 }
 
-/* Botón de configuración */
+/* Botón de configuración - Solo ícono */
 .config-button {
   background: var(--trieste-yellow);
   color: var(--trieste-blue);
   border: 2px solid var(--trieste-blue);
   font-weight: 600;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
 .config-button:hover {
   background: var(--trieste-light-yellow);
   color: var(--trieste-dark-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 102, 0.2);
 }
 
 /* Badges con colores corporativos */
