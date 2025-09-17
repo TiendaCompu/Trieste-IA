@@ -273,6 +273,54 @@ test_plan:
         - working: true
           agent: "main"
           comment: "IMPLEMENTADO: Barra de búsqueda global agregada al header, endpoint /api/buscar creado, UI con dropdown de resultados implementada"
+
+  - task: "Modelos Cliente y Vehículo actualizados para facturación venezolana"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Cliente: campos fiscales (CI/RIF, dirección fiscal, email). Vehículo: combustible, N.I.V., tara, fotografía"
+
+  - task: "Sistema de tasa de cambio manual"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Modelo TasaCambio y endpoints para crear/obtener tasa actual y historial"
+
+  - task: "Sistema de presupuestos en USD con IVA 16%"
+    implemented: true
+    working: "NA" 
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Modelo Presupuesto con items, cálculos automáticos, estados (pendiente/aprobado/rechazado)"
+
+  - task: "Sistema de facturación en Bs con IGTF 3%"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py" 
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Modelo Factura con conversión USD→Bs, IGTF para pagos USD, múltiples métodos de pago"
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Generalized search functionality working correctly: ✅ GET /api/buscar?q=TEST returns vehicles by license plate (4 vehicles found) ✅ GET /api/buscar?q=Fleet returns clients by name (2 clients, 2 vehicles found) ✅ GET /api/buscar?q=Management returns clients by company (1 client, 1 vehicle found) ✅ Empty search returns no results correctly ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ Vehicle results include associated client data ✅ Search works across license plates, client names, and company names ✅ MongoDB ObjectId serialization issues resolved ✅ All search functionality working as expected"
