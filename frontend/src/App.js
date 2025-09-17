@@ -34,7 +34,8 @@ import {
   Calendar,
   ArrowRight,
   FileText,
-  PhoneCall
+  PhoneCall,
+  Trash2
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
