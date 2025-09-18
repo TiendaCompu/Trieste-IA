@@ -19,6 +19,133 @@ class WorkshopAPITester:
             'servicio': None
         }
 
+    def run_diagnostic_test(self, name, method, endpoint, data=None, headers=None):
+        """Run a diagnostic test and record detailed results"""
+        url = f"{self.api_url}/{endpoint}" if endpoint else self.base_url
+        if headers is None:
+            headers = {'Content-Type': 'application/json'}
+
+        print(f"\n🔍 DIAGNÓSTICO: {name}")
+        print(f"   URL: {url}")
+        
+        start_time = time.time()
+        
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=10)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=10)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers, timeout=10)
+
+            response_time = round((time.time() - start_time) * 1000, 2)  # ms
+            
+            # Determine status
+            if response.status_code == 200:
+                status = "✅ Funciona"
+            elif response.status_code in [400, 404, 422]:
+                status = "⚠️ Error de datos/lógica"
+            else:
+                status = "❌ Error"
+            
+            # Try to get response data
+            try:
+                response_data = response.json()
+                data_structure = self._analyze_data_structure(response_data)
+            except:
+                response_data = response.text
+                data_structure = "Texto plano"
+            
+            # Record diagnostic result
+            diagnostic_result = {
+                'endpoint': endpoint or '/',
+                'name': name,
+                'status': status,
+                'http_code': response.status_code,
+                'response_time_ms': response_time,
+                'data_structure': data_structure,
+                'response_data': response_data,
+                'error_message': None
+            }
+            
+            if response.status_code != 200:
+                try:
+                    error_detail = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
+                    diagnostic_result['error_message'] = error_detail
+                except:
+                    diagnostic_result['error_message'] = response.text
+            
+            self.diagnostic_results.append(diagnostic_result)
+            
+            # Print results
+            print(f"   Estado: {status}")
+            print(f"   Código HTTP: {response.status_code}")
+            print(f"   Tiempo de respuesta: {response_time}ms")
+            print(f"   Estructura de datos: {data_structure}")
+            
+            if response.status_code != 200:
+                print(f"   Error específico: {diagnostic_result['error_message']}")
+            elif isinstance(response_data, list):
+                print(f"   Cantidad de registros: {len(response_data)}")
+            elif isinstance(response_data, dict) and 'message' in response_data:
+                print(f"   Mensaje: {response_data['message']}")
+            
+            return response.status_code == 200, response_data
+
+        except requests.exceptions.Timeout:
+            diagnostic_result = {
+                'endpoint': endpoint or '/',
+                'name': name,
+                'status': "❌ Error",
+                'http_code': 'TIMEOUT',
+                'response_time_ms': 10000,
+                'data_structure': 'N/A',
+                'response_data': None,
+                'error_message': 'Request timeout'
+            }
+            self.diagnostic_results.append(diagnostic_result)
+            print(f"   Estado: ❌ Error")
+            print(f"   Error específico: Request timeout")
+            return False, {}
+            
+        except Exception as e:
+            diagnostic_result = {
+                'endpoint': endpoint or '/',
+                'name': name,
+                'status': "❌ Error",
+                'http_code': 'CONNECTION_ERROR',
+                'response_time_ms': 0,
+                'data_structure': 'N/A',
+                'response_data': None,
+                'error_message': str(e)
+            }
+            self.diagnostic_results.append(diagnostic_result)
+            print(f"   Estado: ❌ Error")
+            print(f"   Error específico: {str(e)}")
+            return False, {}
+
+    def _analyze_data_structure(self, data):
+        """Analyze the structure of response data"""
+        if isinstance(data, list):
+            if len(data) == 0:
+                return "Array vacío"
+            elif len(data) == 1:
+                return f"Array con 1 elemento ({type(data[0]).__name__})"
+            else:
+                return f"Array con {len(data)} elementos ({type(data[0]).__name__})"
+        elif isinstance(data, dict):
+            keys = list(data.keys())
+            if len(keys) <= 3:
+                return f"Objeto con campos: {', '.join(keys)}"
+            else:
+                return f"Objeto con {len(keys)} campos"
+        elif isinstance(data, str):
+            return "String"
+        elif isinstance(data, (int, float)):
+            return "Número"
+        else:
+            return type(data).__name__
+
     def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}" if endpoint else f"{self.api_url}/"
