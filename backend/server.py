@@ -1305,7 +1305,6 @@ async def procesar_imagen_con_ia(request: dict):
         from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
         
         imagen_base64 = request.get('imagen_base64', '')
-        contexto = request.get('contexto', 'general')
         
         if not imagen_base64:
             return {"success": False, "error": "No se proporcionó imagen para procesar"}
