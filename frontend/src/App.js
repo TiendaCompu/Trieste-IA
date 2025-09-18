@@ -1465,7 +1465,29 @@ const OrdenEditar = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Detalles de la Orden</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Detalles de la Orden</CardTitle>
+                <Button
+                  onClick={() => handleVoiceInputOrden('general')}
+                  disabled={grabando || procesandoIA}
+                  variant={grabando && campoActivo === 'general' ? "destructive" : "outline"}
+                  className="flex items-center gap-2"
+                  size="sm"
+                >
+                  <Mic className={`w-4 h-4 ${grabando && campoActivo === 'general' ? 'animate-pulse' : ''}`} />
+                  {grabando && campoActivo === 'general' ? 'Escuchando...' : 'Dictar Todo'}
+                </Button>
+              </div>
+              {procesandoIA && (
+                <div className="mt-2">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      🤖 Procesando dictado con IA... Esto puede tomar unos segundos.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Diagnóstico */}
