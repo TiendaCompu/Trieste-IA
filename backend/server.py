@@ -1195,6 +1195,105 @@ async def registrar_pago(factura_id: str, pago: RegistrarPago):
     
     return {"message": "Pago registrado correctamente", "saldo_pendiente": max(0, saldo_pendiente)}
 
+# AI Processing for Voice Dictation
+@api_router.post("/ai/procesar-dictado")
+async def procesar_dictado_con_ia(request: dict):
+    """Procesa dictado de voz con IA para extraer información estructurada"""
+    try:
+        from emergentintegrations import EmergentLLM
+        
+        texto = request.get('texto', '')
+        contexto = request.get('contexto', 'general')
+        
+        if not texto.strip():
+            return {"success": False, "error": "No se proporcionó texto para procesar"}
+        
+        # Initialize Emergent LLM
+        llm = EmergentLLM(api_key="sk-emergent-5071d2a131d5544Ed5")
+        
+        # Prompt específico para extraer información de vehículos y clientes
+        prompt = f"""
+Eres un asistente de IA especializado en extraer información estructurada para el registro de vehículos y clientes en un taller mecánico venezolano.
+
+TEXTO DICTADO: "{texto}"
+
+Extrae TODA la información disponible y organízala en formato JSON. Si no encuentras algún dato, no lo incluyas.
+
+FORMATO DE RESPUESTA REQUERIDO:
+{{
+  "cliente": {{
+    "nombre": "NOMBRE COMPLETO",
+    "telefono": "0000-000.00.00",
+    "empresa": "NOMBRE EMPRESA",
+    "email": "email@ejemplo.com",
+    "direccion_fiscal": "DIRECCIÓN COMPLETA",
+    "tipo_documento": "CI" o "RIF",
+    "prefijo_documento": "V", "E", "J", o "G",
+    "numero_documento": "12345678"
+  }},
+  "vehiculo": {{
+    "matricula": "ABC123",
+    "marca": "TOYOTA",
+    "modelo": "COROLLA",
+    "año": 2020,
+    "color": "BLANCO",
+    "kilometraje": 50000,
+    "tipo_combustible": "GASOLINA"
+  }}
+}}
+
+INSTRUCCIONES:
+- Usa MAYÚSCULAS para nombres, empresas, direcciones, matrículas, marcas, modelos, colores
+- Usa minúsculas para emails
+- Formatea teléfonos como 0000-000.00.00
+- Solo extrae información que esté claramente mencionada
+- Si mencionan cédula con V- o E-, es tipo_documento: "CI", prefijo_documento: "V" o "E"
+- Si mencionan RIF con J- o G-, es tipo_documento: "RIF", prefijo_documento: "J" o "G"
+
+Responde SOLO con el JSON, sin explicaciones adicionales.
+"""
+        
+        # Get AI response
+        response = llm.chat_completions(
+            model="claude-3-5-sonnet-20241022",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1000,
+            temperature=0.1
+        )
+        
+        ai_response = response.choices[0].message.content.strip()
+        
+        try:
+            # Parse JSON response
+            import json
+            datos_extraidos = json.loads(ai_response)
+            
+            return {
+                "success": True,
+                "datos": datos_extraidos,
+                "texto_original": texto,
+                "respuesta_ia": ai_response
+            }
+            
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "IA no pudo generar formato JSON válido",
+                "respuesta_ia": ai_response
+            }
+            
+    except ImportError:
+        return {
+            "success": False,
+            "error": "Librería emergentintegrations no instalada"
+        }
+    except Exception as e:
+        print(f"Error procesando dictado con IA: {e}")
+        return {
+            "success": False,
+            "error": f"Error interno: {str(e)}"
+        }
+
 # Test route
 @api_router.get("/")
 async def root():
