@@ -1979,45 +1979,75 @@ const RegistroVehiculo = () => {
     setProcesandoIA(true);
     toast.info('🤖 Procesando dictado con IA...');
     
+    console.log('Texto a procesar:', textoDictado);
+    
     try {
       const response = await axios.post(`${API}/ai/procesar-dictado`, {
         texto: textoDictado,
         contexto: 'registro_vehiculo_cliente'
       });
       
+      console.log('Respuesta del servidor:', response.data);
+      
       if (response.data.success) {
         const datos = response.data.datos;
         let camposActualizados = [];
         
+        console.log('Datos extraídos por IA:', datos);
+        
         // Actualizar datos del cliente
         if (datos.cliente) {
           if (datos.cliente.nombre) {
-            setCliente(prev => ({ ...prev, nombre: datos.cliente.nombre.toUpperCase() }));
+            setCliente(prev => {
+              const updated = { ...prev, nombre: datos.cliente.nombre.toUpperCase() };
+              console.log('Actualizando nombre cliente:', updated.nombre);
+              return updated;
+            });
             camposActualizados.push('nombre cliente');
           }
           if (datos.cliente.telefono) {
-            setCliente(prev => ({ ...prev, telefono: datos.cliente.telefono }));
+            setCliente(prev => {
+              const updated = { ...prev, telefono: datos.cliente.telefono };
+              console.log('Actualizando teléfono:', updated.telefono);
+              return updated;
+            });
             camposActualizados.push('teléfono');
           }
           if (datos.cliente.empresa) {
-            setCliente(prev => ({ ...prev, empresa: datos.cliente.empresa.toUpperCase() }));
+            setCliente(prev => {
+              const updated = { ...prev, empresa: datos.cliente.empresa.toUpperCase() };
+              console.log('Actualizando empresa:', updated.empresa);
+              return updated;
+            });
             camposActualizados.push('empresa');
           }
           if (datos.cliente.email) {
-            setCliente(prev => ({ ...prev, email: datos.cliente.email.toLowerCase() }));
+            setCliente(prev => {
+              const updated = { ...prev, email: datos.cliente.email.toLowerCase() };
+              console.log('Actualizando email:', updated.email);
+              return updated;
+            });
             camposActualizados.push('email');
           }
           if (datos.cliente.direccion_fiscal) {
-            setCliente(prev => ({ ...prev, direccion_fiscal: datos.cliente.direccion_fiscal.toUpperCase() }));
+            setCliente(prev => {
+              const updated = { ...prev, direccion_fiscal: datos.cliente.direccion_fiscal.toUpperCase() };
+              console.log('Actualizando dirección fiscal:', updated.direccion_fiscal);
+              return updated;
+            });
             camposActualizados.push('dirección fiscal');
           }
           if (datos.cliente.tipo_documento && datos.cliente.numero_documento) {
-            setCliente(prev => ({ 
-              ...prev, 
-              tipo_documento: datos.cliente.tipo_documento,
-              prefijo_documento: datos.cliente.prefijo_documento || 'V',
-              numero_documento: datos.cliente.numero_documento
-            }));
+            setCliente(prev => {
+              const updated = { 
+                ...prev, 
+                tipo_documento: datos.cliente.tipo_documento,
+                prefijo_documento: datos.cliente.prefijo_documento || 'V',
+                numero_documento: datos.cliente.numero_documento
+              };
+              console.log('Actualizando documento:', updated.prefijo_documento + '-' + updated.numero_documento);
+              return updated;
+            });
             camposActualizados.push('documento');
           }
         }
@@ -2025,31 +2055,59 @@ const RegistroVehiculo = () => {
         // Actualizar datos del vehículo
         if (datos.vehiculo) {
           if (datos.vehiculo.matricula) {
-            setVehiculo(prev => ({ ...prev, matricula: datos.vehiculo.matricula.toUpperCase() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, matricula: datos.vehiculo.matricula.toUpperCase() };
+              console.log('Actualizando matrícula:', updated.matricula);
+              return updated;
+            });
             camposActualizados.push('matrícula');
           }
           if (datos.vehiculo.marca) {
-            setVehiculo(prev => ({ ...prev, marca: datos.vehiculo.marca.toUpperCase() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, marca: datos.vehiculo.marca.toUpperCase() };
+              console.log('Actualizando marca:', updated.marca);
+              return updated;
+            });
             camposActualizados.push('marca');
           }
           if (datos.vehiculo.modelo) {
-            setVehiculo(prev => ({ ...prev, modelo: datos.vehiculo.modelo.toUpperCase() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, modelo: datos.vehiculo.modelo.toUpperCase() };
+              console.log('Actualizando modelo:', updated.modelo);
+              return updated;
+            });
             camposActualizados.push('modelo');
           }
           if (datos.vehiculo.año) {
-            setVehiculo(prev => ({ ...prev, año: datos.vehiculo.año.toString() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, año: datos.vehiculo.año.toString() };
+              console.log('Actualizando año:', updated.año);
+              return updated;
+            });
             camposActualizados.push('año');
           }
           if (datos.vehiculo.color) {
-            setVehiculo(prev => ({ ...prev, color: datos.vehiculo.color.toUpperCase() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, color: datos.vehiculo.color.toUpperCase() };
+              console.log('Actualizando color:', updated.color);
+              return updated;
+            });
             camposActualizados.push('color');
           }
           if (datos.vehiculo.kilometraje) {
-            setVehiculo(prev => ({ ...prev, kilometraje: datos.vehiculo.kilometraje.toString() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, kilometraje: datos.vehiculo.kilometraje.toString() };
+              console.log('Actualizando kilometraje:', updated.kilometraje);
+              return updated;
+            });
             camposActualizados.push('kilometraje');
           }
           if (datos.vehiculo.tipo_combustible) {
-            setVehiculo(prev => ({ ...prev, tipo_combustible: datos.vehiculo.tipo_combustible.toUpperCase() }));
+            setVehiculo(prev => {
+              const updated = { ...prev, tipo_combustible: datos.vehiculo.tipo_combustible.toUpperCase() };
+              console.log('Actualizando tipo combustible:', updated.tipo_combustible);
+              return updated;
+            });
             camposActualizados.push('tipo combustible');
           }
         }
@@ -2060,11 +2118,17 @@ const RegistroVehiculo = () => {
           toast.warning('IA no pudo extraer información específica del dictado');
         }
       } else {
-        toast.error('No se pudo procesar el dictado');
+        console.error('Error del servidor:', response.data.error);
+        toast.error(`Error: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error procesando dictado con IA:', error);
-      toast.error('Error conectando con IA para procesar dictado');
+      if (error.response) {
+        console.error('Respuesta del servidor:', error.response.data);
+        toast.error(`Error del servidor: ${error.response.data?.error || error.response.statusText}`);
+      } else {
+        toast.error('Error de conexión con el servidor');
+      }
     } finally {
       setProcesandoIA(false);
     }
