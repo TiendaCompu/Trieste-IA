@@ -1492,7 +1492,19 @@ const OrdenEditar = () => {
             <CardContent className="space-y-4">
               {/* Diagnóstico */}
               <div>
-                <label className="block text-sm font-medium mb-2">Diagnóstico Inicial *</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">Diagnóstico Inicial *</label>
+                  <Button
+                    onClick={() => handleVoiceInputOrden('diagnostico')}
+                    disabled={grabando || procesandoIA}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <Mic className={`w-3 h-3 ${grabando && campoActivo === 'diagnostico' ? 'animate-pulse text-red-500' : ''}`} />
+                    {grabando && campoActivo === 'diagnostico' ? 'Escuchando...' : 'Dictar'}
+                  </Button>
+                </div>
                 <Textarea
                   value={diagnostico}
                   onChange={(e) => setDiagnostico(e.target.value)}
