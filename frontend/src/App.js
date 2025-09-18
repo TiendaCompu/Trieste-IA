@@ -311,9 +311,20 @@ const BusquedaMatricula = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                  Observaciones (opcional)
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium" style={{color: 'var(--trieste-blue)'}}>
+                    Observaciones (opcional)
+                  </label>
+                  <BotonDictado
+                    onDictado={handleDictadoObservaciones}
+                    grabando={grabando}
+                    procesandoIA={procesandoIA}
+                    campoActivo={campoActivo}
+                    campo="observaciones"
+                    texto="Dictar"
+                    size="sm"
+                  />
+                </div>
                 <Textarea
                   value={observacionesKm}
                   onChange={(e) => setObservacionesKm(e.target.value)}
