@@ -15,7 +15,7 @@ async def reset_database():
     """Resetea completamente la base de datos"""
     print("🔄 Conectando a MongoDB...")
     client = AsyncIOMotorClient(MONGO_URL)
-    db = client.taller_workshop
+    db = client.taller_mecanico
     
     # Limpiar todas las colecciones
     print("🗑️  Limpiando base de datos...")
