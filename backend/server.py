@@ -1297,6 +1297,116 @@ FORMATO DE RESPUESTA REQUERIDO:
             "error": f"Error interno: {str(e)}"
         }
 
+# AI Processing for Image OCR (License Plates, Vehicle Documents)
+@api_router.post("/ai/procesar-imagen")
+async def procesar_imagen_con_ia(request: dict):
+    """Procesa imagen con IA para extraer información de matrículas, títulos de propiedad, etc."""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+        
+        imagen_base64 = request.get('imagen_base64', '')
+        contexto = request.get('contexto', 'general')
+        
+        if not imagen_base64:
+            return {"success": False, "error": "No se proporcionó imagen para procesar"}
+        
+        # Clean base64 if it includes data URL prefix
+        if imagen_base64.startswith('data:'):
+            imagen_base64 = imagen_base64.split(',')[1]
+        
+        # System message para OCR/análisis de documentos vehiculares
+        system_message = """Eres un experto en OCR y análisis de documentos vehiculares venezolanos. Tu especialidad es extraer información de:
+
+1. MATRÍCULAS DE VEHÍCULOS: Identificar caracteres alfanuméricos en placas
+2. TÍTULOS DE PROPIEDAD: Datos del vehículo y propietario
+3. DOCUMENTOS VEHICULARES: Registro, inspección, etc.
+
+INSTRUCCIONES:
+- Analiza cuidadosamente la imagen
+- Extrae TODA la información visible y legible
+- Usa MAYÚSCULAS para nombres, direcciones, matrículas, marcas, modelos
+- Formatea números de documento correctamente
+- Si ves una matrícula, examínala carácter por carácter
+- Si es un título de propiedad, busca datos del vehículo Y propietario
+- Responde SOLO con JSON, sin explicaciones"""
+
+        # Initialize IA with image processing
+        llm = LlmChat(
+            api_key="sk-emergent-5071d2a131d5544Ed5",
+            session_id=f"imagen-{hash(imagen_base64[:100])}",
+            system_message=system_message
+        )
+        
+        # Create image content
+        image_content = ImageContent("image/jpeg", imagen_base64)
+        
+        # Prompt for image analysis
+        prompt = """Analiza esta imagen y extrae toda la información visible sobre vehículos y propietarios.
+
+FORMATO DE RESPUESTA JSON:
+{
+  "vehiculo": {
+    "matricula": "ABC123",
+    "marca": "TOYOTA", 
+    "modelo": "COROLLA",
+    "año": 2020,
+    "color": "BLANCO",
+    "serial_niv": "1HGBH41JXMN109186"
+  },
+  "cliente": {
+    "nombre": "JUAN CARLOS RODRIGUEZ",
+    "tipo_documento": "CI" o "RIF",
+    "prefijo_documento": "V", "E", "J", "G",
+    "numero_documento": "12345678"
+  },
+  "tipo_documento": "matricula", "titulo_propiedad", "registro", "otro"
+}
+
+Analiza cuidadosamente y extrae solo información que puedas leer claramente."""
+        
+        # Send message with image
+        user_message = UserMessage(text=prompt, files=[image_content])
+        response = await llm.send_message(user_message)
+        
+        ai_response = response.strip()
+        
+        try:
+            # Clean JSON response
+            import json
+            json_text = ai_response
+            if json_text.startswith('```json'):
+                json_text = json_text.replace('```json', '').replace('```', '').strip()
+            elif json_text.startswith('```'):
+                json_text = json_text.replace('```', '').strip()
+            
+            datos_extraidos = json.loads(json_text)
+            
+            return {
+                "success": True,
+                "datos": datos_extraidos,
+                "tipo_analisis": "imagen_ocr",
+                "respuesta_ia": ai_response
+            }
+            
+        except json.JSONDecodeError as e:
+            return {
+                "success": False,
+                "error": f"IA no pudo generar JSON válido: {str(e)}",
+                "respuesta_ia": ai_response
+            }
+            
+    except ImportError:
+        return {
+            "success": False,
+            "error": "Librería emergentintegrations no instalada"
+        }
+    except Exception as e:
+        print(f"Error procesando imagen con IA: {e}")
+        return {
+            "success": False,
+            "error": f"Error interno: {str(e)}"
+        }
+
 # Test route
 @api_router.get("/")
 async def root():
