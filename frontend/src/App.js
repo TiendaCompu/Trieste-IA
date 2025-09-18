@@ -2152,9 +2152,30 @@ const MecanicosList = () => {
           </DialogTrigger>
           <DialogContent className="max-w-md dialog-content">
             <DialogHeader>
-              <DialogTitle style={{color: 'var(--trieste-blue)'}}>
-                {editandoMecanico ? 'Editar Mecánico' : 'Agregar Nuevo Mecánico'}
-              </DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle style={{color: 'var(--trieste-blue)'}}>
+                  {editandoMecanico ? 'Editar Mecánico' : 'Agregar Nuevo Mecánico'}
+                </DialogTitle>
+                <BotonDictado
+                  onDictado={handleDictadoMecanico}
+                  grabando={grabando}
+                  procesandoIA={procesandoIA}
+                  campoActivo={campoActivo}
+                  campo="mecanico"
+                  texto="Dictar"
+                  size="sm"
+                />
+              </div>
+              {procesandoIA && (
+                <div className="mt-2">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      🤖 Procesando dictado de mecánico...
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
             </DialogHeader>
             <div className="space-y-4">
               {/* Avatar Section */}
