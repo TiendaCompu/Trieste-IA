@@ -2697,6 +2697,7 @@ const Navigation = () => {
         </Link>
         
         <div className="flex items-center gap-3">
+          <div className="flex gap-3">
             <Link 
               to="/dashboard" 
               className={`nav-button ${location.pathname === '/dashboard' ? 'active' : ''}`}
