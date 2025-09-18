@@ -2523,9 +2523,14 @@ const RegistroVehiculo = () => {
           </Button>
           
           <label className="cursor-pointer">
-            <Button as="span" variant="outline" className="flex items-center gap-2">
-              <Camera className="w-4 h-4" />
-              Capturar Matrícula
+            <Button 
+              as="span" 
+              variant="outline" 
+              className="flex items-center gap-2"
+              disabled={procesandoIA}
+            >
+              <Camera className={`w-4 h-4 ${procesandoIA ? 'animate-pulse' : ''}`} />
+              {procesandoIA ? 'Analizando...' : 'Escanear Documento'}
             </Button>
             <input
               type="file"
@@ -2535,6 +2540,10 @@ const RegistroVehiculo = () => {
               className="hidden"
             />
           </label>
+          
+          <div className="text-xs text-gray-500 mt-2">
+            📸 <strong>Escáner inteligente:</strong> Captura matrícula, título de propiedad o documento vehicular
+          </div>
         </div>
       </div>
 
