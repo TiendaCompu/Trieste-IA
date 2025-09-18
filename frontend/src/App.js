@@ -1182,6 +1182,262 @@ const OrdenDetalle = () => {
   );
 };
 
+// Edición de Orden de Trabajo
+const OrdenEditar = () => {
+  const { ordenId } = useParams();
+  const navigate = useNavigate();
+  const [orden, setOrden] = useState(null);
+  const [vehiculo, setVehiculo] = useState(null);
+  const [cliente, setCliente] = useState(null);
+  const [mecanicos, setMecanicos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  
+  // Estados editables
+  const [diagnostico, setDiagnostico] = useState('');
+  const [fallas, setFallas] = useState('');
+  const [observaciones, setObservaciones] = useState('');
+  const [mecanicoAsignado, setMecanicoAsignado] = useState('');
+  const [estado, setEstado] = useState('');
+  const [reparacionesRealizadas, setReparacionesRealizadas] = useState('');
+  const [repuestosUtilizados, setRepuestosUtilizados] = useState('');
+
+  useEffect(() => {
+    cargarDatosOrden();
+    cargarMecanicos();
+  }, [ordenId]);
+
+  const cargarDatosOrden = async () => {
+    try {
+      const ordenRes = await axios.get(`${API}/ordenes/${ordenId}`);
+      const ordenData = ordenRes.data;
+      setOrden(ordenData);
+      
+      // Cargar datos del vehículo y cliente
+      const [vehiculoRes, clienteRes] = await Promise.all([
+        axios.get(`${API}/vehiculos/${ordenData.vehiculo_id}`),
+        axios.get(`${API}/clientes/${ordenData.cliente_id}`)
+      ]);
+      
+      setVehiculo(vehiculoRes.data);
+      setCliente(clienteRes.data);
+      
+      // Pre-llenar campos editables
+      setDiagnostico(ordenData.diagnostico || '');
+      setFallas(ordenData.fallas || '');
+      setObservaciones(ordenData.observaciones || '');
+      setMecanicoAsignado(ordenData.mecanico_id || '');
+      setEstado(ordenData.estado || '');
+      setReparacionesRealizadas(ordenData.reparaciones_realizadas || '');
+      setRepuestosUtilizados(ordenData.repuestos_utilizados || '');
+      
+    } catch (error) {
+      console.error('Error cargando orden:', error);
+      toast.error('Error cargando los datos de la orden');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const cargarMecanicos = async () => {
+    try {
+      const response = await axios.get(`${API}/mecanicos/activos`);
+      setMecanicos(response.data);
+    } catch (error) {
+      console.error('Error cargando mecánicos:', error);
+    }
+  };
+
+  const guardarCambios = async () => {
+    setGuardando(true);
+    try {
+      await axios.put(`${API}/ordenes/${ordenId}`, {
+        diagnostico: diagnostico,
+        fallas: fallas,
+        observaciones: observaciones,
+        mecanico_id: mecanicoAsignado,
+        estado: estado,
+        reparaciones_realizadas: reparacionesRealizadas,
+        repuestos_utilizados: repuestosUtilizados
+      });
+      
+      toast.success('Orden actualizada correctamente');
+      navigate(`/orden/${ordenId}`);
+    } catch (error) {
+      console.error('Error guardando cambios:', error);
+      toast.error('Error al guardar los cambios');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  if (cargando) {
+    return <div className="flex items-center justify-center h-screen">Cargando...</div>;
+  }
+
+  if (!orden) {
+    return <div className="text-center p-8">Orden no encontrada</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Editar Orden #{orden.id?.slice(-8)}</h1>
+          <p className="text-gray-600">Modifica los detalles de la orden de trabajo</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/orden/${ordenId}`)}>
+            Cancelar
+          </Button>
+          <Button onClick={guardarCambios} disabled={guardando} className="btn-primary">
+            {guardando ? 'Guardando...' : 'Guardar Cambios'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Información del Vehículo y Cliente */}
+        <div className="lg:col-span-1 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Car className="w-5 h-5" />
+                Información del Vehículo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p><strong>Matrícula:</strong> {vehiculo?.matricula}</p>
+              <p><strong>Vehículo:</strong> {vehiculo?.marca} {vehiculo?.modelo}</p>
+              <p><strong>Año:</strong> {vehiculo?.año}</p>
+              <p><strong>Color:</strong> {vehiculo?.color}</p>
+              <p><strong>Kilometraje:</strong> {vehiculo?.kilometraje?.toLocaleString()} km</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Información del Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p><strong>Nombre:</strong> {cliente?.nombre}</p>
+              <p><strong>Documento:</strong> {cliente?.prefijo_documento}-{cliente?.numero_documento}</p>
+              <p><strong>Teléfono:</strong> {cliente?.telefono}</p>
+              <p><strong>Email:</strong> {cliente?.email}</p>
+              {cliente?.empresa && <p><strong>Empresa:</strong> {cliente?.empresa}</p>}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Formulario de Edición */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalles de la Orden</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Diagnóstico */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Diagnóstico Inicial *</label>
+                <Textarea
+                  value={diagnostico}
+                  onChange={(e) => setDiagnostico(e.target.value)}
+                  placeholder="Describe el problema inicial reportado por el cliente..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Fallas Detectadas */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Fallas Detectadas</label>
+                <Textarea
+                  value={fallas}
+                  onChange={(e) => setFallas(e.target.value)}
+                  placeholder="Detalla las fallas encontradas durante la inspección..."
+                  rows={4}
+                />
+              </div>
+
+              {/* Reparaciones Realizadas */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Reparaciones Realizadas</label>
+                <Textarea
+                  value={reparacionesRealizadas}
+                  onChange={(e) => setReparacionesRealizadas(e.target.value)}
+                  placeholder="Describe las reparaciones y trabajos realizados..."
+                  rows={4}
+                />
+              </div>
+
+              {/* Repuestos Utilizados */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Repuestos Utilizados</label>
+                <Textarea
+                  value={repuestosUtilizados}
+                  onChange={(e) => setRepuestosUtilizados(e.target.value)}
+                  placeholder="Lista los repuestos utilizados con cantidades..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Estado y Mecánico */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Estado de la Orden</label>
+                  <Select value={estado} onValueChange={setEstado}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recibido">Recibido</SelectItem>
+                      <SelectItem value="diagnosticando">Diagnosticando</SelectItem>
+                      <SelectItem value="presupuestado">Presupuestado</SelectItem>
+                      <SelectItem value="aprobado">Aprobado</SelectItem>
+                      <SelectItem value="en_reparacion">En Reparación</SelectItem>
+                      <SelectItem value="terminado">Terminado</SelectItem>
+                      <SelectItem value="entregado">Entregado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Mecánico Asignado</label>
+                  <Select value={mecanicoAsignado} onValueChange={setMecanicoAsignado}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar mecánico" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mecanicos.map((mecanico) => (
+                        <SelectItem key={mecanico.id} value={mecanico.id}>
+                          {mecanico.nombre} - {mecanico.especialidad}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Observaciones */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Observaciones Adicionales</label>
+                <Textarea
+                  value={observaciones}
+                  onChange={(e) => setObservaciones(e.target.value)}
+                  placeholder="Notas adicionales, recomendaciones, etc..."
+                  rows={3}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Gestión de Servicios y Repuestos
 const ServiciosRepuestos = () => {
   const [items, setItems] = useState([]);
