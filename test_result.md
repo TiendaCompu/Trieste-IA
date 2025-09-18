@@ -122,15 +122,18 @@ backend:
         
   - task: "Actualizar modelo OrdenTrabajoUpdate para incluir campos fallas, reparaciones_realizadas, repuestos_utilizados"
     implemented: true  
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Agregados campos fallas, reparaciones_realizadas, repuestos_utilizados al modelo OrdenTrabajoUpdate"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TESTING COMPLETED - OrdenTrabajoUpdate model with new fields working perfectly: ✅ PUT /api/ordenes/{id} accepts and saves new fields: fallas, reparaciones_realizadas, repuestos_utilizados ✅ All new fields correctly persisted in database and retrieved via GET ✅ Partial updates work correctly (updating only some fields) ✅ Null/empty values handled properly for new fields ✅ Traditional fields (diagnostico, estado, observaciones) still work correctly ✅ Test order created and updated successfully with brake system data: 'SISTEMA DE FRENOS: Pastillas desgastadas, disco rayado', 'Cambio de pastillas de freno, rectificado de disco', 'Pastillas Bosch BR-2023 (2 unidades)' ✅ Model integration with AI dictation endpoint working seamlessly"
 
   - task: "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
     implemented: true
