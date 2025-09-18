@@ -1549,7 +1549,19 @@ const OrdenEditar = () => {
 
               {/* Repuestos Utilizados */}
               <div>
-                <label className="block text-sm font-medium mb-2">Repuestos Utilizados</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">Repuestos Utilizados</label>
+                  <Button
+                    onClick={() => handleVoiceInputOrden('repuestos')}
+                    disabled={grabando || procesandoIA}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <Mic className={`w-3 h-3 ${grabando && campoActivo === 'repuestos' ? 'animate-pulse text-red-500' : ''}`} />
+                    {grabando && campoActivo === 'repuestos' ? 'Escuchando...' : 'Dictar'}
+                  </Button>
+                </div>
                 <Textarea
                   value={repuestosUtilizados}
                   onChange={(e) => setRepuestosUtilizados(e.target.value)}
