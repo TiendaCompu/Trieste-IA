@@ -1,14 +1,16 @@
 import requests
 import sys
 import json
+import time
 from datetime import datetime
 
 class WorkshopAPITester:
-    def __init__(self, base_url="https://workshop-ai.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
+        self.diagnostic_results = []
         self.created_ids = {
             'cliente': None,
             'vehiculo': None,
