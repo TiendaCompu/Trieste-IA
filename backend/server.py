@@ -1203,7 +1203,6 @@ async def procesar_dictado_con_ia(request: dict):
         from emergentintegrations import EmergentLLM
         
         texto = request.get('texto', '')
-        contexto = request.get('contexto', 'general')
         
         if not texto.strip():
             return {"success": False, "error": "No se proporcionó texto para procesar"}
