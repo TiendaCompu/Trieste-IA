@@ -191,6 +191,195 @@ class WorkshopAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
+    def diagnostic_basic_connectivity(self):
+        """DIAGNÓSTICO: Conectividad básica del backend"""
+        print("\n" + "="*60)
+        print("1. CONECTIVIDAD BÁSICA")
+        print("="*60)
+        
+        # Test 1: GET / - Basic backend connectivity
+        success1, _ = self.run_diagnostic_test(
+            "Conectividad básica del backend",
+            "GET",
+            None  # This will use base_url directly
+        )
+        
+        # Test 2: GET /api/ - API router test
+        success2, _ = self.run_diagnostic_test(
+            "Router API",
+            "GET",
+            ""
+        )
+        
+        return success1 and success2
+
+    def diagnostic_database_endpoints(self):
+        """DIAGNÓSTICO: Endpoints de base de datos"""
+        print("\n" + "="*60)
+        print("2. BASE DE DATOS")
+        print("="*60)
+        
+        # Test all main database endpoints
+        endpoints = [
+            ("vehiculos", "Vehículos"),
+            ("clientes", "Clientes"),
+            ("ordenes", "Órdenes de trabajo"),
+            ("mecanicos", "Mecánicos")
+        ]
+        
+        results = []
+        for endpoint, name in endpoints:
+            success, response = self.run_diagnostic_test(
+                f"Endpoint {name}",
+                "GET",
+                endpoint
+            )
+            results.append(success)
+        
+        return all(results)
+
+    def diagnostic_critical_functionalities(self):
+        """DIAGNÓSTICO: Funcionalidades críticas"""
+        print("\n" + "="*60)
+        print("3. FUNCIONALIDADES CRÍTICAS")
+        print("="*60)
+        
+        # Test 1: Vehicle license plate verification
+        success1, response1 = self.run_diagnostic_test(
+            "Verificación de matrícula existente",
+            "GET",
+            "vehiculos/verificar-matricula/ABC123"
+        )
+        
+        # Test 2: General search functionality
+        success2, response2 = self.run_diagnostic_test(
+            "Búsqueda generalizada",
+            "GET",
+            "buscar?q=ABC"
+        )
+        
+        # Test 3: Exchange rate system
+        success3, response3 = self.run_diagnostic_test(
+            "Sistema de tasa de cambio",
+            "GET",
+            "tasa-cambio/actual"
+        )
+        
+        return success1 and success2 and success3
+
+    def diagnostic_new_endpoints(self):
+        """DIAGNÓSTICO: Endpoints nuevos"""
+        print("\n" + "="*60)
+        print("4. ENDPOINTS NUEVOS")
+        print("="*60)
+        
+        # First, try to find an existing vehicle ID for testing
+        success_vehicles, vehicles_data = self.run_diagnostic_test(
+            "Obtener vehículos para testing",
+            "GET",
+            "vehiculos"
+        )
+        
+        vehicle_id = None
+        if success_vehicles and isinstance(vehicles_data, list) and len(vehicles_data) > 0:
+            vehicle_id = vehicles_data[0].get('id')
+            print(f"   Usando vehículo ID: {vehicle_id}")
+        
+        results = []
+        
+        # Test 1: Mileage history endpoint
+        if vehicle_id:
+            success1, _ = self.run_diagnostic_test(
+                "Historial de kilometraje",
+                "GET",
+                f"vehiculos/{vehicle_id}/historial-kilometraje"
+            )
+        else:
+            print("\n🔍 DIAGNÓSTICO: Historial de kilometraje")
+            print("   Estado: ⚠️ No se puede probar - Sin vehículos en BD")
+            success1 = False
+        
+        results.append(success1)
+        
+        # Test 2: Order filtering
+        success2, _ = self.run_diagnostic_test(
+            "Filtrado de órdenes activas",
+            "GET",
+            "ordenes?filtro=activas"
+        )
+        results.append(success2)
+        
+        return all(results)
+
+    def print_diagnostic_summary(self):
+        """Imprime resumen completo del diagnóstico"""
+        print("\n" + "="*80)
+        print("RESUMEN COMPLETO DEL DIAGNÓSTICO")
+        print("="*80)
+        
+        # Group results by category
+        categories = {
+            "CONECTIVIDAD BÁSICA": [],
+            "BASE DE DATOS": [],
+            "FUNCIONALIDADES CRÍTICAS": [],
+            "ENDPOINTS NUEVOS": []
+        }
+        
+        # Categorize results
+        for result in self.diagnostic_results:
+            endpoint = result['endpoint']
+            if endpoint in ['/', '']:
+                categories["CONECTIVIDAD BÁSICA"].append(result)
+            elif endpoint in ['vehiculos', 'clientes', 'ordenes', 'mecanicos']:
+                categories["BASE DE DATOS"].append(result)
+            elif 'verificar-matricula' in endpoint or 'buscar' in endpoint or 'tasa-cambio' in endpoint:
+                categories["FUNCIONALIDADES CRÍTICAS"].append(result)
+            else:
+                categories["ENDPOINTS NUEVOS"].append(result)
+        
+        # Print categorized results
+        for category, results in categories.items():
+            if results:
+                print(f"\n📋 {category}:")
+                for result in results:
+                    print(f"   {result['status']} {result['name']}")
+                    print(f"      └─ HTTP {result['http_code']} | {result['response_time_ms']}ms | {result['data_structure']}")
+                    if result['error_message']:
+                        error_msg = str(result['error_message'])[:100] + "..." if len(str(result['error_message'])) > 100 else str(result['error_message'])
+                        print(f"      └─ Error: {error_msg}")
+        
+        # Overall statistics
+        total_tests = len(self.diagnostic_results)
+        passed_tests = len([r for r in self.diagnostic_results if r['status'] == "✅ Funciona"])
+        warning_tests = len([r for r in self.diagnostic_results if r['status'] == "⚠️ Error de datos/lógica"])
+        failed_tests = len([r for r in self.diagnostic_results if r['status'] == "❌ Error"])
+        
+        print(f"\n📊 ESTADÍSTICAS GENERALES:")
+        print(f"   Total de pruebas: {total_tests}")
+        print(f"   ✅ Funcionando: {passed_tests}")
+        print(f"   ⚠️ Problemas de datos/lógica: {warning_tests}")
+        print(f"   ❌ Errores críticos: {failed_tests}")
+        
+        # Average response time
+        response_times = [r['response_time_ms'] for r in self.diagnostic_results if isinstance(r['response_time_ms'], (int, float))]
+        if response_times:
+            avg_response_time = sum(response_times) / len(response_times)
+            print(f"   ⏱️ Tiempo promedio de respuesta: {avg_response_time:.2f}ms")
+        
+        # Critical issues summary
+        critical_issues = [r for r in self.diagnostic_results if r['status'] == "❌ Error"]
+        if critical_issues:
+            print(f"\n🚨 PROBLEMAS CRÍTICOS ENCONTRADOS:")
+            for issue in critical_issues:
+                print(f"   • {issue['name']}: {issue['error_message']}")
+        
+        # Data issues summary
+        data_issues = [r for r in self.diagnostic_results if r['status'] == "⚠️ Error de datos/lógica"]
+        if data_issues:
+            print(f"\n⚠️ PROBLEMAS DE DATOS/LÓGICA:")
+            for issue in data_issues:
+                print(f"   • {issue['name']}: HTTP {issue['http_code']}")
+
     def test_basic_connectivity(self):
         """Test basic API connectivity"""
         print("\n" + "="*50)
