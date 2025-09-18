@@ -1204,16 +1204,30 @@ async def procesar_dictado_con_ia(request: dict):
         if not texto.strip():
             return {"success": False, "error": "No se proporcionó texto para procesar"}
         
+        # System message para el asistente IA
+        system_message = """Eres un asistente de IA especializado en extraer información estructurada para el registro de vehículos y clientes en un taller mecánico venezolano.
+
+INSTRUCCIONES:
+- Extrae TODA la información disponible del texto dictado
+- Organiza la información en formato JSON
+- Usa MAYÚSCULAS para nombres, empresas, direcciones, matrículas, marcas, modelos, colores
+- Usa minúsculas para emails
+- Formatea teléfonos como 0000-000.00.00
+- Solo extrae información que esté claramente mencionada
+- Si mencionan cédula con V- o E-, es tipo_documento: "CI", prefijo_documento: "V" o "E"
+- Si mencionan RIF con J- o G-, es tipo_documento: "RIF", prefijo_documento: "J" o "G"
+- Responde SOLO con el JSON, sin explicaciones adicionales"""
+
         # Initialize Emergent LLM
-        llm = LlmChat(api_key="sk-emergent-5071d2a131d5544Ed5")
+        llm = LlmChat(
+            api_key="sk-emergent-5071d2a131d5544Ed5",
+            session_id=f"dictado-{hash(texto[:50])}",
+            system_message=system_message
+        )
         
-        # Prompt específico para extraer información de vehículos y clientes
+        # Prompt específico con el texto dictado
         prompt = f"""
-Eres un asistente de IA especializado en extraer información estructurada para el registro de vehículos y clientes en un taller mecánico venezolano.
-
 TEXTO DICTADO: "{texto}"
-
-Extrae TODA la información disponible y organízala en formato JSON. Si no encuentras algún dato, no lo incluyas.
 
 FORMATO DE RESPUESTA REQUERIDO:
 {{
@@ -1237,25 +1251,12 @@ FORMATO DE RESPUESTA REQUERIDO:
     "tipo_combustible": "GASOLINA"
   }}
 }}
-
-INSTRUCCIONES:
-- Usa MAYÚSCULAS para nombres, empresas, direcciones, matrículas, marcas, modelos, colores
-- Usa minúsculas para emails
-- Formatea teléfonos como 0000-000.00.00
-- Solo extrae información que esté claramente mencionada
-- Si mencionan cédula con V- o E-, es tipo_documento: "CI", prefijo_documento: "V" o "E"
-- Si mencionan RIF con J- o G-, es tipo_documento: "RIF", prefijo_documento: "J" o "G"
-
-Responde SOLO con el JSON, sin explicaciones adicionales.
 """
         
-        # Get AI response
-        response = llm.chat_completions(
-            model="claude-3-5-sonnet-20241022",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1000,
-            temperature=0.1
-        )
+        # Send message and get response
+        from emergentintegrations.llm.chat import UserMessage
+        user_message = UserMessage(text=prompt)
+        response = llm.send_message(user_message)
         
         ai_response = response.choices[0].message.content.strip()
         
