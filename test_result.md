@@ -105,6 +105,30 @@
 user_problem_statement: Agregar botón de dictado para rellenar las órdenes de trabajo usando IA para procesar la información de fallas detectadas, diagnósticos mecánicos, reparaciones realizadas y repuestos utilizados.
 
 backend:
+  - task: "Agregar endpoint /api/ai/procesar-dictado-orden para procesar dictado específico de órdenes"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Creado nuevo endpoint específico para procesar dictado de órdenes de trabajo usando IA"
+        
+  - task: "Actualizar modelo OrdenTrabajoUpdate para incluir campos fallas, reparaciones_realizadas, repuestos_utilizados"
+    implemented: true  
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Agregados campos fallas, reparaciones_realizadas, repuestos_utilizados al modelo OrdenTrabajoUpdate"
+
   - task: "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
     implemented: true
     working: true
