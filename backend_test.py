@@ -1715,6 +1715,14 @@ def run_full_tests():
     test_results.append(("🆕 Búsqueda Generalizada", tester.test_busqueda_generalizada()))
     test_results.append(("🆕 Filtrado de Órdenes", tester.test_filtrado_ordenes()))
     
+    # NEWEST FUNCTIONALITY TESTS (AI Dictation for Work Orders)
+    print("\n" + "🤖" * 20)
+    print("TESTING NEWEST AI DICTATION FUNCTIONALITY")
+    print("🤖" * 20)
+    
+    test_results.append(("🤖 AI Dictado Órdenes", tester.test_ai_dictado_orden()))
+    test_results.append(("🤖 OrdenTrabajo Update Model", tester.test_orden_trabajo_update_model()))
+    
     # Print final results
     print("\n" + "="*60)
     print("FINAL TEST RESULTS")
