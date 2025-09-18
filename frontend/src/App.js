@@ -2002,7 +2002,7 @@ const RegistroVehiculo = () => {
           console.error('Error cargando cliente:', error);
         }
         
-        // Pre-llenar formulario con datos existentes
+        // Pre-llenar formulario con datos existentes del vehículo
         setVehiculo(prev => ({
           ...prev,
           matricula: vehiculoEncontrado.matricula,
@@ -2016,8 +2016,6 @@ const RegistroVehiculo = () => {
           tara: vehiculoEncontrado.tara?.toString() || '',
           foto_vehiculo: vehiculoEncontrado.foto_vehiculo || ''
         }));
-        
-        toast.info('Vehículo encontrado - Datos cargados para modificación');
       } else {
         // Vehículo no existe
         setVehiculoExistente(null);
