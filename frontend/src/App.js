@@ -1503,7 +1503,19 @@ const OrdenEditar = () => {
 
               {/* Fallas Detectadas */}
               <div>
-                <label className="block text-sm font-medium mb-2">Fallas Detectadas</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">Fallas Detectadas</label>
+                  <Button
+                    onClick={() => handleVoiceInputOrden('fallas')}
+                    disabled={grabando || procesandoIA}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <Mic className={`w-3 h-3 ${grabando && campoActivo === 'fallas' ? 'animate-pulse text-red-500' : ''}`} />
+                    {grabando && campoActivo === 'fallas' ? 'Escuchando...' : 'Dictar'}
+                  </Button>
+                </div>
                 <Textarea
                   value={fallas}
                   onChange={(e) => setFallas(e.target.value)}
