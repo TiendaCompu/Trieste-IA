@@ -1271,6 +1271,364 @@ class WorkshopAPITester:
         
         return all_tests_passed
 
+    def test_ai_dictado_orden(self):
+        """Test NEW FUNCTIONALITY: AI dictation processing for work orders"""
+        print("\n" + "="*50)
+        print("TESTING NEW FUNCTIONALITY: AI DICTADO PARA ÓRDENES")
+        print("="*50)
+        
+        # Test data from the review request
+        sample_dictation = "Se detectaron fallas en el sistema de frenos, las pastillas están desgastadas y el disco rayado. El diagnóstico indica problema eléctrico en el ABS. Se realizó cambio de pastillas y rectificado de disco. Se utilizaron pastillas Bosch referencia BR-2023 cantidad dos unidades"
+        
+        # Test 1: Process dictation with AI for work orders
+        dictation_data = {
+            "texto": sample_dictation
+        }
+        
+        print(f"📝 Processing dictation with AI:")
+        print(f"   Text: {sample_dictation[:100]}...")
+        
+        success1, response1 = self.run_test(
+            "POST /api/ai/procesar-dictado-orden - Process Work Order Dictation with AI",
+            "POST",
+            "ai/procesar-dictado-orden",
+            200,
+            data=dictation_data
+        )
+        
+        if success1 and isinstance(response1, dict):
+            print("✅ AI dictation processing completed")
+            
+            # Verify response structure
+            if response1.get('success'):
+                print("✅ AI processing was successful")
+                
+                # Check for required fields in response
+                required_response_fields = ['success', 'datos', 'texto_original', 'respuesta_ia']
+                missing_response_fields = [field for field in required_response_fields if field not in response1]
+                if missing_response_fields:
+                    print(f"⚠️  Missing response fields: {missing_response_fields}")
+                else:
+                    print("✅ All required response fields present")
+                
+                # Check extracted data structure
+                datos = response1.get('datos', {})
+                if isinstance(datos, dict):
+                    print("✅ Extracted data is a dictionary")
+                    
+                    # Verify required fields in extracted data
+                    required_data_fields = ['fallas_detectadas', 'diagnostico_mecanico', 'reparaciones_realizadas', 'repuestos_utilizados', 'observaciones']
+                    missing_data_fields = [field for field in required_data_fields if field not in datos]
+                    
+                    if missing_data_fields:
+                        print(f"❌ Missing required data fields: {missing_data_fields}")
+                        success1 = False
+                    else:
+                        print("✅ All required data fields present in AI extraction")
+                        
+                        # Verify field content quality
+                        print(f"\n📋 EXTRACTED DATA ANALYSIS:")
+                        for field in required_data_fields:
+                            value = datos.get(field, '')
+                            if value and isinstance(value, str) and len(value.strip()) > 0:
+                                print(f"   ✅ {field}: {value[:80]}{'...' if len(value) > 80 else ''}")
+                            else:
+                                print(f"   ⚠️  {field}: Empty or invalid")
+                        
+                        # Verify AI correctly extracted brake system information
+                        fallas = datos.get('fallas_detectadas', '').lower()
+                        if 'frenos' in fallas or 'pastillas' in fallas or 'disco' in fallas:
+                            print("✅ AI correctly identified brake system issues")
+                        else:
+                            print("⚠️  AI may not have correctly identified brake system issues")
+                        
+                        # Verify AI extracted diagnostic information
+                        diagnostico = datos.get('diagnostico_mecanico', '').lower()
+                        if 'abs' in diagnostico or 'eléctrico' in diagnostico:
+                            print("✅ AI correctly identified ABS electrical diagnostic")
+                        else:
+                            print("⚠️  AI may not have correctly identified ABS diagnostic")
+                        
+                        # Verify AI extracted repair information
+                        reparaciones = datos.get('reparaciones_realizadas', '').lower()
+                        if 'cambio' in reparaciones and 'pastillas' in reparaciones:
+                            print("✅ AI correctly identified brake pad replacement")
+                        else:
+                            print("⚠️  AI may not have correctly identified repairs")
+                        
+                        # Verify AI extracted parts information
+                        repuestos = datos.get('repuestos_utilizados', '').lower()
+                        if 'bosch' in repuestos and 'br-2023' in repuestos:
+                            print("✅ AI correctly identified Bosch parts with reference")
+                        else:
+                            print("⚠️  AI may not have correctly identified parts details")
+                
+                else:
+                    print("❌ Extracted data is not a dictionary")
+                    success1 = False
+                    
+                # Verify original text is preserved
+                if response1.get('texto_original') == sample_dictation:
+                    print("✅ Original text correctly preserved")
+                else:
+                    print("❌ Original text not preserved correctly")
+                    success1 = False
+                    
+            else:
+                print(f"❌ AI processing failed: {response1.get('error', 'Unknown error')}")
+                success1 = False
+        
+        # Test 2: Test with empty text (should fail gracefully)
+        empty_data = {"texto": ""}
+        
+        success2, response2 = self.run_test(
+            "POST /api/ai/procesar-dictado-orden - Empty Text Validation",
+            "POST",
+            "ai/procesar-dictado-orden",
+            200,  # Should return 200 but with success: false
+            data=empty_data
+        )
+        
+        if success2 and isinstance(response2, dict):
+            if not response2.get('success'):
+                print("✅ Empty text correctly rejected")
+                if 'error' in response2:
+                    print(f"   Error message: {response2['error']}")
+            else:
+                print("❌ Empty text was incorrectly accepted")
+                success2 = False
+        
+        # Test 3: Test with missing texto field
+        invalid_data = {"invalid_field": "test"}
+        
+        success3, response3 = self.run_test(
+            "POST /api/ai/procesar-dictado-orden - Missing Field Validation",
+            "POST",
+            "ai/procesar-dictado-orden",
+            200,  # Should return 200 but with success: false
+            data=invalid_data
+        )
+        
+        if success3 and isinstance(response3, dict):
+            if not response3.get('success'):
+                print("✅ Missing field correctly handled")
+                if 'error' in response3:
+                    print(f"   Error message: {response3['error']}")
+            else:
+                print("❌ Missing field was incorrectly accepted")
+                success3 = False
+        
+        # Test 4: Test with different types of work order content
+        complex_dictation = "Vehículo presenta ruido extraño en motor, posible problema en correa de distribución. Se realizó inspección completa del sistema de transmisión. Diagnóstico indica necesidad de cambio de aceite y filtros. Se utilizaron filtros Mann W712/75 y aceite Mobil 1 5W-30, cantidad 4 litros. Recomendación: revisión en 5000 km."
+        
+        complex_data = {"texto": complex_dictation}
+        
+        success4, response4 = self.run_test(
+            "POST /api/ai/procesar-dictado-orden - Complex Dictation Processing",
+            "POST",
+            "ai/procesar-dictado-orden",
+            200,
+            data=complex_data
+        )
+        
+        if success4 and isinstance(response4, dict):
+            if response4.get('success'):
+                print("✅ Complex dictation processed successfully")
+                
+                datos_complex = response4.get('datos', {})
+                if isinstance(datos_complex, dict):
+                    # Check if AI extracted engine-related information
+                    fallas_complex = datos_complex.get('fallas_detectadas', '').lower()
+                    if 'motor' in fallas_complex or 'ruido' in fallas_complex:
+                        print("✅ AI correctly identified engine issues in complex text")
+                    else:
+                        print("⚠️  AI may not have identified engine issues in complex text")
+                    
+                    # Check if AI extracted oil change information
+                    reparaciones_complex = datos_complex.get('reparaciones_realizadas', '').lower()
+                    if 'aceite' in reparaciones_complex:
+                        print("✅ AI correctly identified oil change in complex text")
+                    else:
+                        print("⚠️  AI may not have identified oil change in complex text")
+            else:
+                print(f"❌ Complex dictation processing failed: {response4.get('error', 'Unknown error')}")
+                success4 = False
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4
+        
+        print(f"\n📊 AI DICTATION FOR WORK ORDERS TESTS SUMMARY:")
+        print(f"   ✅ Process brake system dictation: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Empty text validation: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Missing field validation: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Complex dictation processing: {'PASSED' if success4 else 'FAILED'}")
+        
+        return all_tests_passed
+
+    def test_orden_trabajo_update_model(self):
+        """Test NEW FUNCTIONALITY: OrdenTrabajoUpdate model with new fields"""
+        print("\n" + "="*50)
+        print("TESTING NEW FUNCTIONALITY: MODELO ORDEN TRABAJO UPDATE")
+        print("="*50)
+        
+        if not self.created_ids['orden']:
+            print("❌ Skipping OrdenTrabajoUpdate tests - no work order ID available")
+            return False
+        
+        # Test 1: Update work order with new fields (fallas, reparaciones_realizadas, repuestos_utilizados)
+        update_data = {
+            "diagnostico": "Diagnóstico actualizado con IA",
+            "fallas": "SISTEMA DE FRENOS: Pastillas desgastadas, disco rayado",
+            "reparaciones_realizadas": "Cambio de pastillas de freno, rectificado de disco",
+            "repuestos_utilizados": "Pastillas Bosch BR-2023 (2 unidades), Disco de freno Brembo (1 unidad)",
+            "observaciones": "Trabajo completado satisfactoriamente, próxima revisión en 10,000 km",
+            "estado": "en_reparacion"
+        }
+        
+        print(f"📝 Updating work order with new fields:")
+        for key, value in update_data.items():
+            print(f"   {key}: {value[:60]}{'...' if len(str(value)) > 60 else ''}")
+        
+        success1, response1 = self.run_test(
+            "PUT /api/ordenes/{id} - Update Work Order with New Fields",
+            "PUT",
+            f"ordenes/{self.created_ids['orden']}",
+            200,
+            data=update_data
+        )
+        
+        if success1 and isinstance(response1, dict):
+            print("✅ Work order updated successfully")
+            
+            # Verify all new fields are present in response
+            new_fields = ['fallas', 'reparaciones_realizadas', 'repuestos_utilizados']
+            missing_fields = [field for field in new_fields if field not in response1]
+            if missing_fields:
+                print(f"❌ Missing new fields in response: {missing_fields}")
+                success1 = False
+            else:
+                print("✅ All new fields present in response")
+                
+                # Verify field values
+                for field in new_fields:
+                    expected_value = update_data[field]
+                    actual_value = response1.get(field)
+                    if actual_value == expected_value:
+                        print(f"✅ {field}: Correctly saved")
+                    else:
+                        print(f"❌ {field}: Value mismatch")
+                        print(f"   Expected: {expected_value}")
+                        print(f"   Got: {actual_value}")
+                        success1 = False
+                
+                # Verify traditional fields still work
+                if response1.get('diagnostico') == update_data['diagnostico']:
+                    print("✅ Traditional diagnostico field still works")
+                else:
+                    print("❌ Traditional diagnostico field not working")
+                    success1 = False
+                
+                if response1.get('estado') == update_data['estado']:
+                    print("✅ Estado field updated correctly")
+                else:
+                    print("❌ Estado field not updated correctly")
+                    success1 = False
+        
+        # Test 2: Retrieve updated work order to verify persistence
+        success2, response2 = self.run_test(
+            "GET /api/ordenes/{id} - Verify Updated Work Order Persistence",
+            "GET",
+            f"ordenes/{self.created_ids['orden']}",
+            200
+        )
+        
+        if success2 and isinstance(response2, dict):
+            print("✅ Updated work order retrieved successfully")
+            
+            # Verify new fields are persisted
+            new_fields = ['fallas', 'reparaciones_realizadas', 'repuestos_utilizados']
+            for field in new_fields:
+                expected_value = update_data[field]
+                actual_value = response2.get(field)
+                if actual_value == expected_value:
+                    print(f"✅ {field}: Correctly persisted in database")
+                else:
+                    print(f"❌ {field}: Not persisted correctly")
+                    success2 = False
+        
+        # Test 3: Test partial updates (only some new fields)
+        partial_update_data = {
+            "fallas": "ACTUALIZACIÓN: Sistema eléctrico también presenta fallas",
+            "observaciones": "Observaciones actualizadas parcialmente"
+        }
+        
+        success3, response3 = self.run_test(
+            "PUT /api/ordenes/{id} - Partial Update with New Fields",
+            "PUT",
+            f"ordenes/{self.created_ids['orden']}",
+            200,
+            data=partial_update_data
+        )
+        
+        if success3 and isinstance(response3, dict):
+            print("✅ Partial update completed successfully")
+            
+            # Verify updated fields
+            if response3.get('fallas') == partial_update_data['fallas']:
+                print("✅ Fallas field updated in partial update")
+            else:
+                print("❌ Fallas field not updated in partial update")
+                success3 = False
+            
+            # Verify non-updated fields remain unchanged
+            if response3.get('reparaciones_realizadas') == update_data['reparaciones_realizadas']:
+                print("✅ Non-updated fields preserved in partial update")
+            else:
+                print("❌ Non-updated fields not preserved in partial update")
+                success3 = False
+        
+        # Test 4: Test with null/empty values for new fields
+        null_update_data = {
+            "fallas": None,
+            "reparaciones_realizadas": "",
+            "repuestos_utilizados": None
+        }
+        
+        success4, response4 = self.run_test(
+            "PUT /api/ordenes/{id} - Update with Null/Empty New Fields",
+            "PUT",
+            f"ordenes/{self.created_ids['orden']}",
+            200,
+            data=null_update_data
+        )
+        
+        if success4 and isinstance(response4, dict):
+            print("✅ Null/empty values handled correctly")
+            
+            # Verify null values are handled properly
+            if response4.get('fallas') is None:
+                print("✅ Null fallas value handled correctly")
+            else:
+                print(f"⚠️  Null fallas became: {response4.get('fallas')}")
+            
+            if response4.get('reparaciones_realizadas') == "":
+                print("✅ Empty reparaciones_realizadas handled correctly")
+            else:
+                print(f"⚠️  Empty reparaciones_realizadas became: {response4.get('reparaciones_realizadas')}")
+        
+        # Summary
+        all_tests_passed = success1 and success2 and success3 and success4
+        
+        print(f"\n📊 ORDEN TRABAJO UPDATE MODEL TESTS SUMMARY:")
+        print(f"   ✅ Update with new fields: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Verify persistence: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Partial updates: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Null/empty values: {'PASSED' if success4 else 'FAILED'}")
+        
+        return all_tests_passed
+
+        return all_tests_passed
+
 def main():
     print("🚗 DIAGNÓSTICO COMPLETO DEL SISTEMA BACKEND")
     print("=" * 80)
