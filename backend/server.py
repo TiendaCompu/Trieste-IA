@@ -1200,6 +1200,11 @@ async def registrar_pago(factura_id: str, pago: RegistrarPago):
 async def root():
     return {"message": "Sistema de Taller Mecánico API funcionando"}
 
+# Root endpoint for the main app
+@app.get("/")
+async def main_root():
+    return {"message": "Sistema de Taller Mecánico - Backend funcionando", "api_url": "/api"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
