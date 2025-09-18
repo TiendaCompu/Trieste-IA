@@ -1261,9 +1261,15 @@ FORMATO DE RESPUESTA REQUERIDO:
         ai_response = response.strip()
         
         try:
-            # Parse JSON response
+            # Clean JSON response (remove code blocks if present)
             import json
-            datos_extraidos = json.loads(ai_response)
+            json_text = ai_response.strip()
+            if json_text.startswith('```json'):
+                json_text = json_text.replace('```json', '').replace('```', '').strip()
+            elif json_text.startswith('```'):
+                json_text = json_text.replace('```', '').strip()
+            
+            datos_extraidos = json.loads(json_text)
             
             return {
                 "success": True,
