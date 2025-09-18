@@ -1735,10 +1735,12 @@ def run_full_tests():
     print(f"\n📊 Overall Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     # Special focus on new functionality results
-    new_functionality_results = test_results[-3:]  # Last 3 are the new ones
+    new_functionality_results = test_results[-5:]  # Last 5 are the new ones (3 previous + 2 newest)
     new_passed = sum(1 for _, result in new_functionality_results if result)
     
-    print(f"\n🆕 NEW FUNCTIONALITY Results: {new_passed}/3 new features passed")
+    print(f"\n🆕 NEW FUNCTIONALITY Results: {new_passed}/5 new features passed")
+    print(f"   🆕 Previous features: {sum(1 for _, result in test_results[-5:-2] if result)}/3")
+    print(f"   🤖 AI Dictation features: {sum(1 for _, result in test_results[-2:] if result)}/2")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
