@@ -1198,6 +1198,95 @@ async def registrar_pago(factura_id: str, pago: RegistrarPago):
     
     return {"message": "Pago registrado correctamente", "saldo_pendiente": max(0, saldo_pendiente)}
 
+# AI Processing for Voice Dictation - Orders
+@api_router.post("/ai/procesar-dictado-orden")
+async def procesar_dictado_orden_con_ia(request: dict):
+    """Procesa dictado de voz con IA para extraer información de órdenes de trabajo"""
+    try:
+        from emergentintegrations.llm.chat import LlmChat
+        
+        texto = request.get('texto', '')
+        
+        if not texto.strip():
+            return {"success": False, "error": "No se proporcionó texto para procesar"}
+        
+        # System message específico para órdenes de trabajo
+        system_message = """Eres un asistente de IA especializado en extraer información de órdenes de trabajo para un taller mecánico venezolano.
+
+INSTRUCCIONES:
+- Extrae TODA la información disponible del texto dictado sobre fallas, diagnósticos y acciones realizadas
+- Organiza la información en formato JSON
+- Usa MAYÚSCULAS para descripciones técnicas importantes
+- Identifica claramente fallas detectadas, diagnósticos del mecánico y acciones tomadas
+- Solo extrae información que esté claramente mencionada
+- Responde SOLO con el JSON, sin explicaciones adicionales"""
+
+        # Initialize Emergent LLM
+        llm = LlmChat(
+            api_key="sk-emergent-5071d2a131d5544Ed5",
+            session_id=f"orden-dictado-{hash(texto[:50])}",
+            system_message=system_message
+        )
+        
+        # Prompt específico para órdenes de trabajo
+        prompt = f"""
+TEXTO DICTADO: "{texto}"
+
+FORMATO DE RESPUESTA REQUERIDO:
+{{
+  "fallas_detectadas": "DESCRIPCIÓN DETALLADA DE LAS FALLAS ENCONTRADAS",
+  "diagnostico_mecanico": "DIAGNÓSTICO PROFESIONAL DEL MECÁNICO",
+  "reparaciones_realizadas": "TRABAJOS Y REPARACIONES EJECUTADAS",
+  "repuestos_utilizados": "LISTA DE REPUESTOS UTILIZADOS CON CANTIDADES",
+  "observaciones": "NOTAS ADICIONALES Y RECOMENDACIONES"
+}}
+
+Analiza el dictado y extrae la información relevante para cada campo."""
+        
+        # Send message and get response
+        from emergentintegrations.llm.chat import UserMessage
+        user_message = UserMessage(text=prompt)
+        response = await llm.send_message(user_message)
+        
+        ai_response = response.strip()
+        
+        try:
+            # Clean JSON response (remove code blocks if present)
+            import json
+            json_text = ai_response.strip()
+            if json_text.startswith('```json'):
+                json_text = json_text.replace('```json', '').replace('```', '').strip()
+            elif json_text.startswith('```'):
+                json_text = json_text.replace('```', '').strip()
+            
+            datos_extraidos = json.loads(json_text)
+            
+            return {
+                "success": True,
+                "datos": datos_extraidos,
+                "texto_original": texto,
+                "respuesta_ia": ai_response
+            }
+            
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "IA no pudo generar formato JSON válido",
+                "respuesta_ia": ai_response
+            }
+            
+    except ImportError:
+        return {
+            "success": False,
+            "error": "Librería emergentintegrations no instalada"
+        }
+    except Exception as e:
+        print(f"Error procesando dictado de orden con IA: {e}")
+        return {
+            "success": False,
+            "error": f"Error interno: {str(e)}"
+        }
+
 # AI Processing for Voice Dictation
 @api_router.post("/ai/procesar-dictado")
 async def procesar_dictado_con_ia(request: dict):
