@@ -2409,98 +2409,157 @@ const RegistroVehiculo = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nombre/Razón Social *</label>
+                  <label className="block text-sm font-medium mb-2">Matrícula/Placa *</label>
                   <Input
-                    value={cliente.nombre}
-                    onChange={(e) => setCliente(prev => ({ ...prev, nombre: e.target.value.toUpperCase() }))}
-                    placeholder="NOMBRE COMPLETO O RAZÓN SOCIAL"
-                    style={{textTransform: 'uppercase'}}
+                    value={vehiculo.matricula}
+                    onChange={(e) => validarMatricula(e.target.value)}
+                    placeholder="4-7 caracteres alfanuméricos"
+                    className="uppercase font-mono tracking-wider text-center"
+                    maxLength={7}
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tipo de Documento *</label>
-                  <div className="flex gap-2">
-                    <Select 
-                      value={`${cliente.tipo_documento}-${cliente.prefijo_documento}`}
-                      onValueChange={(value) => {
-                        const [tipo, prefijo] = value.split('-');
-                        setCliente(prev => ({ ...prev, tipo_documento: tipo, prefijo_documento: prefijo }));
-                      }}
-                    >
-                      <SelectTrigger className="w-24">
-                        <SelectValue placeholder="Tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CI-V">V-</SelectItem>
-                        <SelectItem value="CI-E">E-</SelectItem>
-                        <SelectItem value="RIF-J">J-</SelectItem>
-                        <SelectItem value="RIF-G">G-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      value={cliente.numero_documento}
-                      onChange={(e) => setCliente(prev => ({ ...prev, numero_documento: e.target.value.replace(/\D/g, '') }))}
-                      placeholder={cliente.tipo_documento === 'RIF' ? '12345678-9' : '12345678'}
-                      className="flex-1"
-                    />
-                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {cliente.tipo_documento === 'RIF' ? 'Formato: J-12345678-9 o G-12345678-9' : 'Formato: V-12345678 o E-12345678'}
+                    Solo letras y números, sin símbolos. Mínimo 4, máximo 7 caracteres.
                   </p>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono Principal</label>
+                  <label className="block text-sm font-medium mb-2">Marca *</label>
                   <Input
-                    value={cliente.telefono}
-                    onChange={(e) => setCliente(prev => ({ ...prev, telefono: e.target.value }))}
-                    placeholder="0414-555.12.34"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono Secundario</label>
-                  <Input
-                    value={cliente.telefono_secundario}
-                    onChange={(e) => setCliente(prev => ({ ...prev, telefono_secundario: e.target.value }))}
-                    placeholder="0412-987.65.43"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Dirección Fiscal *</label>
-                  <Textarea
-                    value={cliente.direccion_fiscal}
-                    onChange={(e) => setCliente(prev => ({ ...prev, direccion_fiscal: e.target.value.toUpperCase() }))}
-                    placeholder="DIRECCIÓN COMPLETA PARA FACTURACIÓN"
-                    style={{textTransform: 'uppercase'}}
-                    rows={2}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Empresa/Flota</label>
-                  <Input
-                    value={cliente.empresa}
-                    onChange={(e) => setCliente(prev => ({ ...prev, empresa: e.target.value.toUpperCase() }))}
-                    placeholder="NOMBRE DE LA EMPRESA (OPCIONAL)"
+                    value={vehiculo.marca}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, marca: e.target.value.toUpperCase() }))}
+                    placeholder="TOYOTA, HONDA, ETC."
                     style={{textTransform: 'uppercase'}}
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email *</label>
+                  <label className="block text-sm font-medium mb-2">Modelo *</label>
                   <Input
-                    type="email"
-                    value={cliente.email}
-                    onChange={(e) => setCliente(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
-                    placeholder="correo@empresa.com"
+                    value={vehiculo.modelo}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, modelo: e.target.value.toUpperCase() }))}
+                    placeholder="MODELO DEL VEHÍCULO"
+                    style={{textTransform: 'uppercase'}}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Año</label>
+                  <Input
+                    type="number"
+                    value={vehiculo.año}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, año: e.target.value }))}
+                    placeholder="2020"
+                    min="1950"
+                    max="2030"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color</label>
+                  <Input
+                    value={vehiculo.color}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, color: e.target.value.toUpperCase() }))}
+                    placeholder="BLANCO, NEGRO, ETC."
+                    style={{textTransform: 'uppercase'}}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Kilometraje</label>
+                  <Input
+                    type="number"
+                    value={vehiculo.kilometraje}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, kilometraje: e.target.value }))}
+                    placeholder="100000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tipo de Combustible</label>
+                  <Select 
+                    value={vehiculo.tipo_combustible}
+                    onValueChange={(value) => setVehiculo(prev => ({ ...prev, tipo_combustible: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="TIPO DE COMBUSTIBLE" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GASOLINA">GASOLINA</SelectItem>
+                      <SelectItem value="DIESEL">DIESEL</SelectItem>
+                      <SelectItem value="GNV">GNV (GAS NATURAL)</SelectItem>
+                      <SelectItem value="ELECTRICO">ELÉCTRICO</SelectItem>
+                      <SelectItem value="HIBRIDO">HÍBRIDO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Serial N.I.V.</label>
+                  <Input
+                    value={vehiculo.serial_niv}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, serial_niv: e.target.value.toUpperCase() }))}
+                    placeholder="NÚMERO DE IDENTIFICACIÓN VEHICULAR"
+                    style={{textTransform: 'uppercase'}}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tara (Peso en Kg)</label>
+                  <Input
+                    type="number"
+                    value={vehiculo.tara}
+                    onChange={(e) => setVehiculo(prev => ({ ...prev, tara: e.target.value }))}
+                    placeholder="1500"
+                    step="0.1"
                   />
                 </div>
               </div>
+
+              {/* Sección de Fotografías */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Fotografía del Vehículo</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    {vehiculo.foto_vehiculo ? (
+                      <div>
+                        <img src={vehiculo.foto_vehiculo} alt="Vehículo" className="max-w-full h-32 object-cover mx-auto rounded mb-2" />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setVehiculo(prev => ({ ...prev, foto_vehiculo: '' }))}
+                        >
+                          Cambiar Foto
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setVehiculo(prev => ({ ...prev, foto_vehiculo: e.target.result }));
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="foto-vehiculo"
+                        />
+                        <label htmlFor="foto-vehiculo" className="cursor-pointer">
+                          <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">Subir foto del vehículo</p>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {fotoMatricula && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Foto de la Matrícula</label>
+                    <img src={fotoMatricula} alt="Matrícula" className="max-w-full h-32 object-cover border rounded" />
+                  </div>
+                )}
+              </div>
+              
               <div className="flex justify-end">
-                <Button onClick={() => setPaso(2)} disabled={!cliente.nombre}>
+                <Button onClick={() => setPaso(2)} disabled={!vehiculo.matricula}>
                   Siguiente
                 </Button>
               </div>
