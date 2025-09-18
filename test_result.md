@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: Completar mejoras en la sección de Mecánicos con formato de fechas y teléfonos (DD/MM/AAAA, 0000-000.00.00), campo WhatsApp, estados detallados (Disponible, Fuera de Servicio, Vacaciones), y corrección de subida de fotos para avatares.
+user_problem_statement: Agregar botón de dictado para rellenar las órdenes de trabajo usando IA para procesar la información de fallas detectadas, diagnósticos mecánicos, reparaciones realizadas y repuestos utilizados.
 
 backend:
   - task: "Actualizar ruta PUT mecánicos para incluir campos whatsapp y estado"
