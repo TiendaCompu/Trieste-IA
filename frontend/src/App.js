@@ -1202,6 +1202,11 @@ const OrdenEditar = () => {
   const [reparacionesRealizadas, setReparacionesRealizadas] = useState('');
   const [repuestosUtilizados, setRepuestosUtilizados] = useState('');
 
+  // Estados para dictado
+  const [grabando, setGrabando] = useState(false);
+  const [procesandoIA, setProcesandoIA] = useState(false);
+  const [campoActivo, setCampoActivo] = useState('');
+
   useEffect(() => {
     cargarDatosOrden();
     cargarMecanicos();
