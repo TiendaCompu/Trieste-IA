@@ -2467,13 +2467,49 @@ const RegistroVehiculo = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Matrícula/Placa *</label>
-                  <Input
-                    value={vehiculo.matricula}
-                    onChange={(e) => validarMatricula(e.target.value)}
-                    placeholder="4-7 caracteres alfanuméricos"
-                    className="uppercase font-mono tracking-wider text-center"
-                    maxLength={7}
-                  />
+                  <div className="relative">
+                    <Input
+                      value={vehiculo.matricula}
+                      onChange={(e) => {
+                        const matricula = e.target.value.toUpperCase();
+                        validarMatricula(matricula);
+                        
+                        // Verificar matrícula en tiempo real con debounce
+                        clearTimeout(window.matriculaTimeout);
+                        window.matriculaTimeout = setTimeout(() => {
+                          if (matricula.length >= 4) {
+                            verificarMatriculaEnTiempoReal(matricula);
+                          }
+                        }, 800);
+                      }}
+                      placeholder="4-7 caracteres alfanuméricos"
+                      className={`uppercase font-mono tracking-wider text-center ${vehiculoExistente ? 'border-orange-500 bg-orange-50' : ''}`}
+                      maxLength={7}
+                    />
+                    {verificandoMatricula && (
+                      <div className="absolute right-3 top-3">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {vehiculoExistente && (
+                    <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                      <p className="text-orange-800 font-medium flex items-center gap-2">
+                        <span>⚠️</span> Vehículo existente encontrado
+                      </p>
+                      <p className="text-orange-700 text-sm mt-1">
+                        <strong>{vehiculoExistente.marca} {vehiculoExistente.modelo}</strong> ({vehiculoExistente.año})
+                      </p>
+                      <p className="text-orange-700 text-sm">
+                        Propietario: <strong>{clienteExistente?.nombre || 'Cargando cliente...'}</strong>
+                      </p>
+                      <p className="text-orange-600 text-xs mt-2">
+                        ✏️ Los datos se han cargado para permitir modificaciones
+                      </p>
+                    </div>
+                  )}
+                  
                   <p className="text-xs text-gray-500 mt-1">
                     Solo letras y números, sin símbolos. Mínimo 4, máximo 7 caracteres.
                   </p>
