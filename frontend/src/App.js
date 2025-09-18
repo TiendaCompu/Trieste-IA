@@ -2015,26 +2015,68 @@ const RegistroVehiculo = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
+      
+      // Configuración mejorada para dictado inteligente
       recognition.lang = 'es-ES';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;  // Permitir dictado continuo
+      recognition.interimResults = true;  // Mostrar resultados mientras habla
+      recognition.maxAlternatives = 1;
+      
+      // Variables para controlar pausas largas
+      let finalTranscript = '';
+      let interimTranscript = '';
+      let silenceTimer = null;
+      const SILENCE_DELAY = 3000; // 3 segundos de pausa para procesar
 
       setGrabando(true);
+      toast.info('🎤 Escuchando... Hable y haga una pausa larga para procesar');
       
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        console.log('Texto capturado:', transcript);
-        procesarConIA(transcript, 'texto');
+        interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        // Mostrar texto en tiempo real (opcional)
+        const textoCompleto = finalTranscript + interimTranscript;
+        console.log('Texto actual:', textoCompleto);
+        
+        // Resetear timer de silencio cuando hay nueva entrada
+        if (silenceTimer) {
+          clearTimeout(silenceTimer);
+        }
+        
+        // Iniciar timer para procesar después de pausa larga
+        silenceTimer = setTimeout(() => {
+          if (finalTranscript.trim()) {
+            console.log('Texto final capturado:', finalTranscript);
+            recognition.stop();
+            procesarDictadoConIA(finalTranscript.trim());
+          }
+        }, SILENCE_DELAY);
       };
 
       recognition.onerror = (event) => {
         console.error('Error de reconocimiento de voz:', event.error);
-        toast.error('Error en el reconocimiento de voz');
+        toast.error('Error en el reconocimiento de voz: ' + event.error);
         setGrabando(false);
+        if (silenceTimer) {
+          clearTimeout(silenceTimer);
+        }
       };
 
       recognition.onend = () => {
         setGrabando(false);
+        if (silenceTimer) {
+          clearTimeout(silenceTimer);
+        }
       };
 
       recognition.start();
