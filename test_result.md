@@ -270,8 +270,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Agregar endpoint /api/ai/procesar-dictado-orden para procesar dictado específico de órdenes"
-    - "Actualizar modelo OrdenTrabajoUpdate para incluir campos fallas, reparaciones_realizadas, repuestos_utilizados"
     - "Agregar funcionalidad de dictado al componente OrdenEditar"
     - "Implementar procesamiento de dictado con IA para órdenes"
   stuck_tasks: []
