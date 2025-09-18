@@ -2117,14 +2117,15 @@ const RegistroVehiculo = () => {
       recognition.interimResults = true;  // Mostrar resultados mientras habla
       recognition.maxAlternatives = 1;
       
-      // Variables para controlar pausas largas
+      // Variables para controlar el dictado
       let finalTranscript = '';
       let interimTranscript = '';
-      let silenceTimer = null;
-      const SILENCE_DELAY = 3000; // 3 segundos de pausa para procesar
 
       setGrabando(true);
-      toast.info('🎤 Escuchando... Hable y haga una pausa larga para procesar');
+      
+      // Determinar el comando de parada según la ventana actual
+      const comandoParada = paso === 3 ? 'finalizar' : 'siguiente';
+      toast.info(`🎤 Dictando... Diga "${comandoParada}" para procesar los datos`);
       
       recognition.onresult = (event) => {
         interimTranscript = '';
@@ -2139,39 +2140,45 @@ const RegistroVehiculo = () => {
           }
         }
         
-        // Mostrar texto en tiempo real (opcional)
-        const textoCompleto = finalTranscript + interimTranscript;
+        // Mostrar texto en tiempo real
+        const textoCompleto = (finalTranscript + interimTranscript).toLowerCase();
         console.log('Texto actual:', textoCompleto);
         
-        // Resetear timer de silencio cuando hay nueva entrada
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-        }
+        // Detectar comandos de parada
+        const detectedCommand = textoCompleto.includes('siguiente') || 
+                               textoCompleto.includes('finalizar') ||
+                               textoCompleto.includes('terminar') ||
+                               textoCompleto.includes('procesar');
         
-        // Iniciar timer para procesar después de pausa larga
-        silenceTimer = setTimeout(() => {
-          if (finalTranscript.trim()) {
-            console.log('Texto final capturado:', finalTranscript);
-            recognition.stop();
-            procesarDictadoConIA(finalTranscript.trim());
+        if (detectedCommand && finalTranscript.trim()) {
+          console.log('Comando detectado, procesando texto:', finalTranscript);
+          recognition.stop();
+          
+          // Limpiar comandos del texto final
+          const textoLimpio = finalTranscript
+            .replace(/siguiente/gi, '')
+            .replace(/finalizar/gi, '')
+            .replace(/terminar/gi, '')
+            .replace(/procesar/gi, '')
+            .trim();
+          
+          if (textoLimpio) {
+            procesarDictadoConIA(textoLimpio);
+          } else {
+            toast.warning('No se detectó información para procesar');
+            setGrabando(false);
           }
-        }, SILENCE_DELAY);
+        }
       };
 
       recognition.onerror = (event) => {
         console.error('Error de reconocimiento de voz:', event.error);
         toast.error('Error en el reconocimiento de voz: ' + event.error);
         setGrabando(false);
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-        }
       };
 
       recognition.onend = () => {
         setGrabando(false);
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-        }
       };
 
       recognition.start();
