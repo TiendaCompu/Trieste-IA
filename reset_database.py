@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Configuración de la base de datos
-MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/taller_db')
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 
 async def reset_database():
     """Resetea completamente la base de datos"""
