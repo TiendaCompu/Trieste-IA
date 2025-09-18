@@ -1652,6 +1652,24 @@ const ServiciosRepuestos = () => {
     precio: ''
   });
 
+  // Hook de dictado
+  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
+
+  // Función para manejar dictado de servicios
+  const handleDictadoServicio = async () => {
+    const resultado = await iniciarDictado('servicio', 'servicio');
+    if (resultado.success && resultado.datos) {
+      const datos = resultado.datos;
+      setNuevoItem(prev => ({
+        ...prev,
+        tipo: datos.tipo || prev.tipo,
+        nombre: datos.nombre || prev.nombre,
+        descripcion: datos.descripcion || prev.descripcion,
+        precio: datos.precio ? String(datos.precio) : prev.precio
+      }));
+    }
+  };
+
   useEffect(() => {
     cargarItems();
   }, []);
