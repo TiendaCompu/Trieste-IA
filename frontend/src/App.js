@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Alert, AlertDescription } from "./components/ui/alert";
 import { toast } from "sonner";
+import { useDictado } from "./hooks/useDictado";
+import BotonDictado from "./components/BotonDictado";
 import { 
   Car, 
   Users, 
