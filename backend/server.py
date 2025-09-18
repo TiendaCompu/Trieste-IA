@@ -1197,7 +1197,7 @@ async def registrar_pago(factura_id: str, pago: RegistrarPago):
 async def procesar_dictado_con_ia(request: dict):
     """Procesa dictado de voz con IA para extraer información estructurada"""
     try:
-        from emergentintegrations.llm import EmergentLLM
+        from emergentintegrations.llm.chat import LlmChat
         
         texto = request.get('texto', '')
         
@@ -1205,7 +1205,7 @@ async def procesar_dictado_con_ia(request: dict):
             return {"success": False, "error": "No se proporcionó texto para procesar"}
         
         # Initialize Emergent LLM
-        llm = EmergentLLM(api_key="sk-emergent-5071d2a131d5544Ed5")
+        llm = LlmChat(api_key="sk-emergent-5071d2a131d5544Ed5")
         
         # Prompt específico para extraer información de vehículos y clientes
         prompt = f"""
