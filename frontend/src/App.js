@@ -1928,6 +1928,9 @@ const RegistroVehiculo = () => {
   const [procesandoIA, setProcesandoIA] = useState(false);
   const [fotoMatricula, setFotoMatricula] = useState(null);
   const [modoCreacionDirecta, setModoCreacionDirecta] = useState(false);
+  const [verificandoMatricula, setVerificandoMatricula] = useState(false);
+  const [vehiculoExistente, setVehiculoExistente] = useState(null);
+  const [clienteExistente, setClienteExistente] = useState(null);
 
   useEffect(() => {
     // Cargar matrícula predefinida si viene del Dashboard
