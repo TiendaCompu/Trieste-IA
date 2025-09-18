@@ -123,6 +123,21 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED - All mechanic operations working perfectly: ✅ POST /api/mecanicos creates mechanic with whatsapp and estado fields correctly ✅ PUT /api/mecanicos/{id} updates all fields including whatsapp and estado ✅ GET /api/mecanicos returns all mechanics with complete data ✅ GET /api/mecanicos/activos returns active mechanics ✅ Date formats handled correctly (ISO format) ✅ All MecanicoEspecialista model fields present in responses ✅ Estado changes from 'disponible' to 'fuera_servicio' work correctly ✅ WhatsApp field '0412-987.65.43' saved and updated properly ✅ Test data used: 'Test Mechanic Backend', especialidad 'motor', telefono '0414-555.12.34' as requested"
 
+  - task: "Endpoint raíz del backend (GET /) retornando 404"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "Durante diagnóstico completo detectado que GET / retorna 404 Not Found. Solo funciona GET /api/ pero no hay endpoint raíz principal."
+        - working: true
+          agent: "testing"
+          comment: "CORREGIDO - Agregado endpoint raíz @app.get('/') que retorna mensaje de confirmación y URL de API. Ahora GET / retorna 200 OK con mensaje 'Sistema de Taller Mecánico - Backend funcionando' y api_url '/api'. Conectividad básica completamente funcional."
+
 frontend:
   - task: "Mostrar campo WhatsApp en tarjetas de mecánicos"
     implemented: true
