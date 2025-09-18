@@ -1256,7 +1256,7 @@ FORMATO DE RESPUESTA REQUERIDO:
         # Send message and get response
         from emergentintegrations.llm.chat import UserMessage
         user_message = UserMessage(text=prompt)
-        response = llm.send_message(user_message)
+        response = await llm.send_message(user_message)
         
         ai_response = response.strip()
         
