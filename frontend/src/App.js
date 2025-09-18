@@ -2681,38 +2681,6 @@ const ConfiguracionTaller = () => {
 // Navegación Principal (actualizada con diseño Trieste)
 const Navigation = () => {
   const location = useLocation();
-  const [busquedaGlobal, setBusquedaGlobal] = useState('');
-  const [resultadosBusqueda, setResultadosBusqueda] = useState({ vehiculos: [], clientes: [] });
-  const [mostrandoResultados, setMostrandoResultados] = useState(false);
-  const navigate = useNavigate();
-
-  const busquedaGlobalizada = async (query) => {
-    if (!query || query.length < 2) {
-      setResultadosBusqueda({ vehiculos: [], clientes: [] });
-      setMostrandoResultados(false);
-      return;
-    }
-
-    try {
-      const response = await axios.get(`${API}/buscar?q=${encodeURIComponent(query)}`);
-      setResultadosBusqueda(response.data);
-      setMostrandoResultados(true);
-    } catch (error) {
-      console.error('Error en búsqueda:', error);
-    }
-  };
-
-  const handleBusquedaChange = (e) => {
-    const valor = e.target.value;
-    setBusquedaGlobal(valor);
-    busquedaGlobalizada(valor);
-  };
-
-  const seleccionarResultado = (vehiculo) => {
-    navigate(`/vehiculo/${vehiculo.id}`);
-    setBusquedaGlobal('');
-    setMostrandoResultados(false);
-  };
 
   return (
     <nav className="trieste-nav">
