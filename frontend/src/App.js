@@ -2403,8 +2403,8 @@ const RegistroVehiculo = () => {
         <TabsContent value="1" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Información del Cliente</CardTitle>
-              <CardDescription>Datos de la empresa o cliente individual</CardDescription>
+              <CardTitle>Información del Vehículo</CardTitle>
+              <CardDescription>Datos técnicos del vehículo</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
