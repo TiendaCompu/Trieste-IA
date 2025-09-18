@@ -1272,6 +1272,57 @@ class WorkshopAPITester:
         return all_tests_passed
 
 def main():
+    print("🚗 DIAGNÓSTICO COMPLETO DEL SISTEMA BACKEND")
+    print("=" * 80)
+    print("OBJETIVO: Identificar TODOS los errores sin hacer correcciones")
+    print("=" * 80)
+    
+    # Initialize tester
+    tester = WorkshopAPITester()
+    
+    # Run comprehensive diagnostic
+    print(f"\n🔗 BACKEND URL: {tester.base_url}")
+    print(f"🔗 API URL: {tester.api_url}")
+    
+    # 1. CONECTIVIDAD BÁSICA
+    connectivity_ok = tester.diagnostic_basic_connectivity()
+    
+    # 2. BASE DE DATOS
+    database_ok = tester.diagnostic_database_endpoints()
+    
+    # 3. FUNCIONALIDADES CRÍTICAS
+    critical_ok = tester.diagnostic_critical_functionalities()
+    
+    # 4. ENDPOINTS NUEVOS
+    new_endpoints_ok = tester.diagnostic_new_endpoints()
+    
+    # Print comprehensive summary
+    tester.print_diagnostic_summary()
+    
+    # Final diagnostic conclusion
+    print("\n" + "="*80)
+    print("CONCLUSIÓN DEL DIAGNÓSTICO")
+    print("="*80)
+    
+    total_categories = 4
+    passed_categories = sum([connectivity_ok, database_ok, critical_ok, new_endpoints_ok])
+    
+    print(f"📊 Categorías evaluadas: {passed_categories}/{total_categories}")
+    print(f"   ✅ Conectividad básica: {'OK' if connectivity_ok else 'PROBLEMAS'}")
+    print(f"   ✅ Base de datos: {'OK' if database_ok else 'PROBLEMAS'}")
+    print(f"   ✅ Funcionalidades críticas: {'OK' if critical_ok else 'PROBLEMAS'}")
+    print(f"   ✅ Endpoints nuevos: {'OK' if new_endpoints_ok else 'PROBLEMAS'}")
+    
+    if passed_categories == total_categories:
+        print("\n🎉 DIAGNÓSTICO COMPLETO: Sistema funcionando correctamente")
+        return 0
+    else:
+        print(f"\n⚠️ DIAGNÓSTICO COMPLETO: Se encontraron problemas en {total_categories - passed_categories} categorías")
+        print("📋 Revisar detalles arriba para información específica de cada error")
+        return 1
+
+def run_full_tests():
+    """Run the original comprehensive test suite"""
     print("🚗 WORKSHOP MANAGEMENT API TESTING")
     print("=" * 60)
     
