@@ -1197,7 +1197,7 @@ async def registrar_pago(factura_id: str, pago: RegistrarPago):
 async def procesar_dictado_con_ia(request: dict):
     """Procesa dictado de voz con IA para extraer información estructurada"""
     try:
-        from emergentintegrations import EmergentLLM
+        from emergentintegrations.llm import EmergentLLM
         
         texto = request.get('texto', '')
         
