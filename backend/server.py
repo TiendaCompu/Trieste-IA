@@ -1,5 +1,4 @@
-from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,8 +10,6 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 import base64
-import io
-from PIL import Image
 
 # Import AI integrations
 from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
@@ -395,7 +392,7 @@ async def extraer_datos_vehiculo(request: AIExtraRequest):
             datos_extraidos = json.loads(json_str)
             return {"success": True, "datos": datos_extraidos}
             
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             # If JSON parsing fails, return the raw response for debugging
             return {"success": False, "error": "Error parsing AI response", "raw_response": response}
             
