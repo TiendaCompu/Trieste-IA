@@ -1754,9 +1754,30 @@ const ServiciosRepuestos = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {editandoItem ? 'Editar Item' : 'Agregar Nuevo Item'}
-              </DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle>
+                  {editandoItem ? 'Editar Item' : 'Agregar Nuevo Item'}
+                </DialogTitle>
+                <BotonDictado
+                  onDictado={handleDictadoServicio}
+                  grabando={grabando}
+                  procesandoIA={procesandoIA}
+                  campoActivo={campoActivo}
+                  campo="servicio"
+                  texto="Dictar"
+                  size="sm"
+                />
+              </div>
+              {procesandoIA && (
+                <div className="mt-2">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      🤖 Procesando dictado de servicio/repuesto...
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
             </DialogHeader>
             <div className="space-y-4">
               <div>
