@@ -1986,6 +1986,25 @@ const MecanicosList = () => {
     nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: ''
   });
 
+  // Hook de dictado
+  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
+
+  // Función para manejar dictado de mecánicos
+  const handleDictadoMecanico = async () => {
+    const resultado = await iniciarDictado('mecanico', 'mecanico');
+    if (resultado.success && resultado.datos) {
+      const datos = resultado.datos;
+      setNuevoMecanico(prev => ({
+        ...prev,
+        nombre: datos.nombre || prev.nombre,
+        especialidad: datos.especialidad || prev.especialidad,
+        telefono: datos.telefono || prev.telefono,
+        whatsapp: datos.whatsapp || prev.whatsapp,
+        estado: datos.estado || prev.estado
+      }));
+    }
+  };
+
   useEffect(() => {
     cargarMecanicos();
   }, []);
