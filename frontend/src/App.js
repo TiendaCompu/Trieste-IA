@@ -4337,7 +4337,18 @@ const VehiculoDetalle = () => {
                 </>
               ) : (
                 <div className="border p-4 rounded-lg bg-blue-50">
-                  <h4 className="font-medium mb-3">Crear Nuevo Cliente</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Crear Nuevo Cliente</h4>
+                    <BotonDictado
+                      onDictado={handleDictadoCliente}
+                      grabando={grabando}
+                      procesandoIA={procesandoIA}
+                      campoActivo={campoActivo}
+                      campo="cliente"
+                      texto="Dictar"
+                      size="sm"
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Nombre *</label>
