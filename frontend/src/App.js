@@ -1978,6 +1978,60 @@ const RegistroVehiculo = () => {
     }
   };
 
+  const verificarMatriculaEnTiempoReal = async (matricula) => {
+    if (!matricula || matricula.length < 4) {
+      setVehiculoExistente(null);
+      setClienteExistente(null);
+      return;
+    }
+
+    setVerificandoMatricula(true);
+    try {
+      const response = await axios.get(`${API}/vehiculos/verificar-matricula/${matricula}`);
+      
+      if (response.data.exists && response.data.vehiculo) {
+        // Vehículo existe, cargar datos
+        const vehiculoEncontrado = response.data.vehiculo;
+        setVehiculoExistente(vehiculoEncontrado);
+        
+        // Cargar datos del cliente
+        try {
+          const clienteRes = await axios.get(`${API}/clientes/${vehiculoEncontrado.cliente_id}`);
+          setClienteExistente(clienteRes.data);
+        } catch (error) {
+          console.error('Error cargando cliente:', error);
+        }
+        
+        // Pre-llenar formulario con datos existentes
+        setVehiculo(prev => ({
+          ...prev,
+          matricula: vehiculoEncontrado.matricula,
+          marca: vehiculoEncontrado.marca,
+          modelo: vehiculoEncontrado.modelo,
+          año: vehiculoEncontrado.año?.toString() || '',
+          color: vehiculoEncontrado.color || '',
+          kilometraje: vehiculoEncontrado.kilometraje?.toString() || '',
+          tipo_combustible: vehiculoEncontrado.tipo_combustible || '',
+          serial_niv: vehiculoEncontrado.serial_niv || '',
+          tara: vehiculoEncontrado.tara?.toString() || '',
+          foto_vehiculo: vehiculoEncontrado.foto_vehiculo || ''
+        }));
+        
+        toast.info('Vehículo encontrado - Datos cargados para modificación');
+      } else {
+        // Vehículo no existe
+        setVehiculoExistente(null);
+        setClienteExistente(null);
+      }
+    } catch (error) {
+      console.error('Error verificando matrícula:', error);
+      setVehiculoExistente(null);
+      setClienteExistente(null);
+    } finally {
+      setVerificandoMatricula(false);
+    }
+  };
+
   const procesarDictadoConIA = async (textoDictado) => {
     setProcesandoIA(true);
     toast.info('🤖 Procesando dictado con IA...');
