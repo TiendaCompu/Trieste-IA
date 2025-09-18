@@ -80,6 +80,19 @@ const BusquedaMatricula = () => {
   const [observacionesKm, setObservacionesKm] = useState('');
   const navigate = useNavigate();
 
+  // Hook de dictado para observaciones
+  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
+
+  // Función para manejar dictado de observaciones
+  const handleDictadoObservaciones = async () => {
+    const resultado = await iniciarDictado('general', 'observaciones');
+    if (resultado.success && resultado.datos) {
+      // Para observaciones simples, usar el texto procesado directamente
+      const textoObservaciones = resultado.datos.observaciones || resultado.textoOriginal;
+      setObservacionesKm(textoObservaciones);
+    }
+  };
+
   const validarMatricula = (valor) => {
     // Solo alfanuméricos, 4-7 caracteres, convertir a mayúsculas
     const limpio = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
