@@ -1253,6 +1253,130 @@ const OrdenEditar = () => {
     }
   };
 
+  // Funciones para dictado de órdenes
+  const procesarDictadoOrdenConIA = async (textoDictado) => {
+    setProcesandoIA(true);
+    toast.info('🤖 Procesando dictado de orden con IA...');
+    
+    console.log('Texto de orden a procesar:', textoDictado);
+    
+    try {
+      const response = await axios.post(`${API}/ai/procesar-dictado-orden`, {
+        texto: textoDictado
+      });
+
+      console.log('Respuesta IA orden:', response.data);
+
+      if (response.data.success && response.data.datos) {
+        const datos = response.data.datos;
+        
+        // Llenar campos según lo que detecte la IA
+        if (datos.fallas_detectadas && datos.fallas_detectadas.trim()) {
+          setFallas(prev => prev ? `${prev}\n\n${datos.fallas_detectadas}` : datos.fallas_detectadas);
+        }
+        
+        if (datos.diagnostico_mecanico && datos.diagnostico_mecanico.trim()) {
+          setDiagnostico(prev => prev ? `${prev}\n\n${datos.diagnostico_mecanico}` : datos.diagnostico_mecanico);
+        }
+        
+        if (datos.reparaciones_realizadas && datos.reparaciones_realizadas.trim()) {
+          setReparacionesRealizadas(prev => prev ? `${prev}\n\n${datos.reparaciones_realizadas}` : datos.reparaciones_realizadas);
+        }
+        
+        if (datos.repuestos_utilizados && datos.repuestos_utilizados.trim()) {
+          setRepuestosUtilizados(prev => prev ? `${prev}\n\n${datos.repuestos_utilizados}` : datos.repuestos_utilizados);
+        }
+        
+        if (datos.observaciones && datos.observaciones.trim()) {
+          setObservaciones(prev => prev ? `${prev}\n\n${datos.observaciones}` : datos.observaciones);
+        }
+
+        toast.success('✅ Información extraída y aplicada correctamente');
+      } else {
+        toast.error('❌ La IA no pudo procesar la información: ' + (response.data.error || 'Error desconocido'));
+      }
+    } catch (error) {
+      console.error('Error procesando dictado de orden:', error);
+      toast.error('❌ Error procesando el dictado: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setProcesandoIA(false);
+    }
+  };
+
+  const handleVoiceInputOrden = async (campo = 'general') => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      // Configuración para dictado de órdenes
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'es-ES';
+      recognition.maxAlternatives = 1;
+
+      let textoFinal = '';
+      let textoTemporal = '';
+      
+      setCampoActivo(campo);
+      setGrabando(true);
+      toast.info(`🎤 Grabando para ${campo}... Di "finalizar" para procesar`);
+
+      recognition.onresult = (event) => {
+        textoTemporal = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          
+          if (event.results[i].isFinal) {
+            textoFinal += transcript + ' ';
+          } else {
+            textoTemporal += transcript;
+          }
+        }
+
+        // Verificar comandos de control
+        const textoCompleto = (textoFinal + textoTemporal).toLowerCase();
+        
+        if (textoCompleto.includes('finalizar') || textoCompleto.includes('terminar') || textoCompleto.includes('procesar')) {
+          recognition.stop();
+        }
+      };
+
+      recognition.onend = () => {
+        setGrabando(false);
+        setCampoActivo('');
+        
+        if (textoFinal.trim()) {
+          // Limpiar comandos de control del texto
+          const textoLimpio = textoFinal
+            .replace(/finalizar/gi, '')
+            .replace(/terminar/gi, '')
+            .replace(/procesar/gi, '')
+            .trim();
+          
+          if (textoLimpio) {
+            procesarDictadoOrdenConIA(textoLimpio);
+          } else {
+            toast.warning('No se detectó información para procesar');
+          }
+        } else {
+          toast.warning('No se capturó audio válido');
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Error de reconocimiento:', event.error);
+        setGrabando(false);
+        setCampoActivo('');
+        toast.error('Error en el reconocimiento de voz: ' + event.error);
+      };
+
+      recognition.start();
+    } else {
+      toast.error('❌ Reconocimiento de voz no soportado en este navegador');
+    }
+  };
+
   const guardarCambios = async () => {
     setGuardando(true);
     try {
