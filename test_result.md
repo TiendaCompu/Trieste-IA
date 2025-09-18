@@ -163,6 +163,30 @@ backend:
           comment: "CORREGIDO - Agregado endpoint raíz @app.get('/') que retorna mensaje de confirmación y URL de API. Ahora GET / retorna 200 OK con mensaje 'Sistema de Taller Mecánico - Backend funcionando' y api_url '/api'. Conectividad básica completamente funcional."
 
 frontend:
+  - task: "Agregar funcionalidad de dictado al componente OrdenEditar"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Agregados botones de dictado individual para cada campo (Diagnóstico, Fallas, Reparaciones, Repuestos) y botón general 'Dictar Todo'"
+
+  - task: "Implementar procesamiento de dictado con IA para órdenes"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Funciones procesarDictadoOrdenConIA y handleVoiceInputOrden implementadas con reconocimiento de voz y procesamiento IA"
+
   - task: "Mostrar campo WhatsApp en tarjetas de mecánicos"
     implemented: true
     working: true
