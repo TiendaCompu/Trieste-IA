@@ -148,6 +148,9 @@ class OrdenTrabajo(BaseModel):
     cliente_id: str
     mecanico_id: Optional[str] = None
     diagnostico: Optional[str] = None
+    fallas: Optional[str] = None  # Fallas detectadas durante inspección
+    reparaciones_realizadas: Optional[str] = None  # Trabajos realizados
+    repuestos_utilizados: Optional[str] = None  # Lista de repuestos usados
     servicios_repuestos: List[Dict[str, Any]] = []  # [{"id": "service_id", "cantidad": 1, "precio": 100}]
     estado: str = "recibido"  # "recibido", "diagnosticando", "presupuestado", "aprobado", "en_reparacion", "terminado", "entregado"
     presupuesto_total: Optional[float] = None
