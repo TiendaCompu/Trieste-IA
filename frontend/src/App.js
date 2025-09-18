@@ -3960,6 +3960,24 @@ const VehiculoDetalle = () => {
   
   const navigate = useNavigate();
 
+  // Hook de dictado
+  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
+
+  // Función para manejar dictado de cliente
+  const handleDictadoCliente = async () => {
+    const resultado = await iniciarDictado('vehiculo', 'cliente');
+    if (resultado.success && resultado.datos && resultado.datos.cliente) {
+      const datos = resultado.datos.cliente;
+      setNuevoCliente(prev => ({
+        ...prev,
+        nombre: datos.nombre || prev.nombre,
+        telefono: datos.telefono || prev.telefono,
+        empresa: datos.empresa || prev.empresa,
+        email: datos.email || prev.email
+      }));
+    }
+  };
+
   useEffect(() => {
     cargarDetalles();
   }, [vehiculoId]);
