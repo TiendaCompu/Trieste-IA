@@ -412,7 +412,7 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "Iniciando correcciones en la funcionalidad de mecánicos. Identificados problemas en backend (ruta PUT) y frontend (visualización de WhatsApp y estados detallados)"
+      message: "NUEVA FUNCIONALIDAD IMPLEMENTADA: Sistema de dictado para órdenes de trabajo. Creado endpoint específico /api/ai/procesar-dictado-orden que procesa dictado con IA para extraer información estructurada de fallas detectadas, diagnósticos mecánicos, reparaciones realizadas y repuestos utilizados. Actualizado modelo OrdenTrabajoUpdate. En frontend agregados botones de dictado individuales y general en componente OrdenEditar con reconocimiento de voz y procesamiento automático vía IA. Listo para testing backend y frontend."
     - agent: "main"
       message: "COMPLETADAS todas las mejoras de mecánicos: campos WhatsApp y estado actualizados en backend, UI completamente funcional con estados detallados, formato correcto de fechas/teléfonos, cambio de estado en tiempo real, y subida de avatares. Screenshots confirman funcionalidad completa. Listo para testing del backend."
     - agent: "main"
