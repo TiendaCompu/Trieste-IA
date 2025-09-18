@@ -1258,7 +1258,7 @@ FORMATO DE RESPUESTA REQUERIDO:
         user_message = UserMessage(text=prompt)
         response = llm.send_message(user_message)
         
-        ai_response = response.choices[0].message.content.strip()
+        ai_response = response.strip()
         
         try:
             # Parse JSON response
