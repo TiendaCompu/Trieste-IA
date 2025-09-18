@@ -4457,6 +4457,7 @@ function App() {
               <Route path="/registro" element={<RegistroVehiculo />} />
               <Route path="/ordenes" element={<OrdenesListado />} />
               <Route path="/orden/:ordenId" element={<OrdenDetalle />} />
+              <Route path="/orden/:ordenId/editar" element={<OrdenEditar />} />
               <Route path="/mecanicos" element={<MecanicosList />} />
               <Route path="/servicios" element={<ServiciosRepuestos />} />
               <Route path="/vehiculos" element={<VehiculosList />} />
