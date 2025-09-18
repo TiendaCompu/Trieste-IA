@@ -1998,6 +1998,19 @@ const RegistroVehiculo = () => {
         try {
           const clienteRes = await axios.get(`${API}/clientes/${vehiculoEncontrado.cliente_id}`);
           setClienteExistente(clienteRes.data);
+          
+          // Pre-llenar formulario del cliente también
+          setCliente({
+            nombre: clienteRes.data.nombre || '',
+            tipo_documento: clienteRes.data.tipo_documento || 'CI',
+            prefijo_documento: clienteRes.data.prefijo_documento || 'V',
+            numero_documento: clienteRes.data.numero_documento || '',
+            telefono: clienteRes.data.telefono || '',
+            telefono_secundario: clienteRes.data.telefono_secundario || '',
+            direccion_fiscal: clienteRes.data.direccion_fiscal || '',
+            empresa: clienteRes.data.empresa || '',
+            email: clienteRes.data.email || ''
+          });
         } catch (error) {
           console.error('Error cargando cliente:', error);
         }
