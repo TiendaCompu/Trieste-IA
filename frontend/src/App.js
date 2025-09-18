@@ -2395,8 +2395,8 @@ const RegistroVehiculo = () => {
 
       <Tabs value={paso.toString()} onValueChange={(value) => setPaso(parseInt(value))}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="1">Cliente</TabsTrigger>
-          <TabsTrigger value="2">Vehículo</TabsTrigger>
+          <TabsTrigger value="1">Vehículo</TabsTrigger>
+          <TabsTrigger value="2">Cliente</TabsTrigger>
           <TabsTrigger value="3">Confirmación</TabsTrigger>
         </TabsList>
 
