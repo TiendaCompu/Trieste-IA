@@ -1975,6 +1975,101 @@ const RegistroVehiculo = () => {
     }
   };
 
+  const procesarDictadoConIA = async (textoDictado) => {
+    setProcesandoIA(true);
+    toast.info('🤖 Procesando dictado con IA...');
+    
+    try {
+      const response = await axios.post(`${API}/ai/procesar-dictado`, {
+        texto: textoDictado,
+        contexto: 'registro_vehiculo_cliente'
+      });
+      
+      if (response.data.success) {
+        const datos = response.data.datos;
+        let camposActualizados = [];
+        
+        // Actualizar datos del cliente
+        if (datos.cliente) {
+          if (datos.cliente.nombre) {
+            setCliente(prev => ({ ...prev, nombre: datos.cliente.nombre.toUpperCase() }));
+            camposActualizados.push('nombre cliente');
+          }
+          if (datos.cliente.telefono) {
+            setCliente(prev => ({ ...prev, telefono: datos.cliente.telefono }));
+            camposActualizados.push('teléfono');
+          }
+          if (datos.cliente.empresa) {
+            setCliente(prev => ({ ...prev, empresa: datos.cliente.empresa.toUpperCase() }));
+            camposActualizados.push('empresa');
+          }
+          if (datos.cliente.email) {
+            setCliente(prev => ({ ...prev, email: datos.cliente.email.toLowerCase() }));
+            camposActualizados.push('email');
+          }
+          if (datos.cliente.direccion_fiscal) {
+            setCliente(prev => ({ ...prev, direccion_fiscal: datos.cliente.direccion_fiscal.toUpperCase() }));
+            camposActualizados.push('dirección fiscal');
+          }
+          if (datos.cliente.tipo_documento && datos.cliente.numero_documento) {
+            setCliente(prev => ({ 
+              ...prev, 
+              tipo_documento: datos.cliente.tipo_documento,
+              prefijo_documento: datos.cliente.prefijo_documento || 'V',
+              numero_documento: datos.cliente.numero_documento
+            }));
+            camposActualizados.push('documento');
+          }
+        }
+        
+        // Actualizar datos del vehículo
+        if (datos.vehiculo) {
+          if (datos.vehiculo.matricula) {
+            setVehiculo(prev => ({ ...prev, matricula: datos.vehiculo.matricula.toUpperCase() }));
+            camposActualizados.push('matrícula');
+          }
+          if (datos.vehiculo.marca) {
+            setVehiculo(prev => ({ ...prev, marca: datos.vehiculo.marca.toUpperCase() }));
+            camposActualizados.push('marca');
+          }
+          if (datos.vehiculo.modelo) {
+            setVehiculo(prev => ({ ...prev, modelo: datos.vehiculo.modelo.toUpperCase() }));
+            camposActualizados.push('modelo');
+          }
+          if (datos.vehiculo.año) {
+            setVehiculo(prev => ({ ...prev, año: datos.vehiculo.año.toString() }));
+            camposActualizados.push('año');
+          }
+          if (datos.vehiculo.color) {
+            setVehiculo(prev => ({ ...prev, color: datos.vehiculo.color.toUpperCase() }));
+            camposActualizados.push('color');
+          }
+          if (datos.vehiculo.kilometraje) {
+            setVehiculo(prev => ({ ...prev, kilometraje: datos.vehiculo.kilometraje.toString() }));
+            camposActualizados.push('kilometraje');
+          }
+          if (datos.vehiculo.tipo_combustible) {
+            setVehiculo(prev => ({ ...prev, tipo_combustible: datos.vehiculo.tipo_combustible.toUpperCase() }));
+            camposActualizados.push('tipo combustible');
+          }
+        }
+        
+        if (camposActualizados.length > 0) {
+          toast.success(`✅ IA completó: ${camposActualizados.join(', ')}`);
+        } else {
+          toast.warning('IA no pudo extraer información específica del dictado');
+        }
+      } else {
+        toast.error('No se pudo procesar el dictado');
+      }
+    } catch (error) {
+      console.error('Error procesando dictado con IA:', error);
+      toast.error('Error conectando con IA para procesar dictado');
+    } finally {
+      setProcesandoIA(false);
+    }
+  };
+
   const procesarConIA = async (textoOImagen, tipo) => {
     setProcesandoIA(true);
     try {
