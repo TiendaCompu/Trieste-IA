@@ -2232,6 +2232,8 @@ const RegistroVehiculo = () => {
     tara: '',
     foto_vehiculo: ''
   });
+  const [grabando, setGrabando] = useState(false);
+  const [procesandoIA, setProcesandoIA] = useState(false);
   const [fotoMatricula, setFotoMatricula] = useState(null);
   const [modoCreacionDirecta, setModoCreacionDirecta] = useState(false);
   const [verificandoMatricula, setVerificandoMatricula] = useState(false);
@@ -2240,9 +2242,6 @@ const RegistroVehiculo = () => {
   
   // NUEVO: Estado para controlar si la matrícula es válida y habilitar otros campos
   const [matriculaValida, setMatriculaValida] = useState(false);
-
-  // Hook de dictado para registro de vehículos
-  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
 
   // Funciones específicas para matrícula
   const iniciarDictadoMatricula = async () => {
