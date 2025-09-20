@@ -2243,6 +2243,91 @@ const RegistroVehiculo = () => {
   // NUEVO: Estado para controlar si la matrícula es válida y habilitar otros campos
   const [matriculaValida, setMatriculaValida] = useState(false);
 
+  // Hook de dictado para registro de vehículos
+  const { grabando, procesandoIA, campoActivo, iniciarDictado } = useDictado();
+
+  // Funciones específicas para matrícula
+  const iniciarDictadoMatricula = async () => {
+    const resultado = await iniciarDictado('vehiculo', 'matricula');
+    if (resultado.success && resultado.datos) {
+      const datos = resultado.datos;
+      // Extraer matrícula del resultado
+      if (datos.vehiculo && datos.vehiculo.matricula) {
+        validarMatricula(datos.vehiculo.matricula);
+      } else if (datos.matricula) {
+        validarMatricula(datos.matricula);
+      }
+    }
+  };
+
+  const iniciarCamaraMatricula = async () => {
+    try {
+      // Solicitar acceso a cámara
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      
+      // Crear elemento video temporal
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+
+      // Crear canvas para capturar frame
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Esperar a que el video esté listo
+      video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Capturar frame después de 3 segundos
+        setTimeout(() => {
+          ctx.drawImage(video, 0, 0);
+          const imageData = canvas.toDataURL('image/jpeg', 0.8);
+          
+          // Detener stream
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Procesar imagen con IA
+          procesarImagenMatricula(imageData);
+        }, 3000);
+      };
+
+      toast.info('📷 Cámara activada. Enfoque la matrícula por 3 segundos...');
+      
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast.error('❌ No se pudo acceder a la cámara');
+    }
+  };
+
+  const procesarImagenMatricula = async (imagenBase64) => {
+    try {
+      setProcesandoIA(true);
+      toast.info('🤖 Procesando imagen de matrícula...');
+
+      const response = await axios.post(`${API}/ai/procesar-imagen`, {
+        imagen_base64: imagenBase64
+      });
+
+      if (response.data.success && response.data.datos) {
+        const datos = response.data.datos;
+        if (datos.vehiculo && datos.vehiculo.matricula) {
+          validarMatricula(datos.vehiculo.matricula);
+          toast.success('✅ Matrícula detectada: ' + datos.vehiculo.matricula);
+        } else {
+          toast.warning('⚠️ No se detectó matrícula en la imagen');
+        }
+      } else {
+        toast.error('❌ No se pudo procesar la imagen');
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      toast.error('❌ Error procesando la imagen');
+    } finally {
+      setProcesandoIA(false);
+    }
+  };
+
   useEffect(() => {
     // Cargar matrícula predefinida si viene del Dashboard
     if (location.state?.matricula_predefinida) {
