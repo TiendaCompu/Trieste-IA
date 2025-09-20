@@ -3493,116 +3493,352 @@ const ConfiguracionTaller = () => {
           <Settings className="nav-icon" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto dialog-content">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto dialog-content">
         <DialogHeader>
           <DialogTitle className="text-xl text-center" style={{color: 'var(--trieste-blue)'}}>
-            Configuración del Taller
+            Configuración del Sistema - Centro Trieste
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Nombre del Taller
-              </label>
-              <Input
-                value={configuracion.nombre_taller}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, nombre_taller: e.target.value }))}
-              />
+        <Tabs value={tabActiva} onValueChange={setTabActiva} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general">Información General</TabsTrigger>
+            <TabsTrigger value="colores">Personalización</TabsTrigger>
+            <TabsTrigger value="sistema">Sistema</TabsTrigger>
+          </TabsList>
+
+          {/* Tab: Información General */}
+          <TabsContent value="general" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Nombre del Taller *
+                </label>
+                <Input
+                  value={configuracion.nombre_taller}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, nombre_taller: e.target.value }))}
+                  placeholder="Centro de Servicios Automotriz Trieste"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Teléfono
+                </label>
+                <Input
+                  value={configuracion.telefono}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, telefono: e.target.value }))}
+                  placeholder="0000-000.00.00"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Dirección Completa
+                </label>
+                <Input
+                  value={configuracion.direccion}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, direccion: e.target.value }))}
+                  placeholder="Dirección completa del taller"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  Email Corporativo
+                </label>
+                <Input
+                  type="email"
+                  value={configuracion.email}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="info@trieste.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  RIF/NIT
+                </label>
+                <Input
+                  value={configuracion.rif}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, rif: e.target.value }))}
+                  placeholder="J-12345678-9"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
+                  URL del Logo (opcional)
+                </label>
+                <Input
+                  value={configuracion.logo_url}
+                  onChange={(e) => setConfiguracion(prev => ({ ...prev, logo_url: e.target.value }))}
+                  placeholder="https://ejemplo.com/logo.png"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Teléfono
-              </label>
-              <Input
-                value={configuracion.telefono}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, telefono: e.target.value }))}
-                placeholder="(555) 123-4567"
-              />
+          </TabsContent>
+
+          {/* Tab: Personalización de Colores */}
+          <TabsContent value="colores" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold" style={{color: 'var(--trieste-blue)'}}>
+                  Colores Principales
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Color Primario (Azul Principal)</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={configuracion.colores.primario}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, primario: e.target.value }
+                        }))}
+                        className="w-16 h-10"
+                      />
+                      <Input
+                        value={configuracion.colores.primario}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, primario: e.target.value }
+                        }))}
+                        placeholder="#3B82F6"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Color Secundario (Azul Oscuro)</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={configuracion.colores.secundario}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, secundario: e.target.value }
+                        }))}
+                        className="w-16 h-10"
+                      />
+                      <Input
+                        value={configuracion.colores.secundario}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, secundario: e.target.value }
+                        }))}
+                        placeholder="#1D4ED8"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Amarillo Trieste</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={configuracion.colores.amarillo}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, amarillo: e.target.value }
+                        }))}
+                        className="w-16 h-10"
+                      />
+                      <Input
+                        value={configuracion.colores.amarillo}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          colores: { ...prev.colores, amarillo: e.target.value }
+                        }))}
+                        placeholder="#FCD34D"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold" style={{color: 'var(--trieste-blue)'}}>
+                  Vista Previa
+                </h3>
+                <div className="p-4 border rounded-lg space-y-3" style={{backgroundColor: configuracion.colores.fondoCards}}>
+                  <div className="flex gap-2">
+                    <Badge style={{backgroundColor: configuracion.colores.badges, color: configuracion.colores.textoBlanco}}>
+                      Badge Ejemplo
+                    </Badge>
+                    <Badge style={{backgroundColor: configuracion.colores.amarillo, color: configuracion.colores.texto}}>
+                      Amarillo Trieste
+                    </Badge>
+                  </div>
+                  <Button style={{backgroundColor: configuracion.colores.primario, color: configuracion.colores.textoBlanco}}>
+                    Botón Primario
+                  </Button>
+                  <div className="p-3 rounded" style={{backgroundColor: configuracion.colores.blanco, border: `1px solid ${configuracion.colores.borde}`}}>
+                    <p style={{color: configuracion.colores.texto}}>Texto de ejemplo en tarjeta</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Dirección
-              </label>
-              <Input
-                value={configuracion.direccion}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, direccion: e.target.value }))}
-                placeholder="Dirección completa del taller"
-              />
+          </TabsContent>
+
+          {/* Tab: Configuraciones del Sistema */}
+          <TabsContent value="sistema" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold" style={{color: 'var(--trieste-blue)'}}>
+                  Funcionalidades
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Mostrar Avatares de Mecánicos</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.mostrarAvatares}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, mostrarAvatares: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Múltiples Especialidades por Mecánico</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.permitirMultiplesEspecialidades}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, permitirMultiplesEspecialidades: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Validación Obligatoria de Documentos</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.validacionDocumentosObligatoria}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, validacionDocumentosObligatoria: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Habilitar Dictado por Voz</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.habilitarDictado}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, habilitarDictado: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Habilitar Cámara</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.habilitarCamara}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, habilitarCamara: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold" style={{color: 'var(--trieste-blue)'}}>
+                  Formatos y Moneda
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Formato de Teléfono</label>
+                    <Input
+                      value={configuracion.sistema.formatoTelefono}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, formatoTelefono: e.target.value }
+                      }))}
+                      placeholder="0000-000.00.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Moneda Principal</label>
+                    <Select 
+                      value={configuracion.sistema.monedaPrincipal}
+                      onValueChange={(value) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, monedaPrincipal: value }
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD - Dólar Americano</SelectItem>
+                        <SelectItem value="VES">VES - Bolívar Venezolano</SelectItem>
+                        <SelectItem value="EUR">EUR - Euro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-semibold mt-6" style={{color: 'var(--trieste-blue)'}}>
+                  Impuestos
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Aplicar IVA</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.aplicarIVA}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, aplicarIVA: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                  {configuracion.sistema.aplicarIVA && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Porcentaje IVA (%)</label>
+                      <Input
+                        type="number"
+                        value={configuracion.sistema.porcentajeIVA}
+                        onChange={(e) => setConfiguracion(prev => ({
+                          ...prev,
+                          sistema: { ...prev.sistema, porcentajeIVA: parseFloat(e.target.value) }
+                        }))}
+                        min="0"
+                        max="30"
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Aplicar IGTF (3%)</label>
+                    <input
+                      type="checkbox"
+                      checked={configuracion.sistema.aplicarIGTF}
+                      onChange={(e) => setConfiguracion(prev => ({
+                        ...prev,
+                        sistema: { ...prev.sistema, aplicarIGTF: e.target.checked }
+                      }))}
+                      className="toggle"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Email
-              </label>
-              <Input
-                type="email"
-                value={configuracion.email}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="info@trieste.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                RIF/NIT
-              </label>
-              <Input
-                value={configuracion.rif}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, rif: e.target.value }))}
-                placeholder="J-12345678-9"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Gerente
-              </label>
-              <Input
-                value={configuracion.gerente}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, gerente: e.target.value }))}
-                placeholder="Nombre del gerente"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Horario de Atención
-              </label>
-              <Input
-                value={configuracion.horario_atencion}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, horario_atencion: e.target.value }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                IVA (%)
-              </label>
-              <Input
-                type="number"
-                value={configuracion.impuesto_iva}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, impuesto_iva: parseFloat(e.target.value) }))}
-                min="0"
-                max="30"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                Mensaje de Bienvenida
-              </label>
-              <Textarea
-                value={configuracion.mensaje_bienvenida}
-                onChange={(e) => setConfiguracion(prev => ({ ...prev, mensaje_bienvenida: e.target.value }))}
-                rows={2}
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setMostrarConfig(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={guardarConfiguracion} className="btn-primary">
-              Guardar Configuración
-            </Button>
-          </div>
+          </TabsContent>
+        </Tabs>
+        
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" onClick={() => setMostrarConfig(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={guardarConfiguracion} className="btn-primary">
+            Guardar Configuración
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
