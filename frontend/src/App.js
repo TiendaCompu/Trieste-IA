@@ -1696,11 +1696,7 @@ const ServiciosRepuestos = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-lg ${
-                    item.tipo === 'servicio' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'bg-orange-100 text-orange-700'
-                  }`}>
+                  <div className={`p-3 rounded-lg ${COLORES_SISTEMA.iconoAzul}`}>
                     {item.tipo === 'servicio' ? <Wrench className="w-6 h-6" /> : <Package className="w-6 h-6" />}
                   </div>
                   <div>
