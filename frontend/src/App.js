@@ -2108,10 +2108,7 @@ const MecanicosList = () => {
                       <div className={`w-3 h-3 rounded-full ${getEstadoConfig(mecanico.estado || 'disponible').color}`}></div>
                       <h3 className="font-semibold" style={{color: 'var(--trieste-blue)'}}>{mecanico.nombre}</h3>
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className="mt-1 badge-trieste-blue"
-                    >
+                    <Badge className={COLORES_SISTEMA.badgeAzul}>
                       {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
                     </Badge>
                   </div>
