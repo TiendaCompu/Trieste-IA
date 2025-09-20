@@ -2004,23 +2004,60 @@ const MecanicosList = () => {
               
               <div>
                 <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                  Especialidad *
+                  Especialidades * (máximo 3)
                 </label>
-                <Select 
-                  value={nuevoMecanico.especialidad}
-                  onValueChange={(value) => setNuevoMecanico(prev => ({ ...prev, especialidad: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar especialidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {especialidades.map((esp) => (
-                      <SelectItem key={esp} value={esp}>
-                        {esp.charAt(0).toUpperCase() + esp.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  {/* Especialidades seleccionadas */}
+                  {nuevoMecanico.especialidad.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {nuevoMecanico.especialidad.map((esp, index) => (
+                        <Badge 
+                          key={index} 
+                          className={`${COLORES_SISTEMA.badgeAzul} cursor-pointer`}
+                          onClick={() => {
+                            const nuevasEspecialidades = nuevoMecanico.especialidad.filter((_, i) => i !== index);
+                            setNuevoMecanico(prev => ({ ...prev, especialidad: nuevasEspecialidades }));
+                          }}
+                        >
+                          {esp.charAt(0).toUpperCase() + esp.slice(1)}
+                          <span className="ml-1">×</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Selector para agregar especialidades */}
+                  {nuevoMecanico.especialidad.length < 3 && (
+                    <Select 
+                      value=""
+                      onValueChange={(value) => {
+                        if (value && !nuevoMecanico.especialidad.includes(value)) {
+                          setNuevoMecanico(prev => ({ 
+                            ...prev, 
+                            especialidad: [...prev.especialidad, value]
+                          }));
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Agregar especialidad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {especialidades
+                          .filter(esp => !nuevoMecanico.especialidad.includes(esp))
+                          .map((esp) => (
+                            <SelectItem key={esp} value={esp}>
+                              {esp.charAt(0).toUpperCase() + esp.slice(1)}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  <p className="text-xs text-gray-500">
+                    Click en las especialidades para removerlas. Máximo 3 especialidades.
+                  </p>
+                </div>
               </div>
               
               <div>
