@@ -3308,14 +3308,28 @@ const RegistroVehiculo = () => {
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tipo de Documento *</label>
-                  <div className="flex gap-2">
-                    <Select 
-                      value={`${cliente.tipo_documento}-${cliente.prefijo_documento}`}
+                <div className="col-span-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Documento de Identidad * (PRIORIDAD)</label>
+                    <div className="text-xs text-blue-600 font-medium">
+                      📋 Validar documento primero
+                    </div>
+                  </div>
+                  <div className="flex gap-2 relative">
+                    <Select
+                      value={cliente.tipo_documento && cliente.prefijo_documento ? `${cliente.tipo_documento}-${cliente.prefijo_documento}` : ''}
                       onValueChange={(value) => {
                         const [tipo, prefijo] = value.split('-');
-                        setCliente(prev => ({ ...prev, tipo_documento: tipo, prefijo_documento: prefijo }));
+                        setCliente(prev => ({ 
+                          ...prev, 
+                          tipo_documento: tipo, 
+                          prefijo_documento: prefijo 
+                        }));
+                        
+                        // Validar si ya hay número
+                        if (cliente.numero_documento) {
+                          validarDocumentoCliente(tipo, prefijo, cliente.numero_documento);
+                        }
                       }}
                     >
                       <SelectTrigger className="w-24">
@@ -3330,13 +3344,77 @@ const RegistroVehiculo = () => {
                     </Select>
                     <Input
                       value={cliente.numero_documento}
-                      onChange={(e) => setCliente(prev => ({ ...prev, numero_documento: e.target.value.replace(/\D/g, '') }))}
+                      onChange={(e) => {
+                        const numero = e.target.value.replace(/\D/g, '');
+                        setCliente(prev => ({ ...prev, numero_documento: numero }));
+                        
+                        // Validar documento con debounce
+                        clearTimeout(window.documentoTimeout);
+                        window.documentoTimeout = setTimeout(() => {
+                          if (cliente.tipo_documento && cliente.prefijo_documento && numero.length >= 7) {
+                            validarDocumentoCliente(cliente.tipo_documento, cliente.prefijo_documento, numero);
+                          } else {
+                            setDocumentoClienteValido(false);
+                          }
+                        }, 1000);
+                      }}
                       placeholder={cliente.tipo_documento === 'RIF' ? '12345678-9' : '12345678'}
-                      className="flex-1"
+                      className={`flex-1 font-mono tracking-wide ${
+                        documentoClienteValido ? 'border-green-500 bg-green-50' : 
+                        cliente.numero_documento ? 'border-red-300 bg-red-50' : ''
+                      }`}
+                      maxLength={cliente.tipo_documento === 'RIF' ? 10 : 8}
                     />
+                    {verificandoDocumento && (
+                      <div className="absolute right-3 top-3">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                    {documentoClienteValido && (
+                      <div className="absolute right-3 top-3">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Estado del documento */}
+                  <div className="mt-2">
+                    {!cliente.numero_documento && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-blue-800 font-medium flex items-center gap-2">
+                          <span>🔒</span> Ingrese el documento de identidad primero
+                        </p>
+                        <p className="text-blue-700 text-sm mt-1">
+                          V- o E- para personas, J- o G- para empresas. Los demás campos se habilitarán después.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {cliente.numero_documento && !documentoClienteValido && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-red-800 font-medium flex items-center gap-2">
+                          <span>❌</span> Documento inválido
+                        </p>
+                        <p className="text-red-700 text-sm mt-1">
+                          {cliente.tipo_documento === 'RIF' ? 'Formato: J-12345678-9 o G-12345678-9' : 'Formato: V-12345678 o E-12345678 (mínimo 7 dígitos)'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {documentoClienteValido && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span>✅</span> Documento válido
+                        </p>
+                        <p className="text-green-700 text-sm mt-1">
+                          {cliente.nombre ? `Cliente existente: ${cliente.nombre}` : 'Cliente nuevo - Complete la información restante'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
                   <p className="text-xs text-gray-500 mt-1">
-                    {cliente.tipo_documento === 'RIF' ? 'Formato: J-12345678-9 o G-12345678-9' : 'Formato: V-12345678 o E-12345678'}
+                    💡 El documento es obligatorio para verificar si el cliente ya existe en el sistema
                   </p>
                 </div>
 
