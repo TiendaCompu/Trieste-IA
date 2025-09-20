@@ -43,6 +43,13 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// CONFIGURACIÓN GLOBAL DE COLORES DEL SISTEMA
+const COLORES_SISTEMA = {
+  badgeAzul: "bg-blue-600 text-white hover:bg-blue-700 border-blue-600",
+  iconoAzul: "bg-blue-100 text-blue-700",
+  botonPrincipal: "bg-blue-600 hover:bg-blue-700 text-white"
+};
+
 // Funciones de formateo globales
 const formatearFecha = (fecha) => {
   if (!fecha) return '';
