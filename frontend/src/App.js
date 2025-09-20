@@ -2318,6 +2318,52 @@ const RegistroVehiculo = () => {
     handleImageCapture();
   };
 
+  // NUEVA FUNCIÓN: Validar documento del cliente
+  const validarDocumentoCliente = async (tipoDocumento, prefijoDocumento, numeroDocumento) => {
+    // Validar formato
+    const esValido = numeroDocumento && numeroDocumento.length >= 7;
+    
+    if (!esValido) {
+      setDocumentoClienteValido(false);
+      return;
+    }
+
+    try {
+      setVerificandoDocumento(true);
+      
+      // Buscar cliente existente por documento
+      const documentoCompleto = `${prefijoDocumento}-${numeroDocumento}`;
+      const response = await axios.get(`${API}/clientes`);
+      
+      const clienteExistente = response.data.find(cliente => 
+        cliente.prefijo_documento === prefijoDocumento && 
+        cliente.numero_documento === numeroDocumento
+      );
+
+      if (clienteExistente) {
+        // Cliente existente encontrado
+        setCliente({
+          ...clienteExistente,
+          tipo_documento: tipoDocumento,
+          prefijo_documento: prefijoDocumento,
+          numero_documento: numeroDocumento
+        });
+        setDocumentoClienteValido(true);
+        toast.success(`✅ Cliente existente: ${clienteExistente.nombre}`);
+      } else {
+        // Cliente nuevo - documento válido pero no existe
+        setDocumentoClienteValido(true);
+        toast.info('ℹ️ Cliente nuevo - Complete la información');
+      }
+    } catch (error) {
+      console.error('Error validando documento:', error);
+      toast.error('❌ Error validando documento');
+      setDocumentoClienteValido(false);
+    } finally {
+      setVerificandoDocumento(false);
+    }
+  };
+
 
 
   useEffect(() => {
