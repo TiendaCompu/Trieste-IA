@@ -1699,13 +1699,7 @@ const ServiciosRepuestos = () => {
                   <div>
                     <div className="flex items-center gap-3">
                       <h3 className="text-lg font-semibold">{item.nombre}</h3>
-                      <Badge 
-                        variant={item.tipo === 'servicio' ? 'default' : 'secondary'}
-                        className={item.tipo === 'servicio' 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                          : 'bg-orange-600 text-white hover:bg-orange-700'
-                        }
-                      >
+                      <Badge className={badgeStyleAzul}>
                         {item.tipo === 'servicio' ? 'Servicio' : 'Repuesto'}
                       </Badge>
                     </div>
