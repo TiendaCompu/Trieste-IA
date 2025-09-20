@@ -1761,7 +1761,13 @@ const MecanicosList = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoMecanico, setEditandoMecanico] = useState(null);
   const [nuevoMecanico, setNuevoMecanico] = useState({
-    nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: ''
+    nombre: '', 
+    especialidad: [], // CAMBIADO: Array para múltiples especialidades
+    telefono: '', 
+    whatsapp: '', 
+    estado: 'disponible', 
+    activo: true, 
+    avatar: ''
   });
 
   // Hook de dictado
