@@ -2234,6 +2234,7 @@ const RegistroVehiculo = () => {
   });
   const [grabando, setGrabando] = useState(false);
   const [procesandoIA, setProcesandoIA] = useState(false);
+  const [campoActivo, setCampoActivo] = useState('');
   const [fotoMatricula, setFotoMatricula] = useState(null);
   const [modoCreacionDirecta, setModoCreacionDirecta] = useState(false);
   const [verificandoMatricula, setVerificandoMatricula] = useState(false);
