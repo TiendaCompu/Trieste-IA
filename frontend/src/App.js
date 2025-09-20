@@ -1863,11 +1863,22 @@ const MecanicosList = () => {
   };
 
   const editarMecanico = (mecanico) => {
+    // Manejar especialidades - convertir string a array si es necesario
+    let especialidadesArray;
+    if (Array.isArray(mecanico.especialidad)) {
+      especialidadesArray = mecanico.especialidad;
+    } else if (typeof mecanico.especialidad === 'string') {
+      // Si contiene comas, dividir. Si no, crear array con un elemento
+      especialidadesArray = mecanico.especialidad.includes(',')
+        ? mecanico.especialidad.split(',').map(e => e.trim())
+        : [mecanico.especialidad];
+    } else {
+      especialidadesArray = [];
+    }
+
     setNuevoMecanico({
       nombre: mecanico.nombre,
-      especialidad: Array.isArray(mecanico.especialidad) 
-        ? mecanico.especialidad 
-        : [mecanico.especialidad], // Convertir string a array para compatibilidad
+      especialidad: especialidadesArray,
       telefono: mecanico.telefono || '',
       whatsapp: mecanico.whatsapp || '',
       estado: mecanico.estado || 'disponible',
