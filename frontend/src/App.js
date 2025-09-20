@@ -1000,89 +1000,10 @@ const OrdenDetalle = () => {
             </Card>
           )}
 
-          {/* Gestión de Servicios/Repuestos */}
+          {/* Servicios y Repuestos - SOLO LECTURA */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Servicios y Repuestos</CardTitle>
-                <Dialog open={mostrarAgregarServicio} onOpenChange={setMostrarAgregarServicio}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-3 h-3 mr-1" />
-                      Agregar Item
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Agregar Servicio o Repuesto</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Servicio/Repuesto</label>
-                        <Select value={servicioSeleccionado} onValueChange={setServicioSeleccionado}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar item" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {serviciosDisponibles.map((servicio) => (
-                              <SelectItem key={servicio.id} value={servicio.id}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{servicio.nombre}</span>
-                                  <Badge variant={servicio.tipo === 'servicio' ? 'default' : 'secondary'} className="ml-2">
-                                    {servicio.tipo}
-                                  </Badge>
-                                  <span className="ml-2 font-bold">${servicio.precio.toFixed(2)}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {servicioSeleccionado && (
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="text-sm">
-                            <strong>Descripción:</strong> {serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.descripcion || 'Sin descripción'}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Precio unitario:</strong> ${serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.precio.toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Cantidad</label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={cantidadServicio}
-                          onChange={(e) => setCantidadServicio(e.target.value)}
-                        />
-                      </div>
-                      
-                      {servicioSeleccionado && cantidadServicio && (
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <p className="font-medium">
-                            Subtotal: ${(serviciosDisponibles.find(s => s.id === servicioSeleccionado)?.precio * parseInt(cantidadServicio)).toFixed(2)}
-                          </p>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setMostrarAgregarServicio(false)}>
-                          Cancelar
-                        </Button>
-                        <Button 
-                          onClick={agregarServicioAOrden}
-                          disabled={!servicioSeleccionado || cantidadServicio < 1}
-                        >
-                          Agregar al Presupuesto
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+              <CardTitle>Servicios y Repuestos</CardTitle>
             </CardHeader>
             <CardContent>
               {orden.servicios_repuestos && orden.servicios_repuestos.length > 0 ? (
