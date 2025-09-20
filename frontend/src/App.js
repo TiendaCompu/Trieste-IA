@@ -1025,14 +1025,6 @@ const OrdenDetalle = () => {
                         <span className="font-bold text-green-600">
                           ${item.subtotal.toFixed(2)}
                         </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => eliminarServicioDeOrden(index)}
-                        >
-                          <AlertCircle className="w-3 h-3" />
-                        </Button>
                       </div>
                     </div>
                   ))}
