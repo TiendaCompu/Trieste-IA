@@ -1855,7 +1855,9 @@ const MecanicosList = () => {
   const editarMecanico = (mecanico) => {
     setNuevoMecanico({
       nombre: mecanico.nombre,
-      especialidad: mecanico.especialidad,
+      especialidad: Array.isArray(mecanico.especialidad) 
+        ? mecanico.especialidad 
+        : [mecanico.especialidad], // Convertir string a array para compatibilidad
       telefono: mecanico.telefono || '',
       whatsapp: mecanico.whatsapp || '',
       estado: mecanico.estado || 'disponible',
