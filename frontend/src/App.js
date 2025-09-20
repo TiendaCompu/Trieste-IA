@@ -3428,21 +3428,47 @@ const RegistroVehiculo = () => {
   );
 };
 
-// Configuración del Taller
+// Configuración del Taller - SISTEMA CENTRALIZADO
 const ConfiguracionTaller = () => {
   const [configuracion, setConfiguracion] = useState({
+    // Información del taller
     nombre_taller: 'Centro de Servicios Automotriz Trieste',
     direccion: '',
     telefono: '',
     email: '',
     rif: '',
-    gerente: '',
-    horario_atencion: 'Lunes a Viernes 8:00 AM - 6:00 PM',
-    mensaje_bienvenida: 'Bienvenido al mejor centro de servicios automotriz',
-    impuesto_iva: 16,
-    moneda: 'USD'
+    logo_url: '',
+    
+    // Personalización de colores
+    colores: {
+      primario: '#3B82F6',      // Azul principal
+      secundario: '#1D4ED8',    // Azul oscuro
+      amarillo: '#FCD34D',      // Amarillo Trieste
+      blanco: '#FFFFFF',        // Blanco
+      texto: '#1F2937',         // Texto principal
+      badges: '#3B82F6',        // Color de badges/óvalos
+      textoBlanco: '#FFFFFF',   // Texto blanco en badges
+      fondoCards: '#F9FAFB',    // Fondo de tarjetas
+      borde: '#E5E7EB'          // Bordes
+    },
+    
+    // Configuraciones del sistema
+    sistema: {
+      mostrarAvatares: true,
+      permitirMultiplesEspecialidades: true,
+      validacionDocumentosObligatoria: true,
+      habilitarDictado: true,
+      habilitarCamara: true,
+      formatoTelefono: '0000-000.00.00',
+      monedaPrincipal: 'USD',
+      aplicarIVA: true,
+      porcentajeIVA: 16,
+      aplicarIGTF: true,
+      porcentajeIGTF: 3
+    }
   });
 
+  const [tabActiva, setTabActiva] = useState('general');
   const [mostrarConfig, setMostrarConfig] = useState(false);
 
   const guardarConfiguracion = () => {
