@@ -3486,7 +3486,15 @@ const RegistroVehiculo = () => {
                 <Button variant="outline" onClick={() => setPaso(1)}>
                   Anterior
                 </Button>
-                <Button onClick={() => setPaso(3)} disabled={!cliente.nombre}>
+                <Button 
+                  onClick={() => setPaso(3)} 
+                  disabled={!documentoClienteValido}
+                  className={documentoClienteValido ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}
+                >
+                  {!documentoClienteValido 
+                    ? '🔒 Valide documento primero' 
+                    : 'Finalizar Registro ➡️'
+                  }
                   Siguiente
                 </Button>
               </div>
