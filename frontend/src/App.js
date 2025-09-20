@@ -2300,6 +2300,10 @@ const RegistroVehiculo = () => {
   
   // NUEVO: Estado para controlar si la matrícula es válida y habilitar otros campos
   const [matriculaValida, setMatriculaValida] = useState(false);
+  
+  // NUEVO: Estado para controlar si el documento del cliente es válido
+  const [documentoClienteValido, setDocumentoClienteValido] = useState(false);
+  const [verificandoDocumento, setVerificandoDocumento] = useState(false);
 
   // Funciones específicas para matrícula
   const iniciarDictadoMatricula = async () => {
