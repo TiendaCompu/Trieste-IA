@@ -1688,8 +1688,8 @@ const ServiciosRepuestos = () => {
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg ${
                     item.tipo === 'servicio' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-purple-100 text-purple-600'
+                      ? 'bg-blue-100 text-blue-700' 
+                      : 'bg-orange-100 text-orange-700'
                   }`}>
                     {item.tipo === 'servicio' ? <Wrench className="w-6 h-6" /> : <Package className="w-6 h-6" />}
                   </div>
