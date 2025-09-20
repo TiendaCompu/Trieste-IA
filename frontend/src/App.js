@@ -2895,8 +2895,33 @@ const RegistroVehiculo = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Matrícula/Placa *</label>
+                <div className="col-span-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Matrícula/Placa *</label>
+                    <div className="flex gap-2">
+                      <BotonDictado
+                        onDictado={() => iniciarDictadoMatricula()}
+                        grabando={grabando}
+                        procesandoIA={procesandoIA}
+                        campoActivo={campoActivo}
+                        campo="matricula"
+                        texto="🎤 Dictar"
+                        size="sm"
+                        variant="outline"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center gap-1 text-xs"
+                        onClick={() => iniciarCamaraMatricula()}
+                        disabled={procesandoIA}
+                      >
+                        <Camera className="w-3 h-3" />
+                        📷 Escanear
+                      </Button>
+                    </div>
+                  </div>
+                  
                   <div className="relative">
                     <Input
                       value={vehiculo.matricula}
@@ -2912,8 +2937,12 @@ const RegistroVehiculo = () => {
                           }
                         }, 800);
                       }}
-                      placeholder="4-7 caracteres alfanuméricos"
-                      className={`uppercase font-mono tracking-wider text-center ${vehiculoExistente ? 'border-orange-500 bg-orange-50' : ''}`}
+                      placeholder="Ingresa matrícula: ABC123, AB12CD, etc."
+                      className={`uppercase font-mono tracking-wider text-center text-lg font-bold ${
+                        vehiculoExistente ? 'border-orange-500 bg-orange-50' : 
+                        matriculaValida ? 'border-green-500 bg-green-50' : 
+                        vehiculo.matricula ? 'border-red-300 bg-red-50' : ''
+                      }`}
                       maxLength={7}
                     />
                     {verificandoMatricula && (
@@ -2921,27 +2950,68 @@ const RegistroVehiculo = () => {
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                       </div>
                     )}
+                    {matriculaValida && !vehiculoExistente && (
+                      <div className="absolute right-3 top-3">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                    )}
                   </div>
                   
-                  {vehiculoExistente && (
-                    <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
-                      <p className="text-orange-800 font-medium flex items-center gap-2">
-                        <span>⚠️</span> Vehículo existente encontrado
-                      </p>
-                      <p className="text-orange-700 text-sm mt-1">
-                        <strong>{vehiculoExistente.marca} {vehiculoExistente.modelo}</strong> ({vehiculoExistente.año})
-                      </p>
-                      <p className="text-orange-700 text-sm">
-                        Propietario: <strong>{clienteExistente?.nombre || 'Cargando cliente...'}</strong>
-                      </p>
-                      <p className="text-orange-600 text-xs mt-2">
-                        ✏️ Los datos se han cargado para permitir modificaciones
-                      </p>
-                    </div>
-                  )}
+                  {/* Estado de la matrícula */}
+                  <div className="mt-2">
+                    {!vehiculo.matricula && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-blue-800 font-medium flex items-center gap-2">
+                          <span>🔒</span> Ingrese la matrícula primero
+                        </p>
+                        <p className="text-blue-700 text-sm mt-1">
+                          Use dictado 🎤, escaneo 📷 o escritura manual. Los demás campos se habilitarán después.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {vehiculo.matricula && !matriculaValida && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-red-800 font-medium flex items-center gap-2">
+                          <span>❌</span> Matrícula inválida
+                        </p>
+                        <p className="text-red-700 text-sm mt-1">
+                          Debe tener 4-7 caracteres alfanuméricos (sin símbolos)
+                        </p>
+                      </div>
+                    )}
+                    
+                    {matriculaValida && !vehiculoExistente && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                        <p className="text-green-800 font-medium flex items-center gap-2">
+                          <span>✅</span> Matrícula válida - Vehículo nuevo 
+                        </p>
+                        <p className="text-green-700 text-sm mt-1">
+                          Ahora puede completar los datos del vehículo
+                        </p>
+                      </div>
+                    )}
+                    
+                    {vehiculoExistente && (
+                      <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                        <p className="text-orange-800 font-medium flex items-center gap-2">
+                          <span>⚠️</span> Vehículo existente encontrado
+                        </p>
+                        <p className="text-orange-700 text-sm mt-1">
+                          <strong>{vehiculoExistente.marca} {vehiculoExistente.modelo}</strong> ({vehiculoExistente.año})
+                        </p>
+                        <p className="text-orange-700 text-sm">
+                          Propietario: <strong>{clienteExistente?.nombre || 'Cargando cliente...'}</strong>
+                        </p>
+                        <p className="text-orange-600 text-xs mt-2">
+                          ✏️ Los datos se han cargado para permitir modificaciones
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   
                   <p className="text-xs text-gray-500 mt-1">
-                    Solo letras y números, sin símbolos. Mínimo 4, máximo 7 caracteres.
+                    💡 Tip: Use dictado para mayor rapidez o escanee documentos con la cámara
                   </p>
                 </div>
                 <div>
