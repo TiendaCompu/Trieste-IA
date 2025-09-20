@@ -382,6 +382,9 @@ const Dashboard = () => {
     }
   };
 
+  // CONFIGURACIÓN GLOBAL DE COLORES - TODOS LOS BADGES AZULES CON TEXTO BLANCO
+  const badgeStyleAzul = "bg-blue-600 text-white hover:bg-blue-700 border-blue-600";
+  
   const getEstadoBadge = (estado) => {
     const estadoConfig = {
       'recibido': { color: 'bg-blue-100 text-blue-800', icon: <Clock className="w-3 h-3" /> },
