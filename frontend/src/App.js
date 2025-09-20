@@ -2128,7 +2128,7 @@ const MecanicosList = () => {
                   onClick={() => {
                     setMostrarFormulario(false);
                     setEditandoMecanico(null);
-                    setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: '' });
+                    setNuevoMecanico({ nombre: '', especialidad: [], telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: '' });
                   }}
                 >
                   Cancelar
