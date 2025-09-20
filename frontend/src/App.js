@@ -1706,7 +1706,7 @@ const ServiciosRepuestos = () => {
                   <div>
                     <div className="flex items-center gap-3">
                       <h3 className="text-lg font-semibold">{item.nombre}</h3>
-                      <Badge className={badgeStyleAzul}>
+                      <Badge className={COLORES_SISTEMA.badgeAzul}>
                         {item.tipo === 'servicio' ? 'Servicio' : 'Repuesto'}
                       </Badge>
                     </div>
