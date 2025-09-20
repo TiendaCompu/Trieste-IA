@@ -2395,6 +2395,321 @@ const RegistroVehiculo = () => {
     }
   };
 
+  // NUEVO SISTEMA DE CÁMARA AVANZADO
+  const [camaraState, setCamaraState] = useState({
+    dispositivos: [],
+    dispositivoSeleccionado: '',
+    mostrarSelector: false,
+    streaming: false,
+    canvas: null,
+    video: null
+  });
+
+  // Obtener dispositivos de cámara disponibles
+  const obtenerDispositivosCamara = async () => {
+    try {
+      // Solicitar permisos primero
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      
+      // Obtener lista de dispositivos
+      const dispositivos = await navigator.mediaDevices.enumerateDevices();
+      const camaras = dispositivos.filter(dispositivo => dispositivo.kind === 'videoinput');
+      
+      console.log('Cámaras encontradas:', camaras);
+      
+      setCamaraState(prev => ({
+        ...prev,
+        dispositivos: camaras,
+        dispositivoSeleccionado: camaras.length > 0 ? camaras[0].deviceId : ''
+      }));
+      
+      return camaras;
+    } catch (error) {
+      console.error('Error obteniendo dispositivos de cámara:', error);
+      toast.error('❌ Error accediendo a las cámaras');
+      return [];
+    }
+  };
+
+  // Iniciar streaming de cámara
+  const iniciarStreamingCamara = async (deviceId = '') => {
+    try {
+      // Detener stream anterior si existe
+      if (camaraState.video?.srcObject) {
+        camaraState.video.srcObject.getTracks().forEach(track => track.stop());
+      }
+
+      const constraints = {
+        video: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Crear elemento video si no existe
+      let video = camaraState.video;
+      if (!video) {
+        video = document.createElement('video');
+        video.autoplay = true;
+        video.playsInline = true;
+        setCamaraState(prev => ({ ...prev, video }));
+      }
+
+      video.srcObject = stream;
+      
+      setCamaraState(prev => ({
+        ...prev,
+        streaming: true,
+        video
+      }));
+
+      return { video, stream };
+    } catch (error) {
+      console.error('Error iniciando streaming:', error);
+      toast.error('❌ Error accediendo a la cámara');
+      throw error;
+    }
+  };
+
+  // Capturar imagen de la cámara
+  const capturarImagenDeCamara = async () => {
+    try {
+      if (!camaraState.video) {
+        throw new Error('Video no inicializado');
+      }
+
+      // Crear canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Configurar dimensiones
+      canvas.width = camaraState.video.videoWidth;
+      canvas.height = camaraState.video.videoHeight;
+      
+      // Dibujar frame actual
+      ctx.drawImage(camaraState.video, 0, 0);
+      
+      // Convertir a base64
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      return imageData;
+    } catch (error) {
+      console.error('Error capturando imagen:', error);
+      toast.error('❌ Error capturando imagen');
+      throw error;
+    }
+  };
+
+  // Función principal para escanear documento
+  const escanearDocumentoConCamara = async () => {
+    try {
+      // Obtener dispositivos disponibles
+      const dispositivos = await obtenerDispositivosCamara();
+      
+      if (dispositivos.length === 0) {
+        toast.error('❌ No se encontraron cámaras disponibles');
+        return;
+      }
+      
+      if (dispositivos.length === 1) {
+        // Solo una cámara, usar directamente
+        await iniciarCapturaCamara(dispositivos[0].deviceId);
+      } else {
+        // Múltiples cámaras, mostrar selector
+        setCamaraState(prev => ({ ...prev, mostrarSelector: true }));
+      }
+    } catch (error) {
+      console.error('Error escaneando documento:', error);
+      toast.error('❌ Error iniciando escaneo');
+    }
+  };
+
+  // Iniciar captura con cámara seleccionada
+  const iniciarCapturaCamara = async (deviceId) => {
+    try {
+      toast.info('📷 Preparando cámara para captura...');
+      
+      const { video, stream } = await iniciarStreamingCamara(deviceId);
+      
+      // Crear modal/overlay para mostrar vista previa
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      `;
+      
+      const container = document.createElement('div');
+      container.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        max-width: 90vw;
+        max-height: 90vh;
+      `;
+      
+      const title = document.createElement('h3');
+      title.textContent = '📷 Escanear Documento - Enfocar matrícula o documento';
+      title.style.cssText = 'margin: 0; color: #333; text-align: center;';
+      
+      video.style.cssText = `
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        border: 2px solid #3B82F6;
+        border-radius: 8px;
+      `;
+      
+      const buttonsContainer = document.createElement('div');
+      buttonsContainer.style.cssText = 'display: flex; gap: 10px;';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.textContent = '📸 Capturar';
+      captureBtn.style.cssText = `
+        padding: 10px 20px;
+        background: #3B82F6;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      `;
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = '❌ Cancelar';
+      cancelBtn.style.cssText = `
+        padding: 10px 20px;
+        background: #EF4444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      `;
+      
+      // Event listeners
+      captureBtn.onclick = async () => {
+        try {
+          const imageData = await capturarImagenDeCamara();
+          
+          // Detener stream
+          stream.getTracks().forEach(track => track.stop());
+          document.body.removeChild(overlay);
+          
+          // Procesar imagen con IA
+          await procesarImagenConIA(imageData);
+        } catch (error) {
+          toast.error('❌ Error capturando imagen');
+        }
+      };
+      
+      cancelBtn.onclick = () => {
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(overlay);
+        toast.info('📷 Captura cancelada');
+      };
+      
+      // Ensamblar UI
+      buttonsContainer.appendChild(captureBtn);
+      buttonsContainer.appendChild(cancelBtn);
+      container.appendChild(title);
+      container.appendChild(video);
+      container.appendChild(buttonsContainer);
+      overlay.appendChild(container);
+      document.body.appendChild(overlay);
+      
+      toast.success('📷 Cámara lista - Enfoque el documento y haga clic en Capturar');
+      
+    } catch (error) {
+      console.error('Error iniciando captura:', error);
+      toast.error('❌ Error iniciando captura de cámara');
+    }
+  };
+
+  // Procesar imagen con IA
+  const procesarImagenConIA = async (imageBase64) => {
+    try {
+      setProcesandoIA(true);
+      toast.info('🤖 Procesando imagen con IA...');
+
+      const response = await axios.post(`${API}/ai/procesar-imagen`, {
+        imagen_base64: imageBase64
+      });
+
+      if (response.data.success && response.data.datos) {
+        const datos = response.data.datos;
+        
+        // Procesar datos del vehículo
+        if (datos.vehiculo) {
+          if (datos.vehiculo.matricula) {
+            validarMatricula(datos.vehiculo.matricula);
+          }
+          if (datos.vehiculo.marca) {
+            setVehiculo(prev => ({ ...prev, marca: datos.vehiculo.marca }));
+          }
+          if (datos.vehiculo.modelo) {
+            setVehiculo(prev => ({ ...prev, modelo: datos.vehiculo.modelo }));
+          }
+          if (datos.vehiculo.año) {
+            setVehiculo(prev => ({ ...prev, año: parseInt(datos.vehiculo.año) }));
+          }
+          if (datos.vehiculo.color) {
+            setVehiculo(prev => ({ ...prev, color: datos.vehiculo.color }));
+          }
+        }
+
+        // Procesar datos del cliente
+        if (datos.cliente) {
+          if (datos.cliente.nombre) {
+            setCliente(prev => ({ ...prev, nombre: datos.cliente.nombre }));
+          }
+          if (datos.cliente.tipo_documento && datos.cliente.prefijo_documento) {
+            setCliente(prev => ({ 
+              ...prev, 
+              tipo_documento: datos.cliente.tipo_documento,
+              prefijo_documento: datos.cliente.prefijo_documento
+            }));
+          }
+          if (datos.cliente.numero_documento) {
+            setCliente(prev => ({ ...prev, numero_documento: datos.cliente.numero_documento }));
+            
+            // Validar documento automáticamente
+            if (datos.cliente.tipo_documento && datos.cliente.prefijo_documento) {
+              validarDocumentoCliente(
+                datos.cliente.tipo_documento, 
+                datos.cliente.prefijo_documento, 
+                datos.cliente.numero_documento
+              );
+            }
+          }
+        }
+
+        toast.success('✅ Imagen procesada exitosamente');
+      } else {
+        toast.warning('⚠️ No se detectó información clara en la imagen');
+      }
+    } catch (error) {
+      console.error('Error procesando imagen:', error);
+      toast.error('❌ Error procesando la imagen');
+    } finally {
+      setProcesandoIA(false);
+    }
+  };
+
 
 
   useEffect(() => {
