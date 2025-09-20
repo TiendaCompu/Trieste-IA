@@ -896,24 +896,10 @@ const OrdenDetalle = () => {
                   {orden.aprobado_cliente ? 'Aprobado por cliente' : 'Pendiente de aprobación'}
                 </p>
                 {!orden.aprobado_cliente && orden.presupuesto_total > 0 && (
-                  <div className="flex gap-2 mt-3">
-                    <Button 
-                      size="sm" 
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => aprobarPresupuesto(true)}
-                    >
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Aprobar
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                      onClick={() => aprobarPresupuesto(false)}
-                    >
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      Rechazar
-                    </Button>
+                  <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                    <p className="text-sm text-blue-700">
+                      💡 Para aprobar/rechazar el presupuesto, usa el modo de edición
+                    </p>
                   </div>
                 )}
               </CardContent>
