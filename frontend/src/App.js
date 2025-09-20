@@ -2271,6 +2271,19 @@ const RegistroVehiculo = () => {
     const limpio = valor.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     if (limpio.length <= 7) {
       setVehiculo(prev => ({ ...prev, matricula: limpio }));
+      
+      // VALIDACIÓN MEJORADA: La matrícula es válida si tiene 4-7 caracteres alfanuméricos
+      const esValida = limpio.length >= 4 && /^[A-Z0-9]{4,7}$/.test(limpio);
+      setMatriculaValida(esValida);
+      
+      if (esValida) {
+        // Verificar en tiempo real si existe
+        verificarMatriculaEnTiempoReal(limpio);
+      } else {
+        // Limpiar estados si no es válida
+        setVehiculoExistente(null);
+        setClienteExistente(null);
+      }
     }
   };
 
