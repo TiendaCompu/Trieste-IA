@@ -1805,6 +1805,12 @@ const MecanicosList = () => {
 
   const guardarMecanico = async () => {
     try {
+      // Validar que haya al menos una especialidad
+      if (!nuevoMecanico.especialidad || nuevoMecanico.especialidad.length === 0) {
+        toast.error('Debe seleccionar al menos una especialidad');
+        return;
+      }
+
       // Validar teléfonos
       if (nuevoMecanico.telefono && !validarTelefono(nuevoMecanico.telefono)) {
         toast.error('Formato de teléfono inválido. Use 0000-000.00.00');
@@ -1817,6 +1823,10 @@ const MecanicosList = () => {
 
       const mecanicoData = {
         ...nuevoMecanico,
+        // Convertir array de especialidades a string para el backend (temporalmente)
+        especialidad: Array.isArray(nuevoMecanico.especialidad) 
+          ? nuevoMecanico.especialidad.join(', ') 
+          : nuevoMecanico.especialidad,
         telefono: nuevoMecanico.telefono ? formatearTelefono(nuevoMecanico.telefono) : null,
         whatsapp: nuevoMecanico.whatsapp ? formatearTelefono(nuevoMecanico.whatsapp) : null
       };
@@ -1829,7 +1839,7 @@ const MecanicosList = () => {
         toast.success('Mecánico agregado correctamente');
       }
       
-      setNuevoMecanico({ nombre: '', especialidad: '', telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: '' });
+      setNuevoMecanico({ nombre: '', especialidad: [], telefono: '', whatsapp: '', estado: 'disponible', activo: true, avatar: '' });
       setEditandoMecanico(null);
       setMostrarFormulario(false);
       cargarMecanicos();
