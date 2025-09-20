@@ -3418,21 +3418,27 @@ const RegistroVehiculo = () => {
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono Principal</label>
+                <div className={!documentoClienteValido ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Teléfono Principal {!documentoClienteValido && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={cliente.telefono}
                     onChange={(e) => setCliente(prev => ({ ...prev, telefono: e.target.value }))}
                     placeholder="0414-555.12.34"
+                    disabled={!documentoClienteValido}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Teléfono Secundario</label>
+                <div className={!documentoClienteValido ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Teléfono Secundario {!documentoClienteValido && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={cliente.telefono_secundario}
                     onChange={(e) => setCliente(prev => ({ ...prev, telefono_secundario: e.target.value }))}
                     placeholder="0412-987.65.43"
+                    disabled={!documentoClienteValido}
                   />
                 </div>
 
