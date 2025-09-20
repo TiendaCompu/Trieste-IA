@@ -3077,24 +3077,31 @@ const RegistroVehiculo = () => {
                     onChange={(e) => setVehiculo(prev => ({ ...prev, color: e.target.value.toUpperCase() }))}
                     placeholder="BLANCO, NEGRO, ETC."
                     style={{textTransform: 'uppercase'}}
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Kilometraje</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Kilometraje {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     type="number"
                     value={vehiculo.kilometraje}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, kilometraje: e.target.value }))}
                     placeholder="100000"
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tipo de Combustible</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Tipo de Combustible {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Select 
                     value={vehiculo.tipo_combustible}
                     onValueChange={(value) => setVehiculo(prev => ({ ...prev, tipo_combustible: value }))}
+                    disabled={!matriculaValida}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={!matriculaValida ? 'cursor-not-allowed' : ''}>
                       <SelectValue placeholder="TIPO DE COMBUSTIBLE" />
                     </SelectTrigger>
                     <SelectContent>
@@ -3106,17 +3113,22 @@ const RegistroVehiculo = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Serial N.I.V.</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Serial N.I.V. {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={vehiculo.serial_niv}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, serial_niv: e.target.value.toUpperCase() }))}
                     placeholder="NÚMERO DE IDENTIFICACIÓN VEHICULAR"
                     style={{textTransform: 'uppercase'}}
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Tara (Peso en Kg)</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Tara (Peso en Kg) {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     type="number"
                     value={vehiculo.tara}
