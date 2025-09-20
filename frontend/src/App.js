@@ -2164,18 +2164,26 @@ const MecanicosList = () => {
                       <h3 className="font-semibold" style={{color: 'var(--trieste-blue)'}}>{mecanico.nombre}</h3>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {Array.isArray(mecanico.especialidad) 
-                        ? mecanico.especialidad.map((esp, index) => (
-                            <Badge key={index} className={COLORES_SISTEMA.badgeAzul}>
-                              {esp.charAt(0).toUpperCase() + esp.slice(1)}
-                            </Badge>
-                          ))
-                        : (
-                            <Badge className={COLORES_SISTEMA.badgeAzul}>
-                              {mecanico.especialidad.charAt(0).toUpperCase() + mecanico.especialidad.slice(1)}
-                            </Badge>
-                          )
-                      }
+                      {(() => {
+                        // Manejar tanto arrays como strings para compatibilidad
+                        let especialidades;
+                        if (Array.isArray(mecanico.especialidad)) {
+                          especialidades = mecanico.especialidad;
+                        } else if (typeof mecanico.especialidad === 'string') {
+                          // Si contiene comas, dividir. Si no, crear array con un elemento
+                          especialidades = mecanico.especialidad.includes(',') 
+                            ? mecanico.especialidad.split(',').map(e => e.trim())
+                            : [mecanico.especialidad];
+                        } else {
+                          especialidades = ['Sin especialidad'];
+                        }
+                        
+                        return especialidades.map((esp, index) => (
+                          <Badge key={index} className={COLORES_SISTEMA.badgeAzul}>
+                            {esp.charAt(0).toUpperCase() + esp.slice(1)}
+                          </Badge>
+                        ));
+                      })()}
                     </div>
                   </div>
                 </div>
