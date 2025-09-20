@@ -3442,34 +3442,43 @@ const RegistroVehiculo = () => {
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Dirección Fiscal *</label>
+                <div className={`md:col-span-2 ${!documentoClienteValido ? 'opacity-50' : ''}`}>
+                  <label className="block text-sm font-medium mb-2">
+                    Dirección Fiscal * {!documentoClienteValido && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Textarea
                     value={cliente.direccion_fiscal}
                     onChange={(e) => setCliente(prev => ({ ...prev, direccion_fiscal: e.target.value.toUpperCase() }))}
                     placeholder="DIRECCIÓN COMPLETA PARA FACTURACIÓN"
                     style={{textTransform: 'uppercase'}}
                     rows={2}
+                    disabled={!documentoClienteValido}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Empresa/Flota</label>
+                <div className={!documentoClienteValido ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Empresa/Flota {!documentoClienteValido && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={cliente.empresa}
                     onChange={(e) => setCliente(prev => ({ ...prev, empresa: e.target.value.toUpperCase() }))}
                     placeholder="NOMBRE DE LA EMPRESA (OPCIONAL)"
                     style={{textTransform: 'uppercase'}}
+                    disabled={!documentoClienteValido}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email *</label>
+                <div className={!documentoClienteValido ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Email * {!documentoClienteValido && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     type="email"
                     value={cliente.email}
                     onChange={(e) => setCliente(prev => ({ ...prev, email: e.target.value.toLowerCase() }))}
                     placeholder="correo@empresa.com"
+                    disabled={!documentoClienteValido}
                   />
                 </div>
               </div>
