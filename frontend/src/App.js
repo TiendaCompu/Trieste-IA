@@ -979,16 +979,6 @@ const OrdenDetalle = () => {
               </div>
             </CardContent>
           </Card>
-                    {mecanicos.map((mecanico) => (
-                      <SelectItem key={mecanico.id} value={mecanico.id}>
-                        {mecanico.nombre} - {mecanico.especialidad}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
 
           {orden.presupuesto_total && (
             <Card>
