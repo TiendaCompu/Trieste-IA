@@ -941,83 +941,44 @@ const OrdenDetalle = () => {
           </Card>
         </div>
 
-        {/* Panel de Control */}
+        {/* Panel de Control - SOLO LECTURA */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Control de Estado</CardTitle>
+              <CardTitle>Estado Actual</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'recibido' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('recibido')}
-              >
-                Recibido
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'diagnosticando' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('diagnosticando')}
-              >
-                Diagnosticando
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'presupuestado' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('presupuestado')}
-              >
-                Presupuestado
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'aprobado' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('aprobado')}
-              >
-                Aprobado
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'en_reparacion' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('en_reparacion')}
-              >
-                En Reparación
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'terminado' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('terminado')}
-              >
-                Terminado
-              </Button>
-              <Button 
-                className="w-full" 
-                variant={orden.estado === 'entregado' ? 'default' : 'outline'}
-                onClick={() => cambiarEstado('entregado')}
-              >
-                Entregado
-              </Button>
+              <div className="text-center">
+                {getEstadoBadge(orden.estado)}
+                <p className="text-sm text-gray-600 mt-2">
+                  Estado actual de la orden
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Asignación de Mecánico</CardTitle>
+              <CardTitle>Mecánico Asignado</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {mecanicoAsignado && (
+                {mecanicoAsignado ? (
                   <div className="p-3 bg-green-50 rounded border border-green-200">
                     <p className="font-medium text-green-800">{mecanicoAsignado.nombre}</p>
                     <p className="text-sm text-green-600">Especialidad: {mecanicoAsignado.especialidad}</p>
+                    {mecanicoAsignado.telefono && (
+                      <p className="text-sm text-green-600">Tel: {mecanicoAsignado.telefono}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                    <p className="text-gray-600">Sin mecánico asignado</p>
                   </div>
                 )}
-                
-                <Select onValueChange={asignarMecanico}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar mecánico" />
-                  </SelectTrigger>
-                  <SelectContent>
+              </div>
+            </CardContent>
+          </Card>
                     {mecanicos.map((mecanico) => (
                       <SelectItem key={mecanico.id} value={mecanico.id}>
                         {mecanico.nombre} - {mecanico.especialidad}
