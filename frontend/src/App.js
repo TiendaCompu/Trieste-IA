@@ -628,14 +628,6 @@ const OrdenesListado = () => {
                     <Eye className="w-4 h-4 mr-1" />
                     Ver Detalles
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate(`/orden/${orden.id}/editar`)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar
-                  </Button>
                 </div>
               </div>
             </CardContent>
