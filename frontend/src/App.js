@@ -2239,6 +2239,9 @@ const RegistroVehiculo = () => {
   const [verificandoMatricula, setVerificandoMatricula] = useState(false);
   const [vehiculoExistente, setVehiculoExistente] = useState(null);
   const [clienteExistente, setClienteExistente] = useState(null);
+  
+  // NUEVO: Estado para controlar si la matrícula es válida y habilitar otros campos
+  const [matriculaValida, setMatriculaValida] = useState(false);
 
   useEffect(() => {
     // Cargar matrícula predefinida si viene del Dashboard
