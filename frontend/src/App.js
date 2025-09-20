@@ -2969,31 +2969,7 @@ const RegistroVehiculo = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-full">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">Matrícula/Placa *</label>
-                    <div className="flex gap-2">
-                      <BotonDictado
-                        onDictado={() => iniciarDictadoMatricula()}
-                        grabando={grabando}
-                        procesandoIA={procesandoIA}
-                        campoActivo={campoActivo}
-                        campo="matricula"
-                        texto="🎤 Dictar"
-                        size="sm"
-                        variant="outline"
-                      />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex items-center gap-1 text-xs"
-                        onClick={() => iniciarCamaraMatricula()}
-                        disabled={procesandoIA}
-                      >
-                        <Camera className="w-3 h-3" />
-                        📷 Escanear
-                      </Button>
-                    </div>
-                  </div>
+                  <label className="block text-sm font-medium mb-2">Matrícula/Placa *</label>
                   
                   <div className="relative">
                     <Input
