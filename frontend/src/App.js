@@ -1039,8 +1039,7 @@ const OrdenDetalle = () => {
               ) : (
                 <div className="text-center py-6">
                   <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600">No hay servicios agregados</p>
-                  <p className="text-sm text-gray-500">Haga clic en "Agregar Item" para comenzar el presupuesto</p>
+                  <p className="text-gray-600">No hay servicios agregados a esta orden</p>
                 </div>
               )}
             </CardContent>
