@@ -2245,16 +2245,15 @@ const RegistroVehiculo = () => {
 
   // Funciones específicas para matrícula
   const iniciarDictadoMatricula = async () => {
-    const resultado = await iniciarDictado('vehiculo', 'matricula');
-    if (resultado.success && resultado.datos) {
-      const datos = resultado.datos;
-      // Extraer matrícula del resultado
-      if (datos.vehiculo && datos.vehiculo.matricula) {
-        validarMatricula(datos.vehiculo.matricula);
-      } else if (datos.matricula) {
-        validarMatricula(datos.matricula);
-      }
-    }
+    toast.info('🎤 Función de dictado para matrícula - Usando dictado de vehículo existente');
+    // Reutilizar la función handleVoiceInput existente
+    handleVoiceInput();
+  };
+
+  const iniciarCamaraMatricula = async () => {
+    toast.info('📷 Función de cámara para matrícula - Usando captura de imagen existente');
+    // Reutilizar la función handleImageCapture existente  
+    handleImageCapture();
   };
 
   const iniciarCamaraMatricula = async () => {
