@@ -787,27 +787,7 @@ const OrdenDetalle = () => {
     }
   };
 
-  const cambiarEstado = async (nuevoEstado) => {
-    try {
-      await axios.put(`${API}/ordenes/${ordenId}`, { estado: nuevoEstado });
-      setOrden(prev => ({ ...prev, estado: nuevoEstado }));
-      toast.success('Estado actualizado correctamente');
-    } catch (error) {
-      console.error('Error actualizando estado:', error);
-      toast.error('Error actualizando el estado');
-    }
-  };
-
-  const asignarMecanico = async (mecanicoId) => {
-    try {
-      await axios.put(`${API}/ordenes/${ordenId}`, { mecanico_id: mecanicoId });
-      setOrden(prev => ({ ...prev, mecanico_id: mecanicoId }));
-      toast.success('Mecánico asignado correctamente');
-    } catch (error) {
-      console.error('Error asignando mecánico:', error);
-      toast.error('Error asignando el mecánico');
-    }
-  };
+  // OrdenDetalle está en modo SOLO LECTURA - las funciones de edición están en OrdenEditar
 
   const getEstadoBadge = (estado) => {
     const estadoConfig = {
