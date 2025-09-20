@@ -856,6 +856,13 @@ const OrdenDetalle = () => {
         </div>
         <div className="flex items-center gap-3">
           {getEstadoBadge(orden.estado)}
+          <Button 
+            onClick={() => navigate(`/orden/${orden.id}/editar`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Editar
+          </Button>
           <Button onClick={() => navigate('/ordenes')} variant="outline">
             Volver
           </Button>
