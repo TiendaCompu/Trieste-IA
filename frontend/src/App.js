@@ -2138,7 +2138,7 @@ const MecanicosList = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => editarMecanico(mecanico)}
-                    className="config-button h-8"
+                    className="h-8 w-8 p-0 border-blue-200 hover:bg-blue-50"
                     title="Editar mecánico"
                   >
                     <Edit className="w-4 h-4" />
@@ -2148,7 +2148,7 @@ const MecanicosList = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => eliminarMecanico(mecanico)}
-                    className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                     title="Eliminar mecánico"
                   >
                     <Trash2 className="w-4 h-4" />
