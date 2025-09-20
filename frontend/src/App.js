@@ -3192,8 +3192,15 @@ const RegistroVehiculo = () => {
               </div>
               
               <div className="flex justify-end">
-                <Button onClick={() => setPaso(2)} disabled={!vehiculo.matricula}>
-                  Siguiente
+                <Button 
+                  onClick={() => setPaso(2)} 
+                  disabled={!matriculaValida}
+                  className={matriculaValida ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}
+                >
+                  {!matriculaValida 
+                    ? '🔒 Ingrese matrícula válida primero' 
+                    : 'Siguiente: Datos del Cliente ➡️'
+                  }
                 </Button>
               </div>
             </CardContent>
