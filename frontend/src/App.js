@@ -3135,6 +3135,7 @@ const RegistroVehiculo = () => {
                     onChange={(e) => setVehiculo(prev => ({ ...prev, tara: e.target.value }))}
                     placeholder="1500"
                     step="0.1"
+                    disabled={!matriculaValida}
                   />
                 </div>
               </div>
