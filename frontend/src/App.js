@@ -919,7 +919,13 @@ const OrdenDetalle = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">{item.nombre}</h4>
-                          <Badge variant={item.tipo === 'servicio' ? 'default' : 'secondary'}>
+                          <Badge 
+                            variant={item.tipo === 'servicio' ? 'default' : 'secondary'}
+                            className={item.tipo === 'servicio' 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-orange-600 text-white'
+                            }
+                          >
                             {item.tipo}
                           </Badge>
                         </div>
