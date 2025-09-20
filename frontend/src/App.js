@@ -3030,26 +3030,34 @@ const RegistroVehiculo = () => {
                     💡 Tip: Use dictado para mayor rapidez o escanee documentos con la cámara
                   </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Marca *</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Marca * {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={vehiculo.marca}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, marca: e.target.value.toUpperCase() }))}
                     placeholder="TOYOTA, HONDA, ETC."
                     style={{textTransform: 'uppercase'}}
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Modelo *</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Modelo * {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={vehiculo.modelo}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, modelo: e.target.value.toUpperCase() }))}
                     placeholder="MODELO DEL VEHÍCULO"
                     style={{textTransform: 'uppercase'}}
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Año</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Año {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     type="number"
                     value={vehiculo.año}
@@ -3057,10 +3065,13 @@ const RegistroVehiculo = () => {
                     placeholder="2020"
                     min="1950"
                     max="2030"
+                    disabled={!matriculaValida}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Color</label>
+                <div className={!matriculaValida ? 'opacity-50' : ''}>
+                  <label className="block text-sm font-medium mb-2">
+                    Color {!matriculaValida && <span className="text-red-500">(Bloqueado)</span>}
+                  </label>
                   <Input
                     value={vehiculo.color}
                     onChange={(e) => setVehiculo(prev => ({ ...prev, color: e.target.value.toUpperCase() }))}
