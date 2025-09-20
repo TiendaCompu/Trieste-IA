@@ -2135,7 +2135,7 @@ const MecanicosList = () => {
                 </Button>
                 <Button 
                   onClick={guardarMecanico}
-                  disabled={!nuevoMecanico.nombre || !nuevoMecanico.especialidad}
+                  disabled={!nuevoMecanico.nombre || !nuevoMecanico.especialidad.length}
                   className="btn-primary"
                 >
                   {editandoMecanico ? 'Actualizar' : 'Guardar'}
