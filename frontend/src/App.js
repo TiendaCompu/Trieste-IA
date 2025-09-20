@@ -2300,7 +2300,6 @@ const RegistroVehiculo = () => {
 
   const procesarImagenMatricula = async (imagenBase64) => {
     try {
-      setProcesandoIA(true);
       toast.info('🤖 Procesando imagen de matrícula...');
 
       const response = await axios.post(`${API}/ai/procesar-imagen`, {
@@ -2321,8 +2320,6 @@ const RegistroVehiculo = () => {
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error('❌ Error procesando la imagen');
-    } finally {
-      setProcesandoIA(false);
     }
   };
 
