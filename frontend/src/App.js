@@ -1241,6 +1241,12 @@ const OrdenEditar = () => {
   const guardarCambios = async () => {
     setGuardando(true);
     try {
+      // Combinar servicios y repuestos en un solo array
+      const serviciosRepuestosCompletos = [
+        ...serviciosSeleccionados.map(s => ({ ...s, origen: 'taller' })),
+        ...repuestosExternos.map(r => ({ ...r, origen: 'externo' }))
+      ];
+
       await axios.put(`${API}/ordenes/${ordenId}`, {
         diagnostico: diagnostico,
         fallas: fallas,
@@ -1248,7 +1254,8 @@ const OrdenEditar = () => {
         mecanico_id: mecanicoAsignado,
         estado: estado,
         reparaciones_realizadas: reparacionesRealizadas,
-        repuestos_utilizados: repuestosUtilizados
+        repuestos_utilizados: repuestosUtilizados,
+        servicios_repuestos: serviciosRepuestosCompletos
       });
       
       toast.success('Orden actualizada correctamente');
