@@ -2933,7 +2933,10 @@ const RegistroVehiculo = () => {
       overlay.appendChild(container);
       document.body.appendChild(overlay);
       
-      toast.success('📷 Cámara lista - Enfoque el documento y haga clic en Capturar');
+      const mensaje = tipoCaptura === 'vehiculo' 
+        ? '📷 Cámara lista - Enfoque el vehículo y haga clic en Capturar'
+        : '📷 Cámara lista - Enfoque el documento y haga clic en Capturar';
+      toast.success(mensaje);
       
     } catch (error) {
       console.error('Error iniciando captura:', error);
