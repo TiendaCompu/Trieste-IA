@@ -1432,7 +1432,7 @@ INSTRUCCIONES:
         )
         
         # Create image content
-        image_content = ImageContent("image/jpeg", imagen_base64)
+        image_content = ImageContent(imagen_base64)
         
         # Prompt for image analysis
         prompt = """Analiza esta imagen y extrae toda la información visible sobre vehículos y propietarios.
