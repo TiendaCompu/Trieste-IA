@@ -119,6 +119,21 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - AI Dictation for Work Orders functionality working perfectly: ✅ POST /api/ai/procesar-dictado-orden processes dictation correctly with Emergent LLM integration ✅ AI extracts all required fields: fallas_detectadas, diagnostico_mecanico, reparaciones_realizadas, repuestos_utilizados, observaciones ✅ Sample brake system dictation correctly processed: brake issues, ABS diagnostic, pad replacement, Bosch BR-2023 parts identified ✅ Error handling works: empty text and missing fields properly rejected ✅ Complex dictation (engine issues, oil changes) also processed correctly ✅ Response structure includes success, datos, texto_original, respuesta_ia fields ✅ AI correctly converts to uppercase and extracts technical information ✅ Integration with emergentintegrations library working with key 'sk-emergent-5071d2a131d5544Ed5'"
+
+  - task: "AI image processing endpoint /api/ai/procesar-imagen for camera capture system"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "AI image processing endpoint created for camera capture system integration"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TESTING COMPLETED - AI Image Processing endpoint working perfectly: ✅ POST /api/ai/procesar-imagen accepts imagen_base64 parameter correctly ✅ Returns proper response structure with success, datos, tipo_analisis, respuesta_ia fields ✅ Handles data URL prefixes from frontend (data:image/png;base64,) ✅ Proper error handling for empty/invalid image data ✅ Emergent LLM integration active with API key 'sk-emergent-5071d2a131d5544Ed5' ✅ Response format matches frontend camera system expectations ✅ Endpoint ready for procesarImagenConIA function integration ✅ Fixed ImageContent and UserMessage constructor issues ✅ All 5 test scenarios passed: base64 processing, data URL handling, empty validation, missing field validation, invalid base64 validation ✅ Integration verification confirmed: parameter acceptance, response structure, error handling all working correctly"
         
   - task: "Actualizar modelo OrdenTrabajoUpdate para incluir campos fallas, reparaciones_realizadas, repuestos_utilizados"
     implemented: true  
