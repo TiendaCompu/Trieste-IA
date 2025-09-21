@@ -1006,6 +1006,7 @@ const OrdenEditar = () => {
   useEffect(() => {
     cargarDatosOrden();
     cargarMecanicos();
+    cargarServiciosDisponibles();
   }, [ordenId]);
 
   const cargarDatosOrden = async () => {
