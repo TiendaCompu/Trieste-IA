@@ -1487,6 +1487,204 @@ const OrdenEditar = () => {
                 </div>
               </div>
 
+              {/* Servicios y Repuestos del Taller */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Servicios y Repuestos</h3>
+                  <Badge variant="secondary" className="text-sm">
+                    Total: ${calcularTotalServiciosRepuestos().toFixed(2)} USD
+                  </Badge>
+                </div>
+
+                {/* Servicios del Taller */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <Wrench className="w-4 h-4" />
+                    Servicios del Taller
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                    {serviciosDisponibles
+                      .filter(servicio => servicio.tipo === 'servicio')
+                      .map((servicio) => (
+                      <div
+                        key={servicio.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          serviciosSeleccionados.find(s => s.id === servicio.id)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => agregarServicioSeleccionado(servicio)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{servicio.descripcion}</p>
+                            <p className="text-xs text-gray-500">${servicio.precio_usd} USD</p>
+                          </div>
+                          <Plus className="w-4 h-4 text-gray-400" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Servicios Seleccionados */}
+                  {serviciosSeleccionados.length > 0 && (
+                    <div className="space-y-2">
+                      <h5 className="font-medium text-sm">Servicios Seleccionados:</h5>
+                      {serviciosSeleccionados.map((servicio) => (
+                        <div key={servicio.id} className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                          <span className="text-sm">{servicio.descripcion}</span>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              value={servicio.cantidad}
+                              onChange={(e) => actualizarCantidadServicio(servicio.id, e.target.value)}
+                              className="w-16 px-2 py-1 text-sm border rounded"
+                            />
+                            <span className="text-sm font-medium">
+                              ${(servicio.precio_usd * servicio.cantidad).toFixed(2)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removerServicioSeleccionado(servicio.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Repuestos del Taller */}
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Repuestos del Taller
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {serviciosDisponibles
+                      .filter(servicio => servicio.tipo === 'repuesto')
+                      .map((repuesto) => (
+                      <div
+                        key={repuesto.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          serviciosSeleccionados.find(s => s.id === repuesto.id)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => agregarServicioSeleccionado(repuesto)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{repuesto.descripcion}</p>
+                            <p className="text-xs text-gray-500">${repuesto.precio_usd} USD</p>
+                          </div>
+                          <Plus className="w-4 h-4 text-gray-400" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Repuestos Externos */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4" />
+                      Repuestos Externos
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMostrarFormRepuesto(!mostrarFormRepuesto)}
+                      className="flex items-center gap-1"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Agregar
+                    </Button>
+                  </div>
+
+                  {/* Formulario Repuesto Externo */}
+                  {mostrarFormRepuesto && (
+                    <div className="p-4 border rounded-lg bg-gray-50 mb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <Input
+                          placeholder="Nombre del repuesto"
+                          value={nuevoRepuestoExterno.nombre}
+                          onChange={(e) => setNuevoRepuestoExterno(prev => ({ ...prev, nombre: e.target.value }))}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Precio USD"
+                          step="0.01"
+                          value={nuevoRepuestoExterno.precio_usd}
+                          onChange={(e) => setNuevoRepuestoExterno(prev => ({ ...prev, precio_usd: e.target.value }))}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Cantidad"
+                          min="1"
+                          value={nuevoRepuestoExterno.cantidad}
+                          onChange={(e) => setNuevoRepuestoExterno(prev => ({ ...prev, cantidad: parseInt(e.target.value) || 1 }))}
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={agregarRepuestoExterno} size="sm" className="bg-green-600 hover:bg-green-700">
+                            Agregar
+                          </Button>
+                          <Button variant="outline" onClick={() => setMostrarFormRepuesto(false)} size="sm">
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                      <Input
+                        className="mt-2"
+                        placeholder="Observaciones (opcional)"
+                        value={nuevoRepuestoExterno.observaciones}
+                        onChange={(e) => setNuevoRepuestoExterno(prev => ({ ...prev, observaciones: e.target.value }))}
+                      />
+                    </div>
+                  )}
+
+                  {/* Lista Repuestos Externos */}
+                  {repuestosExternos.length > 0 && (
+                    <div className="space-y-2">
+                      {repuestosExternos.map((repuesto) => (
+                        <div key={repuesto.id} className="flex items-center justify-between p-3 border rounded-lg bg-orange-50">
+                          <div>
+                            <p className="font-medium text-sm">{repuesto.nombre}</p>
+                            <p className="text-xs text-gray-600">
+                              Cantidad: {repuesto.cantidad} - ${repuesto.precio_usd} c/u
+                            </p>
+                            {repuesto.observaciones && (
+                              <p className="text-xs text-gray-500">{repuesto.observaciones}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">
+                              ${(repuesto.precio_usd * repuesto.cantidad).toFixed(2)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removerRepuestoExterno(repuesto.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Observaciones */}
               <div>
                 <label className="block text-sm font-medium mb-2">Observaciones Adicionales</label>
