@@ -4504,6 +4504,367 @@ const ConfiguracionTaller = () => {
               </div>
             </div>
           </TabsContent>
+
+          {/* Tab: Administración de Base de Datos */}
+          <TabsContent value="admin" className="space-y-6">
+            <div className="space-y-6">
+              <Alert className="border-yellow-200 bg-yellow-50">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800">
+                  <strong>¡PRECAUCIÓN!</strong> Estas operaciones pueden eliminar datos permanentemente. 
+                  Asegúrese de crear un backup antes de proceder.
+                </AlertDescription>
+              </Alert>
+
+              {/* Sección de Información de Base de Datos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Información de Bases de Datos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-gray-600">
+                      Estado actual de las bases de datos del sistema
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      onClick={cargarColecciones}
+                      disabled={cargandoColecciones}
+                      className="flex items-center gap-2"
+                    >
+                      {cargandoColecciones ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      ) : (
+                        <Search className="w-4 h-4" />
+                      )}
+                      Actualizar
+                    </Button>
+                  </div>
+                  
+                  {cargandoColecciones ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="text-sm text-gray-500 mt-2">Cargando información...</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {colecciones.map((coleccion) => (
+                        <div key={coleccion.name} className="p-3 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={coleccionesSeleccionadas.includes(coleccion.name)}
+                                onChange={(e) => handleSeleccionarColeccion(coleccion.name, e.target.checked)}
+                                className="rounded"
+                              />
+                              <div>
+                                <p className="font-medium text-sm">{coleccion.display_name}</p>
+                                <p className="text-xs text-gray-500">{coleccion.name}</p>
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {coleccion.count} docs
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {colecciones.length > 0 && (
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={seleccionarTodasColecciones}
+                      >
+                        {coleccionesSeleccionadas.length === colecciones.length ? 'Deseleccionar Todas' : 'Seleccionar Todas'}
+                      </Button>
+                      <Badge variant="secondary" className="flex items-center">
+                        {coleccionesSeleccionadas.length} seleccionadas
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Sección de Backup y Restauración */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-700">
+                      <FileText className="w-5 h-5" />
+                      Backup de Datos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Crear una copia de seguridad de las bases de datos seleccionadas
+                    </p>
+                    <Button 
+                      onClick={crearBackup}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={colecciones.length === 0}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Crear Backup
+                    </Button>
+                    <p className="text-xs text-gray-500">
+                      {coleccionesSeleccionadas.length > 0 
+                        ? `Backup de ${coleccionesSeleccionadas.length} base(s) de datos seleccionada(s)`
+                        : 'Backup completo de todas las bases de datos'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                      <ArrowRight className="w-5 h-5" />
+                      Restaurar Backup
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Restaurar datos desde un archivo de backup
+                    </p>
+                    <label className="cursor-pointer">
+                      <Button variant="outline" as="span" className="w-full">
+                        <ArrowRight className="w-4 h-4 mr-2" />
+                        Seleccionar Archivo de Backup
+                      </Button>
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            restaurarBackup(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Seleccione un archivo .json de backup para restaurar
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sección de Reset */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-orange-700">
+                      <Trash2 className="w-5 h-5" />
+                      Reset Selectivo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Resetear solo las bases de datos seleccionadas
+                    </p>
+                    
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="crearEjemplos"
+                        checked={crearDatosEjemplo}
+                        onChange={(e) => setCrearDatosEjemplo(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="crearEjemplos" className="text-sm">
+                        Crear datos de ejemplo después del reset
+                      </label>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => setMostrarConfirmacionReset(true)}
+                      variant="destructive"
+                      className="w-full"
+                      disabled={coleccionesSeleccionadas.length === 0}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Reset Selectivo
+                    </Button>
+                    <p className="text-xs text-gray-500">
+                      {coleccionesSeleccionadas.length > 0 
+                        ? `Resetear ${coleccionesSeleccionadas.length} base(s) de datos`
+                        : 'Seleccione bases de datos para resetear'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-700">
+                      <AlertCircle className="w-5 h-5" />
+                      Reset Completo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      Resetear completamente el sistema (TODAS las bases de datos y configuraciones)
+                    </p>
+                    
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <AlertDescription className="text-red-800 text-xs">
+                        Esta acción eliminará TODOS los datos del sistema y no se puede deshacer
+                      </AlertDescription>
+                    </Alert>
+                    
+                    <Button 
+                      onClick={() => setMostrarConfirmacionResetCompleto(true)}
+                      variant="destructive"
+                      className="w-full bg-red-600 hover:bg-red-700"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Reset Completo del Sistema
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Modal de Confirmación Reset Selectivo */}
+            <Dialog open={mostrarConfirmacionReset} onOpenChange={setMostrarConfirmacionReset}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-orange-700">
+                    <Trash2 className="w-5 h-5" />
+                    Confirmar Reset Selectivo
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm">
+                    ¿Está seguro de que desea resetear las siguientes bases de datos?
+                  </p>
+                  
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <ul className="list-disc list-inside text-sm space-y-1">
+                      {coleccionesSeleccionadas.map(coleccion => {
+                        const info = colecciones.find(c => c.name === coleccion);
+                        return (
+                          <li key={coleccion}>
+                            <strong>{info?.display_name || coleccion}</strong> ({info?.count || 0} documentos)
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                  
+                  {crearDatosEjemplo && (
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <AlertCircle className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800 text-sm">
+                        Se crearán datos de ejemplo después del reset
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <div className="flex gap-2 justify-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setMostrarConfirmacionReset(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      onClick={resetearColecciones}
+                    >
+                      Confirmar Reset
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Modal de Confirmación Reset Completo */}
+            <Dialog open={mostrarConfirmacionResetCompleto} onOpenChange={setMostrarConfirmacionResetCompleto}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-red-700">
+                    <AlertCircle className="w-5 h-5" />
+                    ⚠️ CONFIRMAR RESET COMPLETO DEL SISTEMA
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">
+                      <strong>¡ADVERTENCIA CRÍTICA!</strong><br/>
+                      Esta acción eliminará PERMANENTEMENTE:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>Todos los vehículos y clientes</li>
+                        <li>Todas las órdenes de trabajo</li>
+                        <li>Todos los mecánicos y servicios</li>
+                        <li>Todos los presupuestos y facturas</li>
+                        <li>Todo el historial y configuraciones</li>
+                        <li>El logo del sistema</li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="crearEjemplosCompleto"
+                      checked={crearDatosEjemplo}
+                      onChange={(e) => setCrearDatosEjemplo(e.target.checked)}
+                      className="rounded"
+                    />
+                    <label htmlFor="crearEjemplosCompleto" className="text-sm">
+                      Crear datos de ejemplo después del reset completo
+                    </label>
+                  </div>
+                  
+                  <p className="text-sm font-medium">
+                    Escriba "RESETEAR SISTEMA" para confirmar:
+                  </p>
+                  
+                  <Input
+                    placeholder="Escriba RESETEAR SISTEMA para confirmar"
+                    onChange={(e) => {
+                      // Esta validación se manejará en el botón
+                    }}
+                    id="confirmacionTexto"
+                  />
+                  
+                  <div className="flex gap-2 justify-end">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setMostrarConfirmacionResetCompleto(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={() => {
+                        const texto = document.getElementById('confirmacionTexto').value;
+                        if (texto === 'RESETEAR SISTEMA') {
+                          resetearSistemaCompleto();
+                        } else {
+                          toast.error('Debe escribir exactamente "RESETEAR SISTEMA" para confirmar');
+                        }
+                      }}
+                    >
+                      ⚠️ RESETEAR SISTEMA COMPLETO
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </TabsContent>
         </Tabs>
         
         <div className="flex justify-end gap-2 mt-6">
