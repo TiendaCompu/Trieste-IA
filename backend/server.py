@@ -1748,34 +1748,34 @@ async def crear_datos_ejemplo(collections: List[str]):
                 {
                     "id": str(uuid.uuid4()),
                     "tipo": "servicio",
-                    "descripcion": "CAMBIO DE ACEITE Y FILTRO",
-                    "precio_usd": 25.00,
-                    "activo": True,
-                    "categoria": "MANTENIMIENTO"
+                    "nombre": "CAMBIO DE ACEITE Y FILTRO",
+                    "descripcion": "Cambio completo de aceite y filtro",
+                    "precio": 25.00,
+                    "created_at": datetime.now(timezone.utc)
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "tipo": "servicio",
-                    "descripcion": "ALINEACIÓN Y BALANCEO",
-                    "precio_usd": 30.00,
-                    "activo": True,
-                    "categoria": "MANTENIMIENTO"
+                    "nombre": "ALINEACIÓN Y BALANCEO",
+                    "descripcion": "Alineación y balanceo de ruedas",
+                    "precio": 30.00,
+                    "created_at": datetime.now(timezone.utc)
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "tipo": "repuesto",
-                    "descripcion": "PASTILLAS DE FRENO DELANTERAS",
-                    "precio_usd": 45.00,
-                    "activo": True,
-                    "categoria": "FRENOS"
+                    "nombre": "PASTILLAS DE FRENO DELANTERAS",
+                    "descripcion": "Pastillas de freno delanteras",
+                    "precio": 45.00,
+                    "created_at": datetime.now(timezone.utc)
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "tipo": "repuesto",
-                    "descripcion": "FILTRO DE ACEITE",
-                    "precio_usd": 12.00,
-                    "activo": True,
-                    "categoria": "MOTOR"
+                    "nombre": "FILTRO DE ACEITE",
+                    "descripcion": "Filtro de aceite para motor",
+                    "precio": 12.00,
+                    "created_at": datetime.now(timezone.utc)
                 }
             ]
             
