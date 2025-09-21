@@ -1831,6 +1831,284 @@ class WorkshopAPITester:
         
         return all_tests_passed
 
+    def test_database_administration(self):
+        """Test DATABASE ADMINISTRATION SYSTEM: Collections, Backup, Restore, Reset, Logo Management"""
+        print("\n" + "="*50)
+        print("TESTING DATABASE ADMINISTRATION SYSTEM")
+        print("="*50)
+        
+        # Test 1: Collections Information Endpoint
+        success1, response1 = self.run_test(
+            "GET /api/admin/collections - Get Collections Information",
+            "GET",
+            "admin/collections",
+            200
+        )
+        
+        if success1 and isinstance(response1, dict):
+            print("✅ Collections endpoint working")
+            
+            if response1.get('success'):
+                collections = response1.get('collections', [])
+                print(f"✅ Found {len(collections)} collections")
+                
+                # Verify expected collections are present
+                expected_collections = [
+                    "vehiculos", "clientes", "ordenes", "mecanicos", 
+                    "servicios_repuestos", "presupuestos", "facturas",
+                    "historial_kilometraje", "tasas_cambio"
+                ]
+                
+                collection_names = [c.get('name') for c in collections]
+                missing_collections = [name for name in expected_collections if name not in collection_names]
+                
+                if missing_collections:
+                    print(f"⚠️  Missing collections: {missing_collections}")
+                else:
+                    print("✅ All expected collections present")
+                
+                # Verify collection structure
+                for collection in collections[:3]:  # Check first 3
+                    if all(key in collection for key in ['name', 'display_name', 'count']):
+                        print(f"✅ {collection['display_name']}: {collection['count']} documents")
+                    else:
+                        print(f"❌ Invalid collection structure: {collection}")
+                        success1 = False
+                        break
+            else:
+                print(f"❌ Collections endpoint failed: {response1.get('error', 'Unknown error')}")
+                success1 = False
+        
+        # Test 2: Backup System - Full Backup
+        success2, response2 = self.run_test(
+            "POST /api/admin/backup - Create Full Backup",
+            "POST",
+            "admin/backup",
+            200,
+            data={}  # Empty data for full backup
+        )
+        
+        backup_data = None
+        if success2 and isinstance(response2, dict):
+            print("✅ Full backup created successfully")
+            
+            if response2.get('success'):
+                backup_metadata = response2.get('backup_metadata', {})
+                backup_data = response2.get('backup_data', {})
+                
+                print(f"✅ Backup metadata: {backup_metadata.get('total_documents', 0)} total documents")
+                print(f"✅ Backup collections: {len(backup_data)} collections backed up")
+                
+                # Verify backup structure
+                if isinstance(backup_data, dict) and len(backup_data) > 0:
+                    print("✅ Backup data structure is valid")
+                    
+                    # Check a few collections
+                    for collection_name in list(backup_data.keys())[:3]:
+                        collection_data = backup_data[collection_name]
+                        if isinstance(collection_data, list):
+                            print(f"✅ {collection_name}: {len(collection_data)} documents backed up")
+                        else:
+                            print(f"❌ Invalid backup data for {collection_name}")
+                            success2 = False
+                            break
+                else:
+                    print("❌ Invalid backup data structure")
+                    success2 = False
+            else:
+                print(f"❌ Backup failed: {response2.get('error', 'Unknown error')}")
+                success2 = False
+        
+        # Test 3: Backup System - Specific Collections
+        success3, response3 = self.run_test(
+            "POST /api/admin/backup - Create Specific Collections Backup",
+            "POST",
+            "admin/backup",
+            200,
+            data={"collections": ["vehiculos", "clientes"]}
+        )
+        
+        if success3 and isinstance(response3, dict):
+            print("✅ Specific collections backup created")
+            
+            if response3.get('success'):
+                specific_backup_data = response3.get('backup_data', {})
+                
+                # Verify only requested collections are backed up
+                if set(specific_backup_data.keys()) <= {"vehiculos", "clientes", "configuraciones"}:
+                    print("✅ Only requested collections backed up")
+                else:
+                    print(f"⚠️  Unexpected collections in backup: {list(specific_backup_data.keys())}")
+            else:
+                print(f"❌ Specific backup failed: {response3.get('error', 'Unknown error')}")
+                success3 = False
+        
+        # Test 4: Restore System (only if we have backup data)
+        success4 = True
+        if backup_data and isinstance(backup_data, dict):
+            # Create a small test backup for restore
+            test_restore_data = {
+                "backup_data": {
+                    "vehiculos": backup_data.get("vehiculos", [])[:1],  # Just one vehicle
+                    "clientes": backup_data.get("clientes", [])[:1]     # Just one client
+                }
+            }
+            
+            success4, response4 = self.run_test(
+                "POST /api/admin/restore - Restore from Backup",
+                "POST",
+                "admin/restore",
+                200,
+                data=test_restore_data
+            )
+            
+            if success4 and isinstance(response4, dict):
+                if response4.get('success'):
+                    restored_collections = response4.get('collections_restored', [])
+                    print(f"✅ Restore completed: {len(restored_collections)} collections restored")
+                else:
+                    print(f"❌ Restore failed: {response4.get('error', 'Unknown error')}")
+                    success4 = False
+        else:
+            print("⚠️  Skipping restore test - no backup data available")
+        
+        # Test 5: Reset System - Specific Collections
+        success5, response5 = self.run_test(
+            "POST /api/admin/reset - Reset Specific Collections",
+            "POST",
+            "admin/reset",
+            200,
+            data={
+                "collections": ["historial_kilometraje"],
+                "create_sample_data": False
+            }
+        )
+        
+        if success5 and isinstance(response5, dict):
+            if response5.get('success'):
+                reset_collections = response5.get('collections_reset', [])
+                print(f"✅ Reset completed: {len(reset_collections)} collections reset")
+            else:
+                print(f"❌ Reset failed: {response5.get('error', 'Unknown error')}")
+                success5 = False
+        
+        # Test 6: Reset System - Complete Reset with Sample Data
+        success6, response6 = self.run_test(
+            "POST /api/admin/reset-complete - Complete System Reset with Sample Data",
+            "POST",
+            "admin/reset-complete",
+            200,
+            data={"create_sample_data": True}
+        )
+        
+        if success6 and isinstance(response6, dict):
+            if response6.get('success'):
+                print("✅ Complete system reset with sample data completed")
+                
+                # Verify sample data was created
+                sample_data_info = response6.get('sample_data_created', {})
+                if isinstance(sample_data_info, dict) and len(sample_data_info) > 0:
+                    print("✅ Sample data created:")
+                    for collection, count in sample_data_info.items():
+                        print(f"   {collection}: {count} sample records")
+                else:
+                    print("⚠️  Sample data creation info not available")
+            else:
+                print(f"❌ Complete reset failed: {response6.get('error', 'Unknown error')}")
+                success6 = False
+        
+        # Test 7: Logo Management - Upload Logo
+        # Create a small test image (base64 encoded 1x1 pixel PNG)
+        test_logo_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
+        
+        success7, response7 = self.run_test(
+            "POST /api/admin/upload-logo - Upload Logo",
+            "POST",
+            "admin/upload-logo",
+            200,
+            data={
+                "logo_base64": test_logo_base64,
+                "filename": "test_logo.png"
+            }
+        )
+        
+        if success7 and isinstance(response7, dict):
+            if response7.get('success'):
+                print("✅ Logo uploaded successfully")
+                logo_url = response7.get('logo_url')
+                if logo_url:
+                    print(f"✅ Logo URL: {logo_url}")
+                else:
+                    print("⚠️  Logo URL not provided in response")
+            else:
+                print(f"❌ Logo upload failed: {response7.get('error', 'Unknown error')}")
+                success7 = False
+        
+        # Test 8: Logo Management - Get Logo
+        success8, response8 = self.run_test(
+            "GET /api/admin/logo - Get Current Logo",
+            "GET",
+            "admin/logo",
+            200
+        )
+        
+        if success8 and isinstance(response8, dict):
+            if response8.get('success'):
+                logo_data = response8.get('logo_base64')
+                if logo_data:
+                    print("✅ Logo retrieved successfully")
+                    print(f"✅ Logo data length: {len(logo_data)} characters")
+                else:
+                    print("⚠️  No logo data in response")
+            else:
+                print(f"❌ Logo retrieval failed: {response8.get('error', 'Unknown error')}")
+                success8 = False
+        
+        # Test 9: Error Handling - Invalid Backup Data
+        success9, response9 = self.run_test(
+            "POST /api/admin/restore - Invalid Backup Data",
+            "POST",
+            "admin/restore",
+            400,  # Should return 400 for invalid data
+            data={"backup_data": "invalid_data"}
+        )
+        
+        if success9:
+            print("✅ Invalid backup data correctly rejected")
+        else:
+            print("⚠️  Invalid backup data handling may need improvement")
+        
+        # Test 10: Error Handling - Missing Parameters
+        success10, response10 = self.run_test(
+            "POST /api/admin/reset - Missing Parameters",
+            "POST",
+            "admin/reset",
+            400,  # Should return 400 for missing required parameters
+            data={}
+        )
+        
+        if success10:
+            print("✅ Missing parameters correctly handled")
+        else:
+            print("⚠️  Missing parameter handling may need improvement")
+        
+        # Summary
+        all_tests_passed = all([success1, success2, success3, success4, success5, success6, success7, success8])
+        
+        print(f"\n📊 DATABASE ADMINISTRATION TESTS SUMMARY:")
+        print(f"   ✅ Collections information: {'PASSED' if success1 else 'FAILED'}")
+        print(f"   ✅ Full backup creation: {'PASSED' if success2 else 'FAILED'}")
+        print(f"   ✅ Specific collections backup: {'PASSED' if success3 else 'FAILED'}")
+        print(f"   ✅ Restore from backup: {'PASSED' if success4 else 'FAILED'}")
+        print(f"   ✅ Reset specific collections: {'PASSED' if success5 else 'FAILED'}")
+        print(f"   ✅ Complete system reset: {'PASSED' if success6 else 'FAILED'}")
+        print(f"   ✅ Logo upload: {'PASSED' if success7 else 'FAILED'}")
+        print(f"   ✅ Logo retrieval: {'PASSED' if success8 else 'FAILED'}")
+        print(f"   ✅ Error handling (invalid data): {'PASSED' if success9 else 'FAILED'}")
+        print(f"   ✅ Error handling (missing params): {'PASSED' if success10 else 'FAILED'}")
+        
+        return all_tests_passed
+
 def main():
     print("🚗 DIAGNÓSTICO COMPLETO DEL SISTEMA BACKEND")
     print("=" * 80)
