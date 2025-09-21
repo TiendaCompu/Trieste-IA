@@ -142,6 +142,7 @@ class ServicioRepuestoCreate(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
     precio: float
+    activo: bool = True
 
 class OrdenTrabajo(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
