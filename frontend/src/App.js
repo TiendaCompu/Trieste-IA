@@ -2809,10 +2809,10 @@ const RegistroVehiculo = () => {
       
       if (dispositivos.length === 1) {
         // Solo una cámara, usar directamente
-        await iniciarCapturaCamara(dispositivos[0].deviceId);
+        await iniciarCapturaCamara(dispositivos[0].deviceId, tipoCaptura);
       } else {
         // Múltiples cámaras, mostrar selector
-        setCamaraState(prev => ({ ...prev, mostrarSelector: true }));
+        setCamaraState(prev => ({ ...prev, mostrarSelector: true, tipoCaptura }));
       }
     } catch (error) {
       console.error('Error escaneando documento:', error);
