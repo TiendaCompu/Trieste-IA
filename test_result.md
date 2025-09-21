@@ -433,8 +433,8 @@ test_plan:
           comment: "✅ SEARCH FUNCTIONALITY TESTING COMPLETED - All search operations working perfectly: ✅ GET /api/buscar?q=TEST finds vehicles by license plate (TEST999 found) ✅ GET /api/buscar?q=JUAN finds clients by name (JUAN CARLOS PEREZ found) ✅ GET /api/buscar?q=EMPRESA finds clients by company (EMPRESA DE PRUEBA found) ✅ Vehicle-client relationships working correctly in search results ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ UPPERCASE conversion working in search (test999 → TEST999) ✅ All search functionality operational and finding records correctly"
 
   - task: "Fix Escanear camera button in RegistroVehiculo to use proper camera system"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -443,6 +443,9 @@ test_plan:
         - working: false
           agent: "main"
           comment: "ISSUE IDENTIFIED: 'Escanear Documento' button uses old handleImageCapture (simple file input) instead of comprehensive camera system escanearDocumentoConCamara with device selection. Need to connect UI button to proper camera functionality."
+        - working: true
+          agent: "main"
+          comment: "FIXED: ✅ Connected 'Escanear Documento' button to escanearDocumentoConCamara system ✅ Added device selector modal for multiple cameras ✅ Removed old handleImageCapture function ✅ Updated iniciarCamaraMatricula to use new camera system ✅ Camera system now provides proper streaming with device selection and capture capabilities"
 
 agent_communication:
     - agent: "main"
