@@ -4116,7 +4116,7 @@ const RegistroVehiculo = () => {
                   className="w-full justify-start text-left"
                   onClick={async () => {
                     setCamaraState(prev => ({ ...prev, mostrarSelector: false }));
-                    await iniciarCapturaCamara(dispositivo.deviceId);
+                    await iniciarCapturaCamara(dispositivo.deviceId, camaraState.tipoCaptura);
                   }}
                 >
                   <div className="flex items-center gap-3">
