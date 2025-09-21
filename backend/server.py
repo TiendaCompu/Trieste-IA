@@ -1459,7 +1459,7 @@ FORMATO DE RESPUESTA JSON:
 Analiza cuidadosamente y extrae solo información que puedas leer claramente."""
         
         # Send message with image
-        user_message = UserMessage(text=prompt, files=[image_content])
+        user_message = UserMessage(text=prompt, file_contents=[image_content])
         response = await llm.send_message(user_message)
         
         ai_response = response.strip()
