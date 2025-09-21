@@ -303,8 +303,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Agregar funcionalidad de dictado al componente OrdenEditar"
-    - "Implementar procesamiento de dictado con IA para órdenes"
+    - "AI image processing endpoint /api/ai/procesar-imagen for camera capture system"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
