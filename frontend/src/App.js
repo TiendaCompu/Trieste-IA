@@ -2344,9 +2344,9 @@ const RegistroVehiculo = () => {
   };
 
   const iniciarCamaraMatricula = async () => {
-    toast.info('📷 Función de cámara para matrícula - Usando captura de imagen existente');
-    // Reutilizar la función handleImageCapture existente  
-    handleImageCapture();
+    toast.info('📷 Iniciando captura de cámara para matrícula');
+    // Usar el sistema avanzado de cámara
+    await escanearDocumentoConCamara();
   };
 
   // NUEVA FUNCIÓN: Validar documento del cliente
