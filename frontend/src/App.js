@@ -2797,7 +2797,7 @@ const RegistroVehiculo = () => {
   };
 
   // Función principal para escanear documento
-  const escanearDocumentoConCamara = async () => {
+  const escanearDocumentoConCamara = async (tipoCaptura = 'documento') => {
     try {
       // Obtener dispositivos disponibles
       const dispositivos = await obtenerDispositivosCamara();
