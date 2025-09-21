@@ -1050,6 +1050,70 @@ const OrdenEditar = () => {
     }
   };
 
+  const cargarServiciosDisponibles = async () => {
+    try {
+      const response = await axios.get(`${API}/servicios-repuestos/activos`);
+      setServiciosDisponibles(response.data);
+    } catch (error) {
+      console.error('Error cargando servicios:', error);
+    }
+  };
+
+  const agregarServicioSeleccionado = (servicio) => {
+    const yaSeleccionado = serviciosSeleccionados.find(s => s.id === servicio.id);
+    if (!yaSeleccionado) {
+      setServiciosSeleccionados(prev => [...prev, { ...servicio, cantidad: 1 }]);
+    }
+  };
+
+  const removerServicioSeleccionado = (servicioId) => {
+    setServiciosSeleccionados(prev => prev.filter(s => s.id !== servicioId));
+  };
+
+  const actualizarCantidadServicio = (servicioId, cantidad) => {
+    setServiciosSeleccionados(prev => 
+      prev.map(s => s.id === servicioId ? { ...s, cantidad: parseInt(cantidad) || 1 } : s)
+    );
+  };
+
+  const agregarRepuestoExterno = () => {
+    if (!nuevoRepuestoExterno.nombre.trim() || !nuevoRepuestoExterno.precio_usd) {
+      toast.error('Completa el nombre y precio del repuesto');
+      return;
+    }
+
+    const repuesto = {
+      id: Date.now().toString(),
+      ...nuevoRepuestoExterno,
+      precio_usd: parseFloat(nuevoRepuestoExterno.precio_usd),
+      tipo: 'externo'
+    };
+
+    setRepuestosExternos(prev => [...prev, repuesto]);
+    setNuevoRepuestoExterno({
+      nombre: '',
+      precio_usd: '',
+      cantidad: 1,
+      observaciones: ''
+    });
+    setMostrarFormRepuesto(false);
+    toast.success('Repuesto externo agregado');
+  };
+
+  const removerRepuestoExterno = (repuestoId) => {
+    setRepuestosExternos(prev => prev.filter(r => r.id !== repuestoId));
+  };
+
+  const calcularTotalServiciosRepuestos = () => {
+    const totalServicios = serviciosSeleccionados.reduce((total, servicio) => 
+      total + (servicio.precio_usd * servicio.cantidad), 0
+    );
+    const totalRepuestosExternos = repuestosExternos.reduce((total, repuesto) => 
+      total + (repuesto.precio_usd * repuesto.cantidad), 0
+    );
+    return totalServicios + totalRepuestosExternos;
+  };
+
   // Funciones para dictado de órdenes
   const procesarDictadoOrdenConIA = async (textoDictado) => {
     setProcesandoIA(true);
