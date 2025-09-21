@@ -1558,7 +1558,7 @@ async def crear_backup(request: BackupDatabase):
         backup_data = {}
         
         collections_to_backup = request.collections or [
-            "vehiculos", "clientes", "ordenes", "mecanicos", 
+            "vehiculos", "clientes", "ordenes_trabajo", "mecanicos", 
             "servicios_repuestos", "presupuestos", "facturas",
             "historial_kilometraje", "tasas_cambio"
         ]
