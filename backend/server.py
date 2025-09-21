@@ -1535,7 +1535,7 @@ async def obtener_colecciones():
                 "display_name": {
                     "vehiculos": "Vehículos",
                     "clientes": "Clientes", 
-                    "ordenes": "Órdenes de Trabajo",
+                    "ordenes_trabajo": "Órdenes de Trabajo",
                     "mecanicos": "Mecánicos",
                     "servicios_repuestos": "Servicios y Repuestos",
                     "presupuestos": "Presupuestos",
