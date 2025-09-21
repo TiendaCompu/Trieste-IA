@@ -3229,24 +3229,15 @@ const RegistroVehiculo = () => {
             {grabando ? 'Escuchando...' : 'Dictar Información'}
           </Button>
           
-          <label className="cursor-pointer">
-            <Button 
-              as="span" 
-              variant="outline" 
-              className="flex items-center gap-2"
-              disabled={procesandoIA}
-            >
-              <Camera className={`w-4 h-4 ${procesandoIA ? 'animate-pulse' : ''}`} />
-              {procesandoIA ? 'Analizando...' : 'Escanear Documento'}
-            </Button>
-            <input
-              type="file"
-              accept="image/*"
-              capture="camera"
-              onChange={handleImageCapture}
-              className="hidden"
-            />
-          </label>
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            disabled={procesandoIA}
+            onClick={escanearDocumentoConCamara}
+          >
+            <Camera className={`w-4 h-4 ${procesandoIA ? 'animate-pulse' : ''}`} />
+            {procesandoIA ? 'Analizando...' : 'Escanear Documento'}
+          </Button>
           
           <div className="text-xs text-gray-500 mt-2">
             📸 <strong>Escáner inteligente:</strong> Captura matrícula, título de propiedad o documento vehicular
