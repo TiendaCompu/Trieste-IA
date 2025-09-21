@@ -743,7 +743,7 @@ async def actualizar_servicio_repuesto(item_id: str, datos: dict):
         raise HTTPException(status_code=404, detail="Item no encontrado")
     
     # Campos permitidos para actualización
-    campos_permitidos = ["tipo", "nombre", "descripcion", "precio"]
+    campos_permitidos = ["tipo", "nombre", "descripcion", "precio", "activo"]
     datos_actualizacion = {k: v for k, v in datos.items() if k in campos_permitidos}
     datos_actualizacion = prepare_for_mongo(datos_actualizacion)
     
