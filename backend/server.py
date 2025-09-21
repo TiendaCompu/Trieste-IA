@@ -1832,9 +1832,11 @@ async def crear_datos_ejemplo(collections: List[str]):
             tasa_ejemplo = {
                 "id": str(uuid.uuid4()),
                 "tasa_bs_usd": 36.50,
-                "fecha": datetime.now(timezone.utc),
+                "fecha_actualizacion": datetime.now(timezone.utc),
+                "usuario_actualizacion": "sistema",
+                "observaciones": "TASA DE EJEMPLO",
                 "activa": True,
-                "observaciones": "TASA DE EJEMPLO"
+                "created_at": datetime.now(timezone.utc)
             }
             
             tasa_data = prepare_for_mongo(tasa_ejemplo)
