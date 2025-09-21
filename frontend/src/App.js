@@ -3910,6 +3910,168 @@ const ConfiguracionTaller = () => {
     setMostrarConfig(false);
   };
 
+  // Funciones para administración de base de datos
+  const cargarColecciones = async () => {
+    setCargandoColecciones(true);
+    try {
+      const response = await axios.get(`${API}/admin/collections`);
+      if (response.data.success) {
+        setColecciones(response.data.collections);
+      }
+    } catch (error) {
+      console.error('Error cargando colecciones:', error);
+      toast.error('Error cargando información de bases de datos');
+    } finally {
+      setCargandoColecciones(false);
+    }
+  };
+
+  const crearBackup = async () => {
+    try {
+      toast.info('Creando backup...');
+      const response = await axios.post(`${API}/admin/backup`, {
+        collections: coleccionesSeleccionadas.length > 0 ? coleccionesSeleccionadas : null
+      });
+      
+      if (response.data.success) {
+        setBackupData(response.data);
+        toast.success('Backup creado exitosamente');
+        
+        // Descargar backup como archivo JSON
+        const dataStr = JSON.stringify(response.data, null, 2);
+        const dataBlob = new Blob([dataStr], {type:'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `backup-trieste-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error creando backup:', error);
+      toast.error('Error creando backup');
+    }
+  };
+
+  const restaurarBackup = async (backupFile) => {
+    try {
+      const fileContent = await backupFile.text();
+      const backupData = JSON.parse(fileContent);
+      
+      toast.info('Restaurando backup...');
+      const response = await axios.post(`${API}/admin/restore`, {
+        backup_data: backupData.backup_data,
+        collections: coleccionesSeleccionadas.length > 0 ? coleccionesSeleccionadas : null
+      });
+      
+      if (response.data.success) {
+        toast.success(`Backup restaurado: ${response.data.documents_restored} documentos`);
+        cargarColecciones(); // Recargar estadísticas
+      }
+    } catch (error) {
+      console.error('Error restaurando backup:', error);
+      toast.error('Error restaurando backup');
+    }
+  };
+
+  const resetearColecciones = async () => {
+    if (coleccionesSeleccionadas.length === 0) {
+      toast.warning('Seleccione al menos una base de datos para resetear');
+      return;
+    }
+
+    try {
+      toast.info('Reseteando bases de datos seleccionadas...');
+      const response = await axios.post(`${API}/admin/reset`, {
+        collections: coleccionesSeleccionadas,
+        create_sample_data: crearDatosEjemplo
+      });
+      
+      if (response.data.success) {
+        toast.success('Bases de datos reseteadas exitosamente');
+        setMostrarConfirmacionReset(false);
+        setColeccionesSeleccionadas([]);
+        cargarColecciones(); // Recargar estadísticas
+      }
+    } catch (error) {
+      console.error('Error reseteando:', error);
+      toast.error('Error reseteando bases de datos');
+    }
+  };
+
+  const resetearSistemaCompleto = async () => {
+    try {
+      toast.info('Reseteando sistema completo...');
+      const response = await axios.post(`${API}/admin/reset-complete?create_sample_data=${crearDatosEjemplo}`);
+      
+      if (response.data.success) {
+        toast.success(`Sistema completamente reseteado: ${response.data.total_documents_deleted} documentos eliminados`);
+        setMostrarConfirmacionResetCompleto(false);
+        
+        // Recargar configuración
+        localStorage.removeItem('trieste_config');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error reseteando sistema completo:', error);
+      toast.error('Error reseteando sistema completo');
+    }
+  };
+
+  const handleSeleccionarColeccion = (nombreColeccion, seleccionada) => {
+    if (seleccionada) {
+      setColeccionesSeleccionadas(prev => [...prev, nombreColeccion]);
+    } else {
+      setColeccionesSeleccionadas(prev => prev.filter(col => col !== nombreColeccion));
+    }
+  };
+
+  const seleccionarTodasColecciones = () => {
+    if (coleccionesSeleccionadas.length === colecciones.length) {
+      setColeccionesSeleccionadas([]);
+    } else {
+      setColeccionesSeleccionadas(colecciones.map(col => col.name));
+    }
+  };
+
+  const subirLogo = async (file) => {
+    setCargandoLogo(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const logoBase64 = e.target.result;
+        
+        const response = await axios.post(`${API}/admin/upload-logo`, logoBase64, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.data.success) {
+          setLogoBase64(logoBase64);
+          setConfiguracion(prev => ({ ...prev, logo_url: logoBase64 }));
+          toast.success('Logo subido exitosamente');
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error subiendo logo:', error);
+      toast.error('Error subiendo logo');
+    } finally {
+      setCargandoLogo(false);
+    }
+  };
+
+  const cargarLogo = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/logo`);
+      if (response.data.success && response.data.logo) {
+        setLogoBase64(response.data.logo);
+        setConfiguracion(prev => ({ ...prev, logo_url: response.data.logo }));
+      }
+    } catch (error) {
+      console.error('Error cargando logo:', error);
+    }
+  };
+
   useEffect(() => {
     // Cargar configuración guardada
     const configGuardada = localStorage.getItem('trieste_config');
