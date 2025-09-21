@@ -1927,6 +1927,144 @@ async def obtener_logo():
         logger.error(f"Error getting logo: {e}")
         raise HTTPException(status_code=500, detail=f"Error obteniendo logo: {str(e)}")
 
+# Endpoints para configuración de cámaras
+@api_router.get("/admin/configuracion-camara")
+async def obtener_configuracion_camara():
+    """Obtener configuración de cámaras del sistema"""
+    try:
+        config_collection = db["configuraciones"]
+        config_doc = await config_collection.find_one({"tipo": "camara"})
+        
+        if config_doc and "configuracion" in config_doc:
+            return {
+                "success": True,
+                "configuracion": config_doc["configuracion"]
+            }
+        else:
+            # Configuración por defecto
+            configuracion_default = {
+                "tipo": "dispositivo",
+                "camara_ip": {
+                    "url": "",
+                    "usuario": "",
+                    "password": "",
+                    "puerto": "80"
+                },
+                "dispositivo_predeterminado": "",
+                "resolucion": "1280x720",
+                "calidad": "alta"
+            }
+            return {
+                "success": True,
+                "configuracion": configuracion_default
+            }
+    except Exception as e:
+        logger.error(f"Error getting camera config: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo configuración de cámara: {str(e)}")
+
+@api_router.post("/admin/configuracion-camara")
+async def guardar_configuracion_camara(request: dict):
+    """Guardar configuración de cámaras del sistema"""
+    try:
+        config_collection = db["configuraciones"]
+        
+        # Buscar configuración existente o crear nueva
+        config_doc = await config_collection.find_one({"tipo": "camara"})
+        
+        if config_doc:
+            # Actualizar configuración existente
+            await config_collection.update_one(
+                {"tipo": "camara"},
+                {
+                    "$set": {
+                        "configuracion": request,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
+                }
+            )
+        else:
+            # Crear nueva configuración
+            new_config = {
+                "id": str(uuid.uuid4()),
+                "tipo": "camara",
+                "configuracion": request,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            }
+            await config_collection.insert_one(new_config)
+        
+        return {
+            "success": True,
+            "message": "Configuración de cámara guardada exitosamente"
+        }
+    except Exception as e:
+        logger.error(f"Error saving camera config: {e}")
+        raise HTTPException(status_code=500, detail=f"Error guardando configuración de cámara: {str(e)}")
+
+@api_router.post("/admin/probar-camara-ip")
+async def probar_camara_ip(request: dict):
+    """Probar conexión con cámara IP"""
+    try:
+        url = request.get("url")
+        usuario = request.get("usuario", "")
+        password = request.get("password", "")
+        
+        if not url:
+            raise HTTPException(status_code=400, detail="URL de cámara requerida")
+        
+        # En un caso real, aquí haríamos una petición HTTP a la cámara
+        # Por ahora, simulamos la prueba
+        import asyncio
+        import aiohttp
+        
+        timeout = aiohttp.ClientTimeout(total=5)
+        
+        try:
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                auth = None
+                if usuario and password:
+                    auth = aiohttp.BasicAuth(usuario, password)
+                
+                # Intentar acceder al stream de video o endpoint de estado
+                test_urls = [
+                    f"{url}/video",
+                    f"{url}/mjpeg",
+                    f"{url}/stream",
+                    f"{url}",
+                ]
+                
+                for test_url in test_urls:
+                    try:
+                        async with session.get(test_url, auth=auth) as response:
+                            if response.status == 200:
+                                return {
+                                    "success": True,
+                                    "message": f"Conexión exitosa con cámara IP",
+                                    "url_funcional": test_url
+                                }
+                    except:
+                        continue
+                
+                return {
+                    "success": False,
+                    "message": "No se pudo conectar con la cámara IP"
+                }
+                
+        except asyncio.TimeoutError:
+            return {
+                "success": False,
+                "message": "Timeout - La cámara no responde"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Error de conexión: {str(e)}"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error testing IP camera: {e}")
+        raise HTTPException(status_code=500, detail=f"Error probando cámara IP: {str(e)}")
+
 # Test route
 @api_router.get("/")
 async def root():
