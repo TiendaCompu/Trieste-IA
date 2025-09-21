@@ -5007,6 +5007,278 @@ const ConfiguracionTaller = () => {
             </div>
           </TabsContent>
 
+          {/* Tab: Configuración de Cámaras */}
+          <TabsContent value="camaras" className="space-y-6">
+            <div className="space-y-6">
+              <Alert className="border-blue-200 bg-blue-50">
+                <Camera className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  Configure las cámaras que utilizará el sistema para capturar imágenes de vehículos y documentos.
+                </AlertDescription>
+              </Alert>
+
+              {/* Tipo de Cámara */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Tipo de Cámara
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tipoCamara"
+                        value="dispositivo"
+                        checked={configuracionCamara.tipo === 'dispositivo'}
+                        onChange={(e) => setConfiguracionCamara(prev => ({ ...prev, tipo: e.target.value }))}
+                        className="rounded"
+                      />
+                      <span>Cámara del Dispositivo</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tipoCamara"
+                        value="ip"
+                        checked={configuracionCamara.tipo === 'ip'}
+                        onChange={(e) => setConfiguracionCamara(prev => ({ ...prev, tipo: e.target.value }))}
+                        className="rounded"
+                      />
+                      <span>Cámara IP</span>
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Configuración Cámara de Dispositivo */}
+              {configuracionCamara.tipo === 'dispositivo' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      Cámara del Dispositivo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={detectarCamarasDispositivo}
+                        disabled={probandoCamara}
+                        className="flex items-center gap-2"
+                      >
+                        {probandoCamara ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <Search className="w-4 h-4" />
+                        )}
+                        Detectar Cámaras
+                      </Button>
+                      {camarasDisponibles.length > 0 && (
+                        <Button
+                          variant="outline"
+                          onClick={mostrarVistaPreviaCamaraSeleccionada}
+                          disabled={!configuracionCamara.dispositivo_predeterminado}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Vista Previa
+                        </Button>
+                      )}
+                    </div>
+
+                    {camarasDisponibles.length > 0 && (
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium">Cámara Predeterminada</label>
+                        <Select
+                          value={configuracionCamara.dispositivo_predeterminado}
+                          onValueChange={(value) => setConfiguracionCamara(prev => ({ ...prev, dispositivo_predeterminado: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar cámara" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {camarasDisponibles.map((camara) => (
+                              <SelectItem key={camara.id} value={camara.id}>
+                                {camara.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Configuración Cámara IP */}
+              {configuracionCamara.tipo === 'ip' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      Cámara IP
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">URL/IP de la Cámara *</label>
+                        <Input
+                          placeholder="192.168.1.100"
+                          value={configuracionCamara.camara_ip.url}
+                          onChange={(e) => setConfiguracionCamara(prev => ({
+                            ...prev,
+                            camara_ip: { ...prev.camara_ip, url: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Puerto</label>
+                        <Input
+                          placeholder="80"
+                          value={configuracionCamara.camara_ip.puerto}
+                          onChange={(e) => setConfiguracionCamara(prev => ({
+                            ...prev,
+                            camara_ip: { ...prev.camara_ip, puerto: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Usuario (opcional)</label>
+                        <Input
+                          placeholder="admin"
+                          value={configuracionCamara.camara_ip.usuario}
+                          onChange={(e) => setConfiguracionCamara(prev => ({
+                            ...prev,
+                            camara_ip: { ...prev.camara_ip, usuario: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Contraseña (opcional)</label>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          value={configuracionCamara.camara_ip.password}
+                          onChange={(e) => setConfiguracionCamara(prev => ({
+                            ...prev,
+                            camara_ip: { ...prev.camara_ip, password: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={probarCamaraIP}
+                        disabled={probandoCamara || !configuracionCamara.camara_ip.url}
+                        className="flex items-center gap-2"
+                      >
+                        {probandoCamara ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                        Probar Conexión
+                      </Button>
+                      {estadoConexionIP && (
+                        <Button
+                          variant="outline"
+                          onClick={mostrarVistaPreviaCamaraSeleccionada}
+                          disabled={!estadoConexionIP.includes('✅')}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Vista Previa
+                        </Button>
+                      )}
+                    </div>
+
+                    {estadoConexionIP && (
+                      <Alert className={estadoConexionIP.includes('✅') ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+                        <AlertDescription className={estadoConexionIP.includes('✅') ? 'text-green-800' : 'text-red-800'}>
+                          {estadoConexionIP}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Formatos compatibles:</strong> MJPEG, RTSP, HTTP streams.
+                        <br />
+                        <strong>Ejemplo URL:</strong> http://192.168.1.100/video o rtsp://192.168.1.100:554/stream
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Configuración Avanzada */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Configuración Avanzada
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Resolución</label>
+                      <Select
+                        value={configuracionCamara.resolucion}
+                        onValueChange={(value) => setConfiguracionCamara(prev => ({ ...prev, resolucion: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="640x480">640x480 (VGA)</SelectItem>
+                          <SelectItem value="1280x720">1280x720 (HD)</SelectItem>
+                          <SelectItem value="1920x1080">1920x1080 (Full HD)</SelectItem>
+                          <SelectItem value="3840x2160">3840x2160 (4K)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Calidad</label>
+                      <Select
+                        value={configuracionCamara.calidad}
+                        onValueChange={(value) => setConfiguracionCamara(prev => ({ ...prev, calidad: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="baja">Baja (Rápida)</SelectItem>
+                          <SelectItem value="media">Media (Balanceada)</SelectItem>
+                          <SelectItem value="alta">Alta (Máxima calidad)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Botones de Acción */}
+              <div className="flex gap-2">
+                <Button onClick={guardarConfiguracionCamara} className="bg-green-600 hover:bg-green-700">
+                  Guardar Configuración
+                </Button>
+                <Button variant="outline" onClick={() => setConfiguracionCamara({
+                  tipo: 'dispositivo',
+                  camara_ip: { url: '', usuario: '', password: '', puerto: '80' },
+                  dispositivo_predeterminado: '',
+                  resolucion: '1280x720',
+                  calidad: 'alta'
+                })}>
+                  Restablecer
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
           {/* Tab: Administración de Base de Datos */}
           <TabsContent value="admin" className="space-y-6">
             <div className="space-y-6">
