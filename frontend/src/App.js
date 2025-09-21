@@ -4606,10 +4606,11 @@ const ConfiguracionTaller = () => {
         </DialogHeader>
         
         <Tabs value={tabActiva} onValueChange={setTabActiva} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">Información General</TabsTrigger>
             <TabsTrigger value="colores">Personalización</TabsTrigger>
             <TabsTrigger value="sistema">Sistema</TabsTrigger>
+            <TabsTrigger value="camaras">Cámaras</TabsTrigger>
             <TabsTrigger value="admin">Administración BD</TabsTrigger>
           </TabsList>
 
