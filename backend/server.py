@@ -303,6 +303,18 @@ class AIExtraRequest(BaseModel):
     texto_dictado: Optional[str] = None
     imagen_base64: Optional[str] = None
 
+# Modelos para administración de bases de datos
+class ResetDatabase(BaseModel):
+    collections: List[str]  # Lista de colecciones a resetear
+    create_sample_data: bool = False  # Si crear datos de ejemplo
+
+class BackupDatabase(BaseModel):
+    collections: Optional[List[str]] = None  # Si None, hace backup de todo
+    
+class RestoreDatabase(BaseModel):
+    backup_data: Dict[str, List[Dict]]  # Datos del backup a restaurar
+    collections: Optional[List[str]] = None  # Colecciones específicas a restaurar
+
 # Helper functions
 def convert_to_uppercase(data):
     """Convert text fields to uppercase for Venezuelan requirements"""
