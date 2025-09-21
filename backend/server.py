@@ -1714,26 +1714,24 @@ async def crear_datos_ejemplo(collections: List[str]):
                 {
                     "id": str(uuid.uuid4()),
                     "nombre": "JUAN PÉREZ",
-                    "especialidad": ["motor", "transmision"],
+                    "especialidad": "motor",
                     "telefono": "0414-123.45.67",
                     "whatsapp": "0414-123.45.67",
-                    "email": "juan.perez@trieste.com",
                     "estado": "disponible",
                     "activo": True,
                     "avatar": "",
-                    "fecha_ingreso": datetime.now(timezone.utc)
+                    "created_at": datetime.now(timezone.utc)
                 },
                 {
                     "id": str(uuid.uuid4()),
                     "nombre": "MARÍA GONZÁLEZ",
-                    "especialidad": ["frenos", "suspension"],
+                    "especialidad": "frenos",
                     "telefono": "0424-987.65.43",
                     "whatsapp": "0424-987.65.43", 
-                    "email": "maria.gonzalez@trieste.com",
                     "estado": "disponible",
                     "activo": True,
                     "avatar": "",
-                    "fecha_ingreso": datetime.now(timezone.utc)
+                    "created_at": datetime.now(timezone.utc)
                 }
             ]
             
