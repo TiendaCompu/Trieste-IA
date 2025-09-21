@@ -370,25 +370,32 @@ class DatabaseAdminTester:
         print("\n📊 Verifying Sample Data Creation...")
         
         # Check if collections have data after sample data creation
-        collections_to_check = ["vehiculos", "clientes", "ordenes", "mecanicos"]
+        collections_to_check = [
+            ("vehiculos", "vehiculos"),
+            ("clientes", "clientes"), 
+            ("ordenes", "ordenes"),
+            ("mecanicos", "mecanicos"),
+            ("servicios_repuestos", "servicios-repuestos"),
+            ("tasas_cambio", "tasa-cambio/historial")
+        ]
         all_have_data = True
         
-        for collection in collections_to_check:
+        for collection_name, endpoint in collections_to_check:
             success, response = self.run_test(
-                f"Check {collection} has sample data",
+                f"Check {collection_name} has sample data",
                 "GET",
-                collection,
+                endpoint,
                 200
             )
             
             if success and isinstance(response, list):
                 if len(response) > 0:
-                    print(f"✅ {collection}: {len(response)} records found")
+                    print(f"✅ {collection_name}: {len(response)} records found")
                 else:
-                    print(f"⚠️  {collection}: No records found")
+                    print(f"⚠️  {collection_name}: No records found")
                     all_have_data = False
             else:
-                print(f"❌ {collection}: Failed to retrieve data")
+                print(f"❌ {collection_name}: Failed to retrieve data")
                 all_have_data = False
         
         return all_have_data
