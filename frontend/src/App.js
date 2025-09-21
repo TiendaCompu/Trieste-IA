@@ -3774,26 +3774,26 @@ const RegistroVehiculo = () => {
                       </div>
                     ) : (
                       <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (e) => {
-                                setVehiculo(prev => ({ ...prev, foto_vehiculo: e.target.result }));
-                              };
-                              reader.readAsDataURL(file);
+                        <Button
+                          variant="ghost"
+                          onClick={async () => {
+                            try {
+                              await escanearDocumentoConCamara('vehiculo');
+                            } catch (error) {
+                              console.error('Error capturando foto:', error);
+                              toast.error('Error capturando foto del vehículo');
                             }
                           }}
-                          className="hidden"
-                          id="foto-vehiculo"
-                        />
-                        <label htmlFor="foto-vehiculo" className="cursor-pointer">
-                          <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600">Subir foto del vehículo</p>
-                        </label>
+                          className="w-full h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400"
+                          disabled={procesandoIA}
+                        >
+                          <div className="text-center">
+                            <Camera className={`w-8 h-8 text-gray-400 mx-auto mb-2 ${procesandoIA ? 'animate-pulse' : ''}`} />
+                            <p className="text-sm text-gray-600">
+                              {procesandoIA ? 'Capturando...' : 'Capturar foto del vehículo'}
+                            </p>
+                          </div>
+                        </Button>
                       </div>
                     )}
                   </div>
