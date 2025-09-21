@@ -2822,7 +2822,7 @@ const RegistroVehiculo = () => {
   };
 
   // Iniciar captura con cámara seleccionada
-  const iniciarCapturaCamara = async (deviceId) => {
+  const iniciarCapturaCamara = async (deviceId, tipoCaptura = 'documento') => {
     try {
       toast.info('📷 Preparando cámara para captura...');
       
