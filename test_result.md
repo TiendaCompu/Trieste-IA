@@ -463,6 +463,18 @@ test_plan:
           agent: "testing"
           comment: "✅ COMPREHENSIVE CAMERA CAPTURE SYSTEM TESTING COMPLETED - All functionality working perfectly: ✅ 'Escanear Documento' button visible, clickable, and properly connected to escanearDocumentoConCamara function ✅ Camera icon present in button ✅ Error handling working correctly - proper toast notifications for no camera access ('❌ No se encontraron cámaras disponibles', '❌ Error accediendo a las cámaras') ✅ obtenerDispositivosCamara function properly attempts camera device enumeration ✅ Form field integration ready - matrícula field accepts input and ready for AI population ✅ UI/UX elements complete: dictation button alongside camera, helper text about 'Escáner inteligente' ✅ Responsive design working - button visible on mobile viewport ✅ Integration with procesarImagenConIA function ready for AI processing ✅ All camera system components properly implemented: device selection, streaming, capture, AI processing ✅ System ready for production use with actual camera devices ⚠️ Cannot test actual camera functionality in testing environment (expected behavior)"
 
+  - task: "Implement database administration system with backup, restore, and reset functionality"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "IMPLEMENTED: ✅ Backend endpoints: /admin/collections (list with counts), /admin/backup (create), /admin/restore (restore from backup), /admin/reset (selective), /admin/reset-complete (full system reset) ✅ Logo management: /admin/upload-logo, /admin/logo ✅ Sample data creation for all collections ✅ Frontend: New 'Administración BD' tab in configuration ✅ UI for collection selection, backup/restore, reset operations ✅ Security confirmations for critical operations ✅ Logo upload functionality with file size validation"
+
 agent_communication:
     - agent: "main"
       message: "🎉 FUNCIONALIDAD DE DICTADO COMPLETAMENTE IMPLEMENTADA: Sistema de dictado global implementado en TODOS los formularios de la aplicación. ✅ BACKEND: Endpoint /api/ai/procesar-dictado-orden funcionando perfectamente (100% testing) ✅ FRONTEND: Hook personalizado useDictado y componente BotonDictado creados ✅ FORMULARIOS CON DICTADO: OrdenEditar (5 botones), ServiciosRepuestos, MecanicosList, BusquedaMatricula, VehiculoDetalle ✅ IA PROCESSING: Extracción estructurada de información por tipo de formulario ✅ SCREENSHOTS: Confirmado funcionamiento visual perfecto. Sistema listo para uso en producción."
