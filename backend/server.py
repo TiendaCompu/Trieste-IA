@@ -134,6 +134,7 @@ class ServicioRepuesto(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
     precio: float
+    activo: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ServicioRepuestoCreate(BaseModel):
