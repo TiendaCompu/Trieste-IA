@@ -2858,7 +2858,7 @@ const RegistroVehiculo = () => {
       `;
       
       const title = document.createElement('h3');
-      title.textContent = '📷 Escanear Documento - Enfocar matrícula o documento';
+      title.textContent = tipoCaptura === 'vehiculo' ? '📷 Capturar Foto del Vehículo' : '📷 Escanear Documento - Enfocar matrícula o documento';
       title.style.cssText = 'margin: 0; color: #333; text-align: center;';
       
       video.style.cssText = `
