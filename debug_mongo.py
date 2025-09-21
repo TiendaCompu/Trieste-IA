@@ -44,14 +44,14 @@ async def debug_mongo():
     
     print("-" * 50)
     
-    # Intentar borrar órdenes manualmente
-    if 'ordenes' in collections:
-        ordenes_collection = db['ordenes']
+    # Intentar borrar órdenes manualmente de la colección correcta
+    if 'ordenes_trabajo' in collections:
+        ordenes_collection = db['ordenes_trabajo']
         result = await ordenes_collection.delete_many({})
-        print(f"Intentando borrar órdenes: {result.deleted_count} documentos eliminados")
+        print(f"Intentando borrar órdenes_trabajo: {result.deleted_count} documentos eliminados")
     
     # Verificar conteo después del borrado
-    if 'ordenes' in collections:
+    if 'ordenes_trabajo' in collections:
         new_count = await ordenes_collection.count_documents({})
         print(f"Conteo después del borrado: {new_count}")
     
