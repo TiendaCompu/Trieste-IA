@@ -3,9 +3,10 @@ import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 # Cargar variables de entorno
-load_dotenv()
+load_dotenv(Path('/app/backend/.env'))
 
 async def debug_mongo():
     # Conectar a MongoDB
