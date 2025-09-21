@@ -4579,6 +4579,9 @@ const ConfiguracionTaller = () => {
     
     // Cargar logo del sistema
     cargarLogo();
+    
+    // Cargar configuración de cámara
+    cargarConfiguracionCamara();
   }, []);
 
   useEffect(() => {
