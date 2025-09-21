@@ -261,29 +261,44 @@ class DatabaseAdminTester:
         print("5. LOGO MANAGEMENT")
         print("="*60)
         
-        # Create a small test image (base64 encoded 1x1 pixel PNG)
-        test_logo_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
+        # Create a small test image (base64 encoded 1x1 pixel PNG with data URL prefix)
+        test_logo_base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77zgAAAABJRU5ErkJggg=="
         
-        # Test 1: Upload logo
+        # Test 1: Upload logo (using query parameter as expected by backend)
         print("\n📤 Testing Logo Upload...")
-        success1, response1 = self.run_test(
-            "Upload Logo",
-            "POST",
-            "admin/upload-logo",
-            200,
-            data={
-                "logo_base64": test_logo_base64,
-                "filename": "test_logo.png"
-            }
-        )
+        url = f"{self.api_url}/admin/upload-logo?logo_base64={test_logo_base64}"
         
-        if success1 and isinstance(response1, dict) and response1.get('success'):
-            print("✅ Logo uploaded successfully")
-            logo_url = response1.get('logo_url')
-            if logo_url:
-                print(f"✅ Logo URL: {logo_url}")
+        try:
+            response = requests.post(url, timeout=30)
+            success1 = response.status_code == 200
+            
+            if success1:
+                self.tests_passed += 1
+                print(f"✅ PASSED - Status: {response.status_code}")
+                try:
+                    response1 = response.json()
+                    if response1.get('success'):
+                        print("✅ Logo uploaded successfully")
+                    else:
+                        print(f"❌ Logo upload failed: {response1.get('message', 'Unknown error')}")
+                        success1 = False
+                except:
+                    print("✅ Logo uploaded (response not JSON)")
             else:
-                print("⚠️  Logo URL not provided in response")
+                print(f"❌ FAILED - Status: {response.status_code}")
+                self.failed_tests.append("Upload Logo")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Error: {response.text}")
+                    
+            self.tests_run += 1
+        except Exception as e:
+            print(f"❌ FAILED - Error: {str(e)}")
+            self.failed_tests.append("Upload Logo")
+            self.tests_run += 1
+            success1 = False
         
         # Test 2: Get logo
         print("\n📥 Testing Logo Retrieval...")
@@ -294,13 +309,16 @@ class DatabaseAdminTester:
             200
         )
         
-        if success2 and isinstance(response2, dict) and response2.get('success'):
-            logo_data = response2.get('logo_base64')
-            if logo_data:
-                print("✅ Logo retrieved successfully")
-                print(f"✅ Logo data length: {len(logo_data)} characters")
+        if success2 and isinstance(response2, dict):
+            if response2.get('success'):
+                logo_data = response2.get('logo_base64')
+                if logo_data:
+                    print("✅ Logo retrieved successfully")
+                    print(f"✅ Logo data length: {len(logo_data)} characters")
+                else:
+                    print("⚠️  No logo data in response")
             else:
-                print("⚠️  No logo data in response")
+                print("⚠️  No logo found (may be expected if none uploaded)")
         
         return success1 and success2
 
