@@ -4394,6 +4394,182 @@ const ConfiguracionTaller = () => {
     }
   };
 
+  // Funciones para configuración de cámaras
+  const cargarConfiguracionCamara = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/configuracion-camara`);
+      if (response.data.success && response.data.configuracion) {
+        setConfiguracionCamara(response.data.configuracion);
+      }
+    } catch (error) {
+      console.error('Error cargando configuración de cámara:', error);
+    }
+  };
+
+  const guardarConfiguracionCamara = async () => {
+    try {
+      const response = await axios.post(`${API}/admin/configuracion-camara`, configuracionCamara);
+      if (response.data.success) {
+        toast.success('Configuración de cámara guardada exitosamente');
+      }
+    } catch (error) {
+      console.error('Error guardando configuración de cámara:', error);
+      toast.error('Error guardando configuración de cámara');
+    }
+  };
+
+  const detectarCamarasDispositivo = async () => {
+    try {
+      setProbandoCamara(true);
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      const camarasFormateadas = videoDevices.map((device, index) => ({
+        id: device.deviceId,
+        label: device.label || `Cámara ${index + 1}`,
+        tipo: 'dispositivo'
+      }));
+      
+      setCamarasDisponibles(camarasFormateadas);
+      toast.success(`Se detectaron ${camarasFormateadas.length} cámaras de dispositivo`);
+    } catch (error) {
+      console.error('Error detectando cámaras:', error);
+      toast.error('Error detectando cámaras del dispositivo');
+    } finally {
+      setProbandoCamara(false);
+    }
+  };
+
+  const probarCamaraIP = async () => {
+    if (!configuracionCamara.camara_ip.url) {
+      toast.error('Ingrese la URL de la cámara IP');
+      return;
+    }
+
+    setProbandoCamara(true);
+    setEstadoConexionIP('Probando conexión...');
+
+    try {
+      // Construir URL completa de la cámara IP
+      const urlCamara = `http://${configuracionCamara.camara_ip.url}:${configuracionCamara.camara_ip.puerto}`;
+      
+      // Simular prueba de conexión (en un caso real, haríamos una petición de test)
+      const response = await axios.post(`${API}/admin/probar-camara-ip`, {
+        url: urlCamara,
+        usuario: configuracionCamara.camara_ip.usuario,
+        password: configuracionCamara.camara_ip.password
+      });
+
+      if (response.data.success) {
+        setEstadoConexionIP('✅ Conexión exitosa');
+        toast.success('Cámara IP conectada correctamente');
+      } else {
+        setEstadoConexionIP('❌ Error de conexión');
+        toast.error('No se pudo conectar con la cámara IP');
+      }
+    } catch (error) {
+      setEstadoConexionIP('❌ Error de conexión');
+      toast.error('Error probando cámara IP: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setProbandoCamara(false);
+    }
+  };
+
+  const mostrarVistaPreviaCamaraSeleccionada = async () => {
+    try {
+      if (configuracionCamara.tipo === 'dispositivo') {
+        if (!configuracionCamara.dispositivo_predeterminado) {
+          toast.error('Seleccione una cámara de dispositivo');
+          return;
+        }
+        // Usar sistema de cámara existente
+        await iniciarVistaPreviaDispositivo(configuracionCamara.dispositivo_predeterminado);
+      } else {
+        // Mostrar vista previa de cámara IP
+        await iniciarVistaPreviaCamaraIP();
+      }
+    } catch (error) {
+      console.error('Error mostrando vista previa:', error);
+      toast.error('Error mostrando vista previa de cámara');
+    }
+  };
+
+  const iniciarVistaPreviaDispositivo = async (deviceId) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: deviceId } }
+      });
+      
+      // Crear modal de vista previa
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+        align-items: center; justify-content: center; z-index: 9999;
+      `;
+      
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.autoplay = true;
+      video.style.cssText = 'max-width: 80%; max-height: 60%; border: 2px solid #fff;';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Cerrar Vista Previa';
+      closeBtn.style.cssText = `
+        margin-top: 20px; padding: 10px 20px; background: #EF4444;
+        color: white; border: none; border-radius: 5px; cursor: pointer;
+      `;
+      
+      closeBtn.onclick = () => {
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(overlay);
+      };
+      
+      overlay.appendChild(video);
+      overlay.appendChild(closeBtn);
+      document.body.appendChild(overlay);
+      
+      toast.success('Vista previa de cámara iniciada');
+    } catch (error) {
+      toast.error('Error iniciando vista previa: ' + error.message);
+    }
+  };
+
+  const iniciarVistaPreviaCamaraIP = async () => {
+    try {
+      const urlStream = `http://${configuracionCamara.camara_ip.url}:${configuracionCamara.camara_ip.puerto}/video`;
+      
+      // Crear modal de vista previa
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+        align-items: center; justify-content: center; z-index: 9999;
+      `;
+      
+      const img = document.createElement('img');
+      img.src = urlStream;
+      img.style.cssText = 'max-width: 80%; max-height: 60%; border: 2px solid #fff;';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Cerrar Vista Previa';
+      closeBtn.style.cssText = `
+        margin-top: 20px; padding: 10px 20px; background: #EF4444;
+        color: white; border: none; border-radius: 5px; cursor: pointer;
+      `;
+      
+      closeBtn.onclick = () => document.body.removeChild(overlay);
+      
+      overlay.appendChild(img);
+      overlay.appendChild(closeBtn);
+      document.body.appendChild(overlay);
+      
+      toast.success('Vista previa de cámara IP iniciada');
+    } catch (error) {
+      toast.error('Error iniciando vista previa de cámara IP');
+    }
+  };
+
   useEffect(() => {
     // Cargar configuración guardada
     const configGuardada = localStorage.getItem('trieste_config');
