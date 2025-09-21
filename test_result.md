@@ -432,6 +432,18 @@ test_plan:
           agent: "testing"
           comment: "✅ SEARCH FUNCTIONALITY TESTING COMPLETED - All search operations working perfectly: ✅ GET /api/buscar?q=TEST finds vehicles by license plate (TEST999 found) ✅ GET /api/buscar?q=JUAN finds clients by name (JUAN CARLOS PEREZ found) ✅ GET /api/buscar?q=EMPRESA finds clients by company (EMPRESA DE PRUEBA found) ✅ Vehicle-client relationships working correctly in search results ✅ Response structure includes 'vehiculos' and 'clientes' arrays ✅ UPPERCASE conversion working in search (test999 → TEST999) ✅ All search functionality operational and finding records correctly"
 
+  - task: "Fix Escanear camera button in RegistroVehiculo to use proper camera system"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "ISSUE IDENTIFIED: 'Escanear Documento' button uses old handleImageCapture (simple file input) instead of comprehensive camera system escanearDocumentoConCamara with device selection. Need to connect UI button to proper camera functionality."
+
 agent_communication:
     - agent: "main"
       message: "🎉 FUNCIONALIDAD DE DICTADO COMPLETAMENTE IMPLEMENTADA: Sistema de dictado global implementado en TODOS los formularios de la aplicación. ✅ BACKEND: Endpoint /api/ai/procesar-dictado-orden funcionando perfectamente (100% testing) ✅ FRONTEND: Hook personalizado useDictado y componente BotonDictado creados ✅ FORMULARIOS CON DICTADO: OrdenEditar (5 botones), ServiciosRepuestos, MecanicosList, BusquedaMatricula, VehiculoDetalle ✅ IA PROCESSING: Extracción estructurada de información por tipo de formulario ✅ SCREENSHOTS: Confirmado funcionamiento visual perfecto. Sistema listo para uso en producción."
@@ -443,6 +455,8 @@ agent_communication:
       message: "TODAS LAS NUEVAS FUNCIONALIDADES IMPLEMENTADAS Y FUNCIONANDO: ✅ Modal entrada al taller con actualización kilometraje ✅ Órdenes con pestañas Activas/Historial ✅ Búsqueda globalizada en header ✅ Backend endpoints creados ✅ Screenshots confirman funcionalidad. Listo para testing backend."
     - agent: "main"
       message: "INICIANDO SISTEMA DE FACTURACIÓN VENEZOLANO: ✅ Modelos Cliente y Vehículo actualizados con campos fiscales ✅ Sistema tasa de cambio implementado ✅ Modelos Presupuesto y Factura creados ✅ Endpoints para presupuestos, facturas y pagos ✅ Cálculos IVA 16% e IGTF 3% ✅ Múltiples monedas y métodos de pago"
+    - agent: "main"
+      message: "🎯 ARREGLANDO BOTÓN CÁMARA ESCANEAR: Identificado problema - botón 'Escanear Documento' usa handleImageCapture (file input) en lugar del sistema avanzado de cámara escanearDocumentoConCamara ya implementado con selección de dispositivos. Procediendo a conectar UI con funcionalidad completa de cámara."
     - agent: "testing"
       message: "BACKEND TESTING COMPLETED SUCCESSFULLY - All mechanic functionality working perfectly. Comprehensive tests performed on all 4 required endpoints with exact test data requested. All CRUD operations for mechanics including whatsapp and estado fields are functioning correctly. Date formats handled properly. No critical issues found. Backend implementation is solid and ready for production use."
     - agent: "testing"
