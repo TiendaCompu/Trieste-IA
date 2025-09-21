@@ -726,8 +726,18 @@ async def obtener_servicios_repuestos():
 
 @api_router.get("/servicios-repuestos/activos")
 async def obtener_servicios_repuestos_activos():
-    items = await db.servicios_repuestos.find({"activo": True}).to_list(1000)
-    return [parse_from_mongo(item) for item in items]
+    try:
+        items = await db.servicios_repuestos.find({"activo": True}).to_list(1000)
+        result = []
+        for item in items:
+            # Remover _id para evitar problemas de serialización
+            if '_id' in item:
+                del item['_id']
+            result.append(item)
+        return result
+    except Exception as e:
+        logger.error(f"Error obteniendo servicios activos: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo servicios activos: {str(e)}")
 
 @api_router.get("/servicios-repuestos/tipo/{tipo}", response_model=List[ServicioRepuesto])
 async def obtener_por_tipo(tipo: str):
