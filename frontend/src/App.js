@@ -3802,6 +3802,60 @@ const RegistroVehiculo = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal Selector de Cámaras */}
+      <Dialog open={camaraState.mostrarSelector} onOpenChange={(open) => 
+        setCamaraState(prev => ({ ...prev, mostrarSelector: open }))
+      }>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5" />
+              Seleccionar Cámara
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Se detectaron múltiples cámaras. Seleccione la que desea usar:
+            </p>
+            <div className="space-y-2">
+              {camaraState.dispositivos.map((dispositivo, index) => (
+                <Button
+                  key={dispositivo.deviceId}
+                  variant="outline"
+                  className="w-full justify-start text-left"
+                  onClick={async () => {
+                    setCamaraState(prev => ({ ...prev, mostrarSelector: false }));
+                    await iniciarCapturaCamara(dispositivo.deviceId);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      index === 0 ? 'bg-blue-500' : 'bg-gray-400'
+                    }`} />
+                    <div>
+                      <div className="font-medium">
+                        {dispositivo.label || `Cámara ${index + 1}`}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {index === 0 ? 'Predeterminada' : 'Disponible'}
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setCamaraState(prev => ({ ...prev, mostrarSelector: false }))}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
