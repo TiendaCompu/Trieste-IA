@@ -1636,7 +1636,7 @@ async def restaurar_backup(request: RestoreDatabase):
         
         return {
             "success": True,
-            "message": f"Backup restaurado exitosamente",
+            "message": "Backup restaurado exitosamente",
             "collections_restored": collections_restored,
             "documents_restored": sum(len(request.backup_data.get(col, [])) for col in collections_restored)
         }
