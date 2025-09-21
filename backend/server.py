@@ -1522,7 +1522,7 @@ async def obtener_colecciones():
         
         # Lista de todas las colecciones del sistema
         collection_names = [
-            "vehiculos", "clientes", "ordenes", "mecanicos", 
+            "vehiculos", "clientes", "ordenes_trabajo", "mecanicos", 
             "servicios_repuestos", "presupuestos", "facturas",
             "historial_kilometraje", "tasas_cambio"
         ]
