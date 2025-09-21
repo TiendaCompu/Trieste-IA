@@ -1,92 +1,95 @@
 <analysis>
-The AI engineer iteratively developed a workshop management application, tackling features like AI-assisted vehicle registration (voice/OCR), comprehensive data models (vehicles, clients, mechanics, orders, services), and custom UI/UX. Key challenges included integrating emergent LLM for AI features, establishing robust data handling (UUIDs, date formats), managing frontend state and routing, and resolving persistent environment/connectivity issues, particularly with database consistency and API URLs. The engineer demonstrated strong debugging skills, addressing frontend syntax errors, backend API functionality, and complex data flow logic. Recent work focused on enhancing mechanic management, implementing a mileage history system, improving order filtering, and integrating an advanced Venezuelan invoicing system with multi-currency and tax logic. The AI also significantly improved AI-driven dictation and image capture for vehicle registration.
+The AI engineer has been working on enhancing a workshop management application, focusing on AI-driven features, UI/UX improvements, and addressing critical functional gaps. The initial phase involved implementing AI-assisted vehicle registration (voice/OCR), comprehensive data models (vehicles, clients, mechanics, orders, services), and fixing environment issues.
+
+The trajectory shows an iterative process. Initially, the AI engineer addressed a request to implement dictation functionality for order fields, updating backend models and frontend components. Following this, the user provided a comprehensive list of functional requirements, which the AI engineer systematically tackled: making order details read-only with a dedicated edit mode, implementing a robust global dictation system, and standardizing UI elements with consistent branding.
+
+The engineer also guided the user through local environment setup, troubleshooting MongoDB connection issues, and handling PC restarts. Most recently, the focus has been on vehicle registration enhancements (client document validation, removing duplicate dictation buttons) and resolving a bug in the mechanics' edit functionality. The current task involves fixing the Escanear camera button in vehicle registration, requiring a complete camera system with device selection.
 </analysis>
 
 <product_requirements>
-The user requires a powerful, multi-platform workshop management application (PC, Android, iOS) featuring AI capabilities for streamlined vehicle registration via photo (OCR) or voice input, automatically extracting details like license plate, make, model, year, color, mileage, and client data. The application must manage corporate fleet vehicles with strict control over client information, applied spare parts/services for invoicing, and mechanic assignment based on specialization. A detailed vehicle history (medical record style) is crucial, alongside budgeting, invoicing, and payment tracking. The core workflow involves: client arrival, AI-assisted vehicle registration, diagnosis, mechanic assignment, repair, and delivery (requiring budget approval). The platform must be web-based, accessible via mobile and PC, and adhere to custom branding (yellow background, white cards, blue borders, specific logo) and improved UI elements. Recent additions include: updating mileage for existing vehicles with history tracking, filtering orders by status (active/history), generalized search (client/vehicle), and a Venezuelan invoicing system supporting two currencies (Bs., USD), 16% IVA, 3% IGTF (for USD payments), various payment methods, detailed client/vehicle fiscal data, and vehicle photos.
+The application is a multi-platform (PC, Android, iOS) workshop management system with AI capabilities for vehicle registration (photo OCR, voice input for details like license plate, make, model, year, color, mileage, client data). It manages corporate fleets, spare parts/services for invoicing, and mechanic assignment. Key workflows include client arrival, AI-assisted registration, diagnosis, mechanic assignment, repair, and delivery (requiring budget approval). The web-based platform needs custom branding (yellow background, white cards, blue borders, specific logo) and improved UI. Recent additions included mileage history, order filtering, and a Venezuelan invoicing system (Bs., USD, 16% IVA, 3% IGTF, fiscal data, vehicle photos).
+
+Current detailed requirements:
+1.  **Vehicle Registration**: Matrícula must be entered/scanned/dictated first, blocking other fields. Document of identity (Cedula/RIF) is prioritized for client data validation, blocking other client fields until validated. Remove duplicate dictation/scan buttons from matrícula input; fix Escanear camera.
+2.  **Work Orders**: Order details should be read-only. An Editar button must be *inside* the order detail card, leading to an edit mode where only diagnosis, detected faults, repairs, spare parts, status, and assigned mechanic can be changed (dictation option included).
+3.  **Mechanics**: Mechanics should load correctly. Editar button should match Borrar button size. Allow 2-3 specialties. All specialty badges (ovals) must be blue with white text.
+4.  **Services & Repuestos**: Service/Repuesto list items should have improved contrast for their type indicators (badges). All badges/ovals globally should be blue with white text.
+5.  **Vehicles**: Implement vehicle history as a medical record. Ver otros vehículos should show other vehicles linked to the same owner (identified by unique ID).
+6.  **Owner Information**: Display name/company, phones with call/WhatsApp buttons, and email link.
+7.  **Configuration**: Settings (gear icon) should allow centralized customization of system colors, logo, and other details.
 </product_requirements>
 
 <key_technical_concepts>
-- FastAPI: Backend API development.
-- React: Frontend user interface.
-- MongoDB: NoSQL database (using UUIDs, ISO strings for dates).
-- Emergent LLM Key & emergentintegrations: AI for voice/OCR processing.
-- Shadcn UI & Tailwind CSS: Frontend component library and styling.
-- Pydantic: Data validation for API models.
-- Axios: HTTP client.
-- Python-dotenv: Environment variable management.
+-   **FastAPI**: Backend API development.
+-   **React**: Frontend UI.
+-   **MongoDB**: NoSQL database (UUIDs, ISO strings for dates).
+-   **Emergent LLM Key & emergentintegrations**: AI for voice/OCR processing (gpt-4o model).
+-   **Shadcn UI & Tailwind CSS**: Frontend component library and styling.
+-   **Pydantic**: Data validation for API models.
+-   **Axios**: HTTP client for frontend.
+-   **Python-dotenv**: Environment variable management.
+-   **React Router**: Frontend navigation.
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture: React frontend, FastAPI backend, and MongoDB for the database.
 
 
-
-- ****:
-    - **Importance**: Main FastAPI application handling all backend logic, API routes, and database interactions.
-    - **Changes**:
-        - Defined Pydantic models for , , , , . Added , , ,  models.
-        - Implemented CRUD endpoints for vehicles, clients, mechanics, orders, services/repuestos.
-        - Integrated AI logic for vehicle registration (OCR/voice processing) via  and  endpoints using .
-        - Added endpoints for matrícula uniqueness validation ().
-        - Implemented endpoints for  (, ).
-        - Added  for generalized search across vehicles, clients, mechanics, orders.
-        - Modified  to filter by status (, , ).
-        - Updated  model to include , , and  fields.
-        - Updated  model to include , , , , , , .
-        - Updated  model to include , , , .
-        - Implemented automatic uppercase conversion for relevant text fields in create/update operations.
-        - Began updating  model to include fields for , , .
-- ****:
-    - **Importance**: Stores environment variables like .
-    - **Changes**:  added.  was corrected to point to .
-- ****:
-    - **Importance**: The main React component, handles routing, global state, and integrates all other components.
-    - **Changes**:
-        - Implemented React Router for navigation.
-        - Developed/updated components/pages for Dashboard, Vehicle Registration (AI integration, new order Vehicle->Client->Confirm), Order Management (tabs for active/history), Mechanic Management (list, details, edit, delete, avatar upload fix, WhatsApp, detailed status dropdowns), Vehicle Management (list, details, edit, delete, change matrícula).
-        - Integrated  hook for routing.
-        - Implemented modals for editing vehicle/client data, changing matrícula, deleting vehicles, and a new Vehicle Enters Workshop modal for existing vehicles (mileage update).
-        - Added specific validation logic for matrícula format and uniqueness, and new fiscal fields.
-        - Incorporated  for notifications.
-        - Implemented custom UI/UX design (colors, logo, button styles, icon sizes).
-        - Refactored  components for editing capabilities, avatar, WhatsApp, and status display, including a delete button.
-        - Added date and phone number formatting functions.
-        - Removed global search bar from the header ( component).
-        - Implemented real-time matrícula verification during vehicle registration.
-        - Enhanced  with AI processing for structured data extraction and 'siguiente'/'finalizar' commands.
-        - Updated  for AI-driven document scanning.
-        - Route  added, and  component started.
-- ****:
-    - **Importance**: Contains global styles and Tailwind CSS configurations.
-    - **Changes**: Applied custom corporate colors, adjusted styles for navigation buttons, icons, and card borders.
-- ****:
-    - **Importance**: Entry point for the React application.
-    - **Changes**: Added the  component.
-- ****:
-    - **Importance**: Stores the workshop's logo.
-    - **Changes**: New logo image downloaded and updated.
-- ****:
-    - **Importance**: Script to completely clear and re-populate the MongoDB database with test data.
-    - **Changes**: Created to handle  database specifically, and updated with new test data including , , , , , and .
+-   ****:
+    -   **Importance**: Main FastAPI application for backend logic and API.
+    -   **Changes**:
+        -    and  models updated to include , , .
+        -   New endpoint  created for AI-driven order dictation.
+        -   MongoDB connection configuration revised to use  and to log connection status on startup.
+-   ****:
+    -   **Importance**: Stores environment variables.
+    -   **Changes**:  format clarified to exclude database name (e.g., ),  explicitly defined.
+-   ****:
+    -   **Importance**: Central React component, handles routing and component rendering.
+    -   **Changes**:
+        -   **Order Management**:  modified for read-only mode; interactive elements (state change buttons, mechanic assignment, add service, delete service) removed/disabled. Editar button moved inside the detail view.
+        -   **Dictation Integration**: Initial dictation in  (for fallas, diagnostico, etc.). Later refactored to use a global  hook and  component for , , Entrada al Taller modal, and Crear Nuevo Cliente modal within . Removed duplicate matricula dictation/scan buttons.
+        -   **Global Styles**: Added  for consistent blue badges with white text, and updated circular icon colors.
+        -   **Mechanic Management**:  updated for multi-select  (now an array) and uniform Editar/Borrar button sizes. Bug fixes for editing mechanics' specialties (handling string/array conversion).
+        -   **Vehicle Registration**:  updated to:
+            -   Prioritize client document validation (, , ).
+            -   Disable client fields until document is valid.
+            -   Disable vehicle fields until matrícula is valid.
+            -   Updated Siguiente button logic based on validations.
+            -   Removed duplicate dictation/scan buttons from matrícula input.
+        -   **Configuration**:  expanded to include color/logo customization options.
+-   ** (New)**:
+    -   **Importance**: Custom React hook for encapsulating dictation logic.
+    -   **Changes**: Created to manage recording state, AI processing, and microphone access for reusable dictation functionality.
+-   ** (New)**:
+    -   **Importance**: Reusable UI component for a dictation button.
+    -   **Changes**: Created to integrate with  hook, providing a standardized dictation button.
+-   ****:
+    -   **Importance**: Script to clear and re-populate MongoDB with test data.
+    -   **Changes**: Provided in full to the user for local setup, ensuring consistency with updated models and adding sample data for new fields (e.g., ,  in orders). Includes installation of  and .
+-   ** (New directory, contains  files for Windows local setup)**:
+    -   **Importance**: Provides convenience scripts for users to start/stop the application components automatically on Windows.
+    -   **Changes**: Contains , , , , .
 </code_architecture>
 
 <pending_tasks>
-- Fully implement the frontend interface for the Budgeting System.
-- Develop a comprehensive system for generating and managing invoices (further frontend and backend logic beyond model updates).
-- Implement advanced reporting functionalities.
-- Further mobile optimizations beyond basic responsiveness.
-- Develop advanced search and filter options (backend implemented, frontend needs more advanced UI).
-- Implement automatic attendance control for mechanics based on security cameras (future).
-- Implement the Configuración (settings) page.
-- Fully implement the  component with fields for , , .
-- Fully integrate the new fiscal client and vehicle fields into the UI and ensure they are used in the invoicing flow.
+-   Fully implement the frontend interface for the Budgeting System.
+-   Develop a comprehensive system for generating and managing invoices (further frontend and backend logic beyond model updates).
+-   Implement advanced reporting functionalities.
+-   Further mobile optimizations beyond basic responsiveness.
+-   Develop advanced search and filter options (backend implemented, frontend needs more advanced UI).
+-   Implement automatic attendance control for mechanics based on security cameras (future).
+-   Implement the Configuración (settings) page (further development beyond basic structure).
+-   Fully integrate the new fiscal client and vehicle fields into the UI and ensure they are used in the invoicing flow.
+-   **Fix Escanear camera button in RegistroVehiculo to open a camera with device selection.**
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on enhancing the Órdenes (Orders) section, specifically addressing a user report that the Editar button on order details was not functional and that fields for fallas, diagnósticos, etc., were missing. The engineer confirmed the  component was lacking a proper edit route and necessary input fields. The last action taken was updating the  model in  to include new fields crucial for the detailed invoicing system: , , and . This is part of a larger initiative to build out the full Venezuelan invoicing system with multi-currency, tax, and payment method support.
+Immediately before this summary request, the AI engineer was addressing a user-reported bug in the **Registro de Vehículos** section. Specifically, the Escanear button, intended to capture vehicle document images via camera, was not functioning correctly (it was a simple file input, not a camera interface). The user explicitly requested the ability to choose between different cameras (e.g., webcam, IP camera).
+
+The AI engineer had started investigating this by locating the existing Escanear Documento button and identified that a complete camera capture system with device selection capabilities needed to be implemented. During the initial implementation attempt, a conflict with a duplicate  function declaration was encountered. The last action was to remove this duplicate function in  to clear the path for the new camera integration.
 </current_work>
 
 <optional_next_step>
-I will continue updating the  model and related logic in the backend, and then implement the frontend  component.
+Replace the existing Escanear button with a comprehensive camera capture system allowing device selection.
 </optional_next_step>
+
