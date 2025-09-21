@@ -328,33 +328,33 @@ class DatabaseAdminTester:
         print("6. ERROR HANDLING")
         print("="*60)
         
-        # Test 1: Invalid backup data
+        # Test 1: Invalid backup data (expect 422 for validation error, not 400)
         print("\n🚫 Testing Invalid Backup Data...")
         success1, response1 = self.run_test(
             "Invalid Backup Data",
             "POST",
             "admin/restore",
-            400,  # Should return 400 for invalid data
+            422,  # FastAPI returns 422 for validation errors
             data={"backup_data": "invalid_data"}
         )
         
         if success1:
-            print("✅ Invalid backup data correctly rejected")
+            print("✅ Invalid backup data correctly rejected with validation error")
         else:
             print("⚠️  Invalid backup data handling may need improvement")
         
-        # Test 2: Missing parameters
+        # Test 2: Missing parameters (expect 422 for validation error, not 400)
         print("\n🚫 Testing Missing Parameters...")
         success2, response2 = self.run_test(
             "Missing Parameters",
             "POST",
             "admin/reset",
-            400,  # Should return 400 for missing required parameters
+            422,  # FastAPI returns 422 for validation errors
             data={}
         )
         
         if success2:
-            print("✅ Missing parameters correctly handled")
+            print("✅ Missing parameters correctly handled with validation error")
         else:
             print("⚠️  Missing parameter handling may need improvement")
         
