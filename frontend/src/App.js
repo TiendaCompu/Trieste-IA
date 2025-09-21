@@ -2904,8 +2904,15 @@ const RegistroVehiculo = () => {
           stream.getTracks().forEach(track => track.stop());
           document.body.removeChild(overlay);
           
-          // Procesar imagen con IA
-          await procesarImagenConIA(imageData);
+          // Manejar la imagen según el tipo de captura
+          if (tipoCaptura === 'vehiculo') {
+            // Para foto del vehículo, guardar directamente
+            setVehiculo(prev => ({ ...prev, foto_vehiculo: imageData }));
+            toast.success('✅ Foto del vehículo capturada');
+          } else {
+            // Para documentos, procesar con IA
+            await procesarImagenConIA(imageData);
+          }
         } catch (error) {
           toast.error('❌ Error capturando imagen');
         }
