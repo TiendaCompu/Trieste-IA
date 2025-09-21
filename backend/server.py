@@ -724,6 +724,11 @@ async def obtener_servicios_repuestos():
     items = await db.servicios_repuestos.find().to_list(1000)
     return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
 
+@api_router.get("/servicios-repuestos/activos", response_model=List[ServicioRepuesto])
+async def obtener_servicios_repuestos_activos():
+    items = await db.servicios_repuestos.find({"activo": True}).to_list(1000)
+    return [ServicioRepuesto(**parse_from_mongo(item)) for item in items]
+
 @api_router.get("/servicios-repuestos/tipo/{tipo}", response_model=List[ServicioRepuesto])
 async def obtener_por_tipo(tipo: str):
     items = await db.servicios_repuestos.find({"tipo": tipo}).to_list(1000)
