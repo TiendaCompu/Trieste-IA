@@ -1035,6 +1035,15 @@ const OrdenEditar = () => {
       setReparacionesRealizadas(ordenData.reparaciones_realizadas || '');
       setRepuestosUtilizados(ordenData.repuestos_utilizados || '');
       
+      // Cargar servicios y repuestos existentes
+      if (ordenData.servicios_repuestos && ordenData.servicios_repuestos.length > 0) {
+        const serviciosTaller = ordenData.servicios_repuestos.filter(item => item.origen === 'taller');
+        const repuestosExt = ordenData.servicios_repuestos.filter(item => item.origen === 'externo');
+        
+        setServiciosSeleccionados(serviciosTaller);
+        setRepuestosExternos(repuestosExt);
+      }
+      
     } catch (error) {
       console.error('Error cargando orden:', error);
       toast.error('Error cargando los datos de la orden');
