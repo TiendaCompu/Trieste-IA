@@ -1672,7 +1672,7 @@ async def resetear_sistema_completo(create_sample_data: bool = False):
     try:
         # Lista de todas las colecciones
         all_collections = [
-            "vehiculos", "clientes", "ordenes", "mecanicos",
+            "vehiculos", "clientes", "ordenes_trabajo", "mecanicos",
             "servicios_repuestos", "presupuestos", "facturas", 
             "historial_kilometraje", "tasas_cambio", "configuraciones"
         ]
