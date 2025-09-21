@@ -4078,7 +4078,17 @@ const ConfiguracionTaller = () => {
     if (configGuardada) {
       setConfiguracion(JSON.parse(configGuardada));
     }
+    
+    // Cargar logo del sistema
+    cargarLogo();
   }, []);
+
+  useEffect(() => {
+    // Cargar colecciones cuando se abre el modal y se cambia a la pestaña de administración
+    if (mostrarConfig && tabActiva === 'admin') {
+      cargarColecciones();
+    }
+  }, [mostrarConfig, tabActiva]);
 
   return (
     <Dialog open={mostrarConfig} onOpenChange={setMostrarConfig}>
