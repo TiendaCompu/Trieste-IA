@@ -2204,6 +2204,13 @@ def run_full_tests():
     test_results.append(("🤖 OrdenTrabajo Update Model", tester.test_orden_trabajo_update_model()))
     test_results.append(("🤖 AI Image Processing", tester.test_ai_image_processing()))
     
+    # DATABASE ADMINISTRATION SYSTEM TESTS
+    print("\n" + "🗄️" * 20)
+    print("TESTING DATABASE ADMINISTRATION SYSTEM")
+    print("🗄️" * 20)
+    
+    test_results.append(("🗄️ Database Administration", tester.test_database_administration()))
+    
     # Print final results
     print("\n" + "="*60)
     print("FINAL TEST RESULTS")
