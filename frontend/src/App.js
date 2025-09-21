@@ -3112,18 +3112,7 @@ const RegistroVehiculo = () => {
     }
   };
 
-  const handleImageCapture = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target.result;
-        setFotoMatricula(base64);
-        procesarImagenConIA(base64);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // handleImageCapture function removed - replaced by escanearDocumentoConCamara
 
   const guardarRegistro = async () => {
     try {
