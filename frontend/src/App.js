@@ -3891,6 +3891,17 @@ const ConfiguracionTaller = () => {
 
   const [tabActiva, setTabActiva] = useState('general');
   const [mostrarConfig, setMostrarConfig] = useState(false);
+  
+  // Estados para administración de base de datos
+  const [colecciones, setColecciones] = useState([]);
+  const [coleccionesSeleccionadas, setColeccionesSeleccionadas] = useState([]);
+  const [cargandoColecciones, setCargandoColecciones] = useState(false);
+  const [mostrarConfirmacionReset, setMostrarConfirmacionReset] = useState(false);
+  const [mostrarConfirmacionResetCompleto, setMostrarConfirmacionResetCompleto] = useState(false);
+  const [crearDatosEjemplo, setCrearDatosEjemplo] = useState(false);
+  const [backupData, setBackupData] = useState(null);
+  const [logoBase64, setLogoBase64] = useState('');
+  const [cargandoLogo, setCargandoLogo] = useState(false);
 
   const guardarConfiguracion = () => {
     // Aquí se guardaría en localStorage o backend
