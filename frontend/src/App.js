@@ -4206,6 +4206,24 @@ const ConfiguracionTaller = () => {
   const [backupData, setBackupData] = useState(null);
   const [logoBase64, setLogoBase64] = useState('');
   const [cargandoLogo, setCargandoLogo] = useState(false);
+  
+  // Estados para configuración de cámaras
+  const [configuracionCamara, setConfiguracionCamara] = useState({
+    tipo: 'dispositivo', // 'dispositivo' o 'ip'
+    camara_ip: {
+      url: '',
+      usuario: '',
+      password: '',
+      puerto: '80'
+    },
+    dispositivo_predeterminado: '',
+    resolucion: '1280x720',
+    calidad: 'alta'
+  });
+  const [camarasDisponibles, setCamarasDisponibles] = useState([]);
+  const [probandoCamara, setProbandoCamara] = useState(false);
+  const [estadoConexionIP, setEstadoConexionIP] = useState('');
+  const [mostrarVistaPreviaCamara, setMostrarVistaPreviaCamara] = useState(false);
 
   const guardarConfiguracion = () => {
     // Aquí se guardaría en localStorage o backend
