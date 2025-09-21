@@ -1513,6 +1513,403 @@ Analiza cuidadosamente y extrae solo información que puedas leer claramente."""
             "error": f"Error interno: {str(e)}"
         }
 
+# Administración de Base de Datos
+@api_router.get("/admin/collections")
+async def obtener_colecciones():
+    """Obtener lista de todas las colecciones disponibles con conteo de documentos"""
+    try:
+        collections_info = []
+        
+        # Lista de todas las colecciones del sistema
+        collection_names = [
+            "vehiculos", "clientes", "ordenes", "mecanicos", 
+            "servicios_repuestos", "presupuestos", "facturas",
+            "historial_kilometraje", "tasas_cambio"
+        ]
+        
+        for collection_name in collection_names:
+            collection = db[collection_name]
+            count = await collection.count_documents({})
+            collections_info.append({
+                "name": collection_name,
+                "display_name": {
+                    "vehiculos": "Vehículos",
+                    "clientes": "Clientes", 
+                    "ordenes": "Órdenes de Trabajo",
+                    "mecanicos": "Mecánicos",
+                    "servicios_repuestos": "Servicios y Repuestos",
+                    "presupuestos": "Presupuestos",
+                    "facturas": "Facturas",
+                    "historial_kilometraje": "Historial de Kilometraje",
+                    "tasas_cambio": "Tasas de Cambio"
+                }.get(collection_name, collection_name.title()),
+                "count": count
+            })
+        
+        return {"success": True, "collections": collections_info}
+    except Exception as e:
+        logger.error(f"Error getting collections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo colecciones: {str(e)}")
+
+@api_router.post("/admin/backup")
+async def crear_backup(request: BackupDatabase):
+    """Crear backup de las colecciones especificadas o todas si no se especifica"""
+    try:
+        backup_data = {}
+        
+        collections_to_backup = request.collections or [
+            "vehiculos", "clientes", "ordenes", "mecanicos", 
+            "servicios_repuestos", "presupuestos", "facturas",
+            "historial_kilometraje", "tasas_cambio"
+        ]
+        
+        for collection_name in collections_to_backup:
+            collection = db[collection_name]
+            documents = await collection.find({}).to_list(length=None)
+            
+            # Convertir ObjectId a string para serialización JSON
+            for doc in documents:
+                if '_id' in doc:
+                    doc['_id'] = str(doc['_id'])
+            
+            backup_data[collection_name] = documents
+        
+        # También hacer backup de configuraciones del sistema
+        config_collection = db["configuraciones"]
+        config_docs = await config_collection.find({}).to_list(length=None)
+        for doc in config_docs:
+            if '_id' in doc:
+                doc['_id'] = str(doc['_id'])
+        backup_data["configuraciones"] = config_docs
+        
+        # Metadata del backup
+        backup_metadata = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "collections": collections_to_backup,
+            "total_documents": sum(len(docs) for docs in backup_data.values())
+        }
+        
+        return {
+            "success": True,
+            "backup_metadata": backup_metadata,
+            "backup_data": backup_data
+        }
+    except Exception as e:
+        logger.error(f"Error creating backup: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creando backup: {str(e)}")
+
+@api_router.post("/admin/restore")
+async def restaurar_backup(request: RestoreDatabase):
+    """Restaurar datos desde un backup"""
+    try:
+        collections_restored = []
+        
+        collections_to_restore = request.collections or list(request.backup_data.keys())
+        
+        for collection_name in collections_to_restore:
+            if collection_name not in request.backup_data:
+                continue
+                
+            collection = db[collection_name]
+            documents = request.backup_data[collection_name]
+            
+            if documents:
+                # Limpiar colección existente
+                await collection.delete_many({})
+                
+                # Preparar documentos para inserción
+                for doc in documents:
+                    # Remover _id si existe para evitar conflictos
+                    if '_id' in doc:
+                        del doc['_id']
+                
+                # Insertar documentos
+                await collection.insert_many(documents)
+                collections_restored.append(collection_name)
+        
+        return {
+            "success": True,
+            "message": f"Backup restaurado exitosamente",
+            "collections_restored": collections_restored,
+            "documents_restored": sum(len(request.backup_data.get(col, [])) for col in collections_restored)
+        }
+    except Exception as e:
+        logger.error(f"Error restoring backup: {e}")
+        raise HTTPException(status_code=500, detail=f"Error restaurando backup: {str(e)}")
+
+@api_router.post("/admin/reset")
+async def resetear_sistema(request: ResetDatabase):
+    """Resetear colecciones específicas del sistema"""
+    try:
+        collections_reset = []
+        
+        for collection_name in request.collections:
+            collection = db[collection_name]
+            result = await collection.delete_many({})
+            collections_reset.append({
+                "name": collection_name,
+                "documents_deleted": result.deleted_count
+            })
+        
+        # Si se solicita crear datos de ejemplo
+        sample_data_created = []
+        if request.create_sample_data:
+            sample_data_created = await crear_datos_ejemplo(request.collections)
+        
+        return {
+            "success": True,
+            "message": "Sistema reseteado exitosamente",
+            "collections_reset": collections_reset,
+            "sample_data_created": sample_data_created
+        }
+    except Exception as e:
+        logger.error(f"Error resetting system: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reseteando sistema: {str(e)}")
+
+@api_router.post("/admin/reset-complete")
+async def resetear_sistema_completo(create_sample_data: bool = False):
+    """Resetear completamente el sistema incluyendo configuraciones"""
+    try:
+        # Lista de todas las colecciones
+        all_collections = [
+            "vehiculos", "clientes", "ordenes", "mecanicos",
+            "servicios_repuestos", "presupuestos", "facturas", 
+            "historial_kilometraje", "tasas_cambio", "configuraciones"
+        ]
+        
+        collections_reset = []
+        
+        for collection_name in all_collections:
+            collection = db[collection_name]
+            result = await collection.delete_many({})
+            collections_reset.append({
+                "name": collection_name,
+                "documents_deleted": result.deleted_count
+            })
+        
+        # Crear datos de ejemplo si se solicita
+        sample_data_created = []
+        if create_sample_data:
+            sample_data_created = await crear_datos_ejemplo(all_collections[:-1])  # Excluir configuraciones
+        
+        return {
+            "success": True,
+            "message": "Sistema completamente reseteado",
+            "collections_reset": collections_reset,
+            "sample_data_created": sample_data_created,
+            "total_documents_deleted": sum(col["documents_deleted"] for col in collections_reset)
+        }
+    except Exception as e:
+        logger.error(f"Error resetting complete system: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reseteando sistema completo: {str(e)}")
+
+async def crear_datos_ejemplo(collections: List[str]):
+    """Crear datos de ejemplo para las colecciones especificadas"""
+    created_data = []
+    
+    try:
+        # Datos de ejemplo para Mecánicos
+        if "mecanicos" in collections:
+            mecanicos_ejemplo = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "nombre": "JUAN PÉREZ",
+                    "especialidad": ["motor", "transmision"],
+                    "telefono": "0414-123.45.67",
+                    "whatsapp": "0414-123.45.67",
+                    "email": "juan.perez@trieste.com",
+                    "estado": "disponible",
+                    "activo": True,
+                    "avatar": "",
+                    "fecha_ingreso": datetime.now(timezone.utc)
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "nombre": "MARÍA GONZÁLEZ",
+                    "especialidad": ["frenos", "suspension"],
+                    "telefono": "0424-987.65.43",
+                    "whatsapp": "0424-987.65.43", 
+                    "email": "maria.gonzalez@trieste.com",
+                    "estado": "disponible",
+                    "activo": True,
+                    "avatar": "",
+                    "fecha_ingreso": datetime.now(timezone.utc)
+                }
+            ]
+            
+            mecanicos_collection = db["mecanicos"]
+            for mecanico in mecanicos_ejemplo:
+                mecanico_data = prepare_for_mongo(mecanico)
+                await mecanicos_collection.insert_one(mecanico_data)
+            
+            created_data.append({"collection": "mecanicos", "count": len(mecanicos_ejemplo)})
+        
+        # Datos de ejemplo para Servicios y Repuestos
+        if "servicios_repuestos" in collections:
+            servicios_ejemplo = [
+                {
+                    "id": str(uuid.uuid4()),
+                    "tipo": "servicio",
+                    "descripcion": "CAMBIO DE ACEITE Y FILTRO",
+                    "precio_usd": 25.00,
+                    "activo": True,
+                    "categoria": "MANTENIMIENTO"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "tipo": "servicio",
+                    "descripcion": "ALINEACIÓN Y BALANCEO",
+                    "precio_usd": 30.00,
+                    "activo": True,
+                    "categoria": "MANTENIMIENTO"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "tipo": "repuesto",
+                    "descripcion": "PASTILLAS DE FRENO DELANTERAS",
+                    "precio_usd": 45.00,
+                    "activo": True,
+                    "categoria": "FRENOS"
+                },
+                {
+                    "id": str(uuid.uuid4()),
+                    "tipo": "repuesto",
+                    "descripcion": "FILTRO DE ACEITE",
+                    "precio_usd": 12.00,
+                    "activo": True,
+                    "categoria": "MOTOR"
+                }
+            ]
+            
+            servicios_collection = db["servicios_repuestos"]
+            for servicio in servicios_ejemplo:
+                servicio_data = prepare_for_mongo(servicio)
+                await servicios_collection.insert_one(servicio_data)
+            
+            created_data.append({"collection": "servicios_repuestos", "count": len(servicios_ejemplo)})
+        
+        # Datos de ejemplo para Cliente y Vehículo
+        if "clientes" in collections and "vehiculos" in collections:
+            cliente_ejemplo = {
+                "id": str(uuid.uuid4()),
+                "nombre": "CARLOS MENDOZA",
+                "tipo_documento": "CI",
+                "prefijo_documento": "V",
+                "numero_documento": "12345678",
+                "telefono": "0212-555.12.34",
+                "telefono_secundario": "0414-555.12.34",
+                "direccion_fiscal": "AV. PRINCIPAL CARACAS",
+                "empresa": "EMPRESA EJEMPLO C.A.",
+                "email": "carlos.mendoza@ejemplo.com"
+            }
+            
+            cliente_data = prepare_for_mongo(convert_to_uppercase(cliente_ejemplo))
+            await db["clientes"].insert_one(cliente_data)
+            
+            vehiculo_ejemplo = {
+                "id": str(uuid.uuid4()),
+                "matricula": "ABC123",
+                "marca": "TOYOTA",
+                "modelo": "COROLLA",
+                "año": 2020,
+                "color": "BLANCO",
+                "kilometraje": 50000,
+                "tipo_combustible": "GASOLINA",
+                "serial_niv": "1NXBR32E25Z123456",
+                "tara": 1200,
+                "foto_vehiculo": "",
+                "cliente_id": cliente_ejemplo["id"]
+            }
+            
+            vehiculo_data = prepare_for_mongo(convert_to_uppercase(vehiculo_ejemplo))
+            await db["vehiculos"].insert_one(vehiculo_data)
+            
+            created_data.extend([
+                {"collection": "clientes", "count": 1},
+                {"collection": "vehiculos", "count": 1}
+            ])
+        
+        # Datos de ejemplo para Tasa de Cambio
+        if "tasas_cambio" in collections:
+            tasa_ejemplo = {
+                "id": str(uuid.uuid4()),
+                "tasa_bs_usd": 36.50,
+                "fecha": datetime.now(timezone.utc),
+                "activa": True,
+                "observaciones": "TASA DE EJEMPLO"
+            }
+            
+            tasa_data = prepare_for_mongo(tasa_ejemplo)
+            await db["tasas_cambio"].insert_one(tasa_data)
+            
+            created_data.append({"collection": "tasas_cambio", "count": 1})
+        
+        return created_data
+    except Exception as e:
+        logger.error(f"Error creating sample data: {e}")
+        return []
+
+# Endpoint para subir logo del sistema
+@api_router.post("/admin/upload-logo")
+async def subir_logo(logo_base64: str):
+    """Subir logo del sistema en base64"""
+    try:
+        # Validar que sea una imagen válida
+        if not logo_base64.startswith('data:image/'):
+            raise HTTPException(status_code=400, detail="Formato de imagen inválido")
+        
+        # Guardar en configuraciones
+        config_collection = db["configuraciones"]
+        
+        # Buscar configuración existente o crear nueva
+        config_doc = await config_collection.find_one({"tipo": "sistema"})
+        
+        if config_doc:
+            # Actualizar configuración existente
+            await config_collection.update_one(
+                {"tipo": "sistema"},
+                {"$set": {"logo": logo_base64, "updated_at": datetime.now(timezone.utc)}}
+            )
+        else:
+            # Crear nueva configuración
+            new_config = {
+                "id": str(uuid.uuid4()),
+                "tipo": "sistema",
+                "logo": logo_base64,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            }
+            await config_collection.insert_one(new_config)
+        
+        return {
+            "success": True,
+            "message": "Logo subido exitosamente"
+        }
+    except Exception as e:
+        logger.error(f"Error uploading logo: {e}")
+        raise HTTPException(status_code=500, detail=f"Error subiendo logo: {str(e)}")
+
+@api_router.get("/admin/logo")
+async def obtener_logo():
+    """Obtener logo del sistema"""
+    try:
+        config_collection = db["configuraciones"]
+        config_doc = await config_collection.find_one({"tipo": "sistema"})
+        
+        if config_doc and "logo" in config_doc:
+            return {
+                "success": True,
+                "logo": config_doc["logo"]
+            }
+        else:
+            return {
+                "success": False,
+                "message": "No hay logo configurado"
+            }
+    except Exception as e:
+        logger.error(f"Error getting logo: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo logo: {str(e)}")
+
 # Test route
 @api_router.get("/")
 async def root():
