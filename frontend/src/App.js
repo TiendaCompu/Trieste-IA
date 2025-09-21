@@ -985,6 +985,18 @@ const OrdenEditar = () => {
   const [estado, setEstado] = useState('');
   const [reparacionesRealizadas, setReparacionesRealizadas] = useState('');
   const [repuestosUtilizados, setRepuestosUtilizados] = useState('');
+  
+  // Estados para servicios y repuestos
+  const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
+  const [repuestosExternos, setRepuestosExternos] = useState([]);
+  const [nuevoRepuestoExterno, setNuevoRepuestoExterno] = useState({
+    nombre: '',
+    precio_usd: '',
+    cantidad: 1,
+    observaciones: ''
+  });
+  const [mostrarFormRepuesto, setMostrarFormRepuesto] = useState(false);
 
   // Estados para dictado
   const [grabando, setGrabando] = useState(false);
