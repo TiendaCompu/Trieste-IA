@@ -4168,13 +4168,82 @@ const ConfiguracionTaller = () => {
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium mb-2" style={{color: 'var(--trieste-blue)'}}>
-                  URL del Logo (opcional)
+                  Logo del Sistema
                 </label>
-                <Input
-                  value={configuracion.logo_url}
-                  onChange={(e) => setConfiguracion(prev => ({ ...prev, logo_url: e.target.value }))}
-                  placeholder="https://ejemplo.com/logo.png"
-                />
+                <div className="space-y-3">
+                  {(logoBase64 || configuracion.logo_url) && (
+                    <div className="flex items-center gap-4 p-3 border rounded-lg bg-gray-50">
+                      <img 
+                        src={logoBase64 || configuracion.logo_url} 
+                        alt="Logo actual" 
+                        className="w-16 h-16 object-contain"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600">Logo actual</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setLogoBase64('');
+                            setConfiguracion(prev => ({ ...prev, logo_url: '' }));
+                          }}
+                          className="mt-1"
+                        >
+                          Eliminar Logo
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <label className="cursor-pointer">
+                      <Button 
+                        as="span" 
+                        variant="outline" 
+                        disabled={cargandoLogo}
+                        className="flex items-center gap-2"
+                      >
+                        {cargandoLogo ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                            Subiendo...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4" />
+                            Subir Logo
+                          </>
+                        )}
+                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                              toast.error('El archivo debe ser menor a 2MB');
+                              return;
+                            }
+                            subirLogo(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                    
+                    <Input
+                      placeholder="O ingrese URL del logo"
+                      value={configuracion.logo_url}
+                      onChange={(e) => setConfiguracion(prev => ({ ...prev, logo_url: e.target.value }))}
+                      className="flex-1"
+                    />
+                  </div>
+                  
+                  <p className="text-xs text-gray-500">
+                    Suba una imagen (PNG, JPG, SVG) o ingrese una URL. Tamaño máximo: 2MB
+                  </p>
+                </div>
               </div>
             </div>
           </TabsContent>
