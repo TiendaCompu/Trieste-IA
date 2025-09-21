@@ -1924,6 +1924,7 @@ def run_full_tests():
     
     test_results.append(("🤖 AI Dictado Órdenes", tester.test_ai_dictado_orden()))
     test_results.append(("🤖 OrdenTrabajo Update Model", tester.test_orden_trabajo_update_model()))
+    test_results.append(("🤖 AI Image Processing", tester.test_ai_image_processing()))
     
     # Print final results
     print("\n" + "="*60)
