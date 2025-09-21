@@ -2695,7 +2695,8 @@ const RegistroVehiculo = () => {
     mostrarSelector: false,
     streaming: false,
     canvas: null,
-    video: null
+    video: null,
+    tipoCaptura: 'documento'
   });
 
   // Obtener dispositivos de cámara disponibles
