@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trieste - Prototipo Gestión de Taller</title>
+  <style>
+    :root {
+      --trieste-blue: #000064;
+      --trieste-yellow: #FCDF0D;
+      --trieste-white: #FFFFFE;
+      --bg: #f5f6fb;
+      --panel: #ffffff;
+      --text: #101828;
+      --muted: #667085;
+      --border: #e4e7ec;
+      --shadow: 0 18px 50px rgba(16, 24, 40, .08);
+    }
+    body.dark {
+      --bg: #070a16;
+      --panel: rgba(255,255,255,.055);
+      --text: #fffffe;
+      --muted: #a8b3cf;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .app { display: grid; grid-template-columns: 290px 1fr; min-height: 100vh; }
+    aside { background: var(--panel); border-right: 1px solid var(--border); padding: 22px; position: sticky; top: 0; height: 100vh; }
+    .brand { background: var(--trieste-blue); color: var(--trieste-white); border-radius: 28px; padding: 18px; box-shadow: var(--shadow); }
+    .brand-row { display: flex; gap: 14px; align-items: center; }
+    .logo-mark { width: 56px; height: 56px; border-radius: 20px; background: var(--trieste-yellow); color: var(--trieste-blue); display: grid; place-items: center; font-weight: 1000; font-size: 26px; }
+    .brand h1 { margin: 0; font-size: 22px; letter-spacing: .6px; }
+    .brand p { margin: 3px 0 0; color: var(--trieste-yellow); font-weight: 700; font-size: 12px; }
+    nav { margin-top: 22px; display: grid; gap: 7px; }
+    .nav-btn { border: 0; background: transparent; color: var(--muted); text-align: left; padding: 13px 14px; border-radius: 18px; font-weight: 800; cursor: pointer; transition: .18s; display:flex; align-items:center; gap:10px; }
+    .nav-btn:hover { background: rgba(0,0,100,.06); color: var(--text); }
+    body.dark .nav-btn:hover { background: rgba(255,255,255,.06); }
+    .nav-btn.active { background: var(--trieste-yellow); color: var(--trieste-blue); box-shadow: 0 10px 25px rgba(252,223,13,.22); }
+    main { padding: 26px; }
+    header { background: var(--panel); border: 1px solid var(--border); border-radius: 28px; padding: 18px 22px; box-shadow: var(--shadow); display:flex; justify-content:space-between; gap:18px; align-items:center; margin-bottom: 24px; }
+    .eyebrow { color: var(--muted); font-weight: 700; font-size: 13px; }
+    header h2 { margin: 4px 0 0; font-size: 28px; }
+    .actions { display:flex; gap:10px; align-items:center; }
+    button.primary { background: var(--trieste-blue); color: white; border: 0; border-radius: 16px; padding: 13px 17px; font-weight: 900; cursor:pointer; }
+    button.yellow { background: var(--trieste-yellow); color: var(--trieste-blue); border: 0; border-radius: 16px; padding: 13px 17px; font-weight: 900; cursor:pointer; }
+    .icon-btn { border:1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 16px; padding: 13px 15px; font-weight:900; cursor:pointer; }
+    .grid4 { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:16px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius: 26px; padding: 22px; box-shadow: var(--shadow); }
+    .stat-title { color: var(--muted); font-weight:800; font-size:14px; }
+    .stat-value { font-size:34px; font-weight:1000; margin-top:10px; }
+    .stat-note { color: var(--muted); margin-top:5px; font-size:14px; }
+    .content-grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; margin-top:18px; }
+    .searchbox { margin-top:18px; background: rgba(0,0,100,.045); border:1px dashed var(--border); border-radius:22px; padding:16px; display:flex; gap:12px; }
+    body.dark .searchbox { background: rgba(255,255,255,.045); }
+    input { width:100%; border:1px solid var(--border); border-radius:16px; padding:14px 16px; font-size:20px; font-weight:900; letter-spacing:3px; background:var(--panel); color:var(--text); outline:none; text-transform:uppercase; }
+    .list { margin-top:14px; display:grid; gap:12px; }
+    .row { border:1px solid var(--border); border-radius:20px; padding:15px; display:flex; justify-content:space-between; gap:12px; align-items:center; cursor:pointer; transition:.18s; }
+    .row:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .row strong { display:block; }
+    .row small { color:var(--muted); }
+    .badge { border-radius:999px; padding:7px 11px; font-weight:900; font-size:12px; white-space:nowrap; }
+    .badge.yellow { background:#fff7c2; color:#5b4700; }
+    .badge.blue { background:#dbeafe; color:#000064; }
+    .badge.green { background:#d1fae5; color:#065f46; }
+    body.dark .badge.yellow { background:rgba(252,223,13,.18); color:#fff1a0; }
+    body.dark .badge.blue { background:rgba(59,130,246,.18); color:#bfdbfe; }
+    body.dark .badge.green { background:rgba(16,185,129,.18); color:#a7f3d0; }
+    .module-screen { display:none; }
+    .module-screen.active { display:block; animation: fade .22s ease; }
+    @keyframes fade { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+    .placeholder-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+    .placeholder { border:1px dashed var(--border); background: rgba(0,0,100,.035); border-radius:24px; padding:24px; min-height:160px; }
+    body.dark .placeholder { background: rgba(255,255,255,.035); }
+    .placeholder h3 { margin:0 0 10px; }
+    .placeholder p { color:var(--muted); line-height:1.5; margin:0; }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position:relative; height:auto; }
+      nav { grid-template-columns: repeat(2,1fr); }
+      .grid4, .content-grid, .placeholder-grid { grid-template-columns:1fr; }
+      header { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-row">
+          <div class="logo-mark">T</div>
+          <div>
+            <h1>TRIESTE</h1>
+            <p>Gestión de Taller</p>
+          </div>
+        </div>
+      </div>
+      <nav id="nav"></nav>
+    </aside>
+    <main>
+      <header>
+        <div>
+          <div class="eyebrow">Sistema local · Prototipo navegable</div>
+          <h2 id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="actions">
+          <button class="icon-btn">🔔 Alertas</button>
+          <button class="yellow" onclick="toggleTheme()" id="themeBtn">☀️ Modo claro</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="module-screen active">
+        <div class="grid4">
+          <div class="card"><div class="stat-title">Órdenes activas</div><div class="stat-value">18</div><div class="stat-note">5 esperando aprobación</div></div>
+          <div class="card"><div class="stat-title">Bloqueadas</div><div class="stat-value">6</div><div class="stat-note">Repuestos o aprobación</div></div>
+          <div class="card"><div class="stat-title">Listas</div><div class="stat-value">4</div><div class="stat-note">Pendientes por entregar</div></div>
+          <div class="card"><div class="stat-title">Presupuestado</div><div class="stat-value">$4.820</div><div class="stat-note">Mes actual</div></div>
+        </div>
+        <div class="content-grid">
+          <div class="card">
+            <h2>Búsqueda rápida por matrícula</h2>
+            <p class="stat-note">El flujo principal del taller comienza aquí.</p>
+            <div class="searchbox">
+              <input placeholder="ABC123" maxlength="8" />
+              <button class="primary" onclick="go('ingreso')">Buscar</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Alertas operativas</h2>
+            <div class="list">
+              <div class="row"><div><strong>3 órdenes con más de 3 días detenidas</strong><small>Revisar compras y aprobaciones.</small></div><span class="badge yellow">Atención</span></div>
+              <div class="row"><div><strong>Inventario bajo en consumibles</strong><small>Aceite, grasa y relés por revisar.</small></div><span class="badge blue">Inventario</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <h2>Órdenes recientes</h2>
+          <div class="list">
+            <div class="row" onclick="go('ordenes')"><div><strong>AB123CD · Inversiones Los Andes, C.A.</strong><small>4 días en taller · Total estimado $420</small></div><span class="badge yellow">Esperando repuesto</span></div>
+            <div class="row" onclick="go('ordenes')"><div><strong>AE987KL · María Fernanda Rivas</strong><small>1 día en taller · Total estimado $0</small></div><span class="badge blue">En diagnóstico</span></div>
+            <div class="row" onclick="go('ordenes')"><div><strong>TQ551AA · Transporte Triana</strong><small>2 días en taller · Total estimado $780</small></div><span class="badge green">Listo para entregar</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="generic" class="module-screen">
+        <div class="card">
+          <h2 id="genericTitle"></h2>
+          <p id="genericDesc" class="stat-note"></p>
+        </div>
+        <div class="placeholder-grid" style="margin-top:18px">
+          <div class="placeholder"><h3>Vista principal</h3><p>Listado, filtros, estados y búsqueda rápida.</p></div>
+          <div class="placeholder"><h3>Formulario</h3><p>Registro o edición de información del módulo.</p></div>
+          <div class="placeholder"><h3>Detalle / Historial</h3><p>Consulta completa de eventos, documentos y relaciones.</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+<script>
+  const modules = [
+    ['dashboard','📊','Dashboard','Vista general del taller, alertas, órdenes activas y búsqueda por matrícula.'],
+    ['ingreso','🚗','Ingreso al Taller','Hoja de ingreso, datos del vehículo, cliente, kilometraje y observaciones iniciales.'],
+    ['ordenes','📋','Órdenes','Diagnóstico, aprobación, reparación, repuestos, mecánicos y estados de trabajo.'],
+    ['clientes','👥','Clientes','Personas naturales, jurídicas, empresas y flotillas.'],
+    ['vehiculos','🚘','Vehículos','Historial por matrícula, datos técnicos y relación con cliente propietario.'],
+    ['inventario','📦','Inventario','Consumibles, repuestos existentes, stock mínimo y movimientos.'],
+    ['compras','🛒','Compras','Repuestos externos solicitados para órdenes específicas.'],
+    ['presupuestos','📄','Presupuestos','Servicios, repuestos, utilidad, aprobación y documento para cliente.'],
+    ['historico','🕘','Histórico','Historia clínica del vehículo: ingresos, trabajos, costos y mecánicos.'],
+    ['tasas','💵','Tasas','Control cambiario para USD, VES y EUR.'],
+    ['config','⚙️','Configuración','Usuarios, roles, impresión, identidad visual y parámetros del taller.']
+  ];
+  const nav = document.getElementById('nav');
+  modules.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'nav-btn' + (m[0] === 'dashboard' ? ' active' : '');
+    b.innerHTML = `<span>${m[1]}</span>${m[2]}`;
+    b.onclick = () => go(m[0]);
+    b.dataset.page = m[0];
+    nav.appendChild(b);
+  });
+  function go(page){
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    const data = modules.find(m => m[0] === page);
+    document.getElementById('pageTitle').textContent = data[2];
+    document.getElementById('dashboard').classList.toggle('active', page === 'dashboard');
+    document.getElementById('generic').classList.toggle('active', page !== 'dashboard');
+    if(page !== 'dashboard'){
+      document.getElementById('genericTitle').textContent = data[2];
+      document.getElementById('genericDesc').textContent = data[3];
+    }
+  }
+  function toggleTheme(){
+    document.body.classList.toggle('dark');
+    const dark = document.body.classList.contains('dark');
+    document.getElementById('themeBtn').textContent = dark ? '☀️ Modo claro' : '🌙 Modo oscuro';
+  }
+</script>
+</body>
+</html>
